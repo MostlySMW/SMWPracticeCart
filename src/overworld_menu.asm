@@ -477,42 +477,6 @@ unpack_FastMode_level_settings:
 
         TYA : LSR : TAY : AND #$03
         STA !status_FastMode_exit_type
-
-    ;     lda #$00
-    ;     sta !status_FastMode_green
-    ;     sta !status_FastMode_blue
-    ;     sta !status_FastMode_yellow
-    ;     sta !status_FastMode_red
-    ;     sta !status_FastMode_special
-    ;     LDA #$01
-    ;     XBA
-    ;     LDA !FastMode_save_1+4,X
-    ;     LSR
-    ;     bcc +
-    ;     XBA
-    ;     STA !status_FastMode_red
-    ;     XBA
-    ;   + LSR
-    ;     BCC +
-    ;     XBA
-    ;     STA !status_FastMode_blue
-    ;     XBA
-    ;   + LSR 
-    ;     BCC +
-    ;     XBA
-    ;     STA !status_FastMode_yellow
-    ;     XBA
-    ;   + LSR 
-    ;     BCC +
-    ;     XBA
-    ;     STA !status_FastMode_green
-    ;     XBA
-    ;   + LSR 
-    ;     BCC +
-    ;     XBA
-    ;     STA !status_FastMode_special
-    ;     XBA
-    ;   + 
         
         SEP #$30
         RTS
@@ -2258,7 +2222,7 @@ meter_editor_mode: ; w$5460
         JSL draw_meter_text_draw_subtype_text
         SEP #$30
     .done_update_meter:
-        LDA #$98
+        LDA.b #bank(meter_names)
         STA $02
         LDA !current_meter_selection
         ASL #2

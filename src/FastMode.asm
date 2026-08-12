@@ -8,12 +8,13 @@
 ;$00 = #$00 for normal, #$01 for secret
 FastMode_add_level:
         LDA #$02                            ; \
-        STA $1df9                           ; |
-        REP #$30                            ; |
+        STA $1df9                           ; |                       
         LDA !FastMode_save_1_header+0       ; |
         INC                                 ; | Increment level pointer
         STA !FastMode_save_1_header+0       ; | X = 16 bit index into level save data
         DEC                                 ; |
+        REP #$30 
+        AND #$00FF
         ASL #3                              ; |
         TAX                                 ; |
         SEP #$20                            ; /
@@ -103,69 +104,27 @@ ResetLevel:
     REP #$10
     PLX
 
-        LDA !FastMode_save_1+5,X
-        TAY : AND #$01
-        STA $1f2a
+    LDA !FastMode_save_1+5,X
+    TAY : AND #$01
+    STA $1f2a
 
-        TYA : LSR : TAY : AND #$01
-        STA $1f29
+    TYA : LSR : TAY : AND #$01
+    STA $1f29
 
-        TYA : LSR : TAY : AND #$01
-        STA $1f28
+    TYA : LSR : TAY : AND #$01
+    STA $1f28
 
-        TYA : LSR : TAY : AND #$01
-        STA $1f27
+    TYA : LSR : TAY : AND #$01
+    STA $1f27
 
-        TYA : LSR : TAY : AND #$01
-        STA !status_special
+    TYA : LSR : TAY : AND #$01
+    STA !status_special
 
-        TYA : LSR : TAY : AND #$01
-        STA !midway_enable_flag
+    TYA : LSR : TAY : AND #$01
+    STA !midway_enable_flag
 
-        TYA : LSR : TAY : AND #$03
-        STA !status_FastMode_exit_type
-
-
-    ;     lda #$00
-    ;     sta $1f27
-    ;     sta $1f28
-    ;     sta $1f29
-    ;     sta $1f2a
-    ;     sta !status_special
-
-    ;     LDA #$01
-    ;     XBA
-    ;     LDA !FastMode_save_1+5,X
-    ;     LSR
-    ;     bcc +
-    ;     XBA
-    ;     STA $1f2a
-    ;     XBA
-    ;   + LSR
-    ;     BCC +
-    ;     XBA
-    ;     STA $1f29
-    ;     XBA
-    ;   + LSR 
-    ;     BCC +
-    ;     XBA
-    ;     STA $1f28
-    ;     XBA
-    ;   + LSR 
-    ;     BCC +
-    ;     XBA
-    ;     STA $1f27
-    ;     XBA
-    ;   + LSR
-    ;     BCC +
-    ;     XBA 
-    ;     STA !status_special
-    ;     XBA
-    ;   + 
-
-
-    ; lda #$01
-    ; sta !midway_enable_flag
+    TYA : LSR : TAY : AND #$03
+    STA !status_FastMode_exit_type
 
     lda #$07    ;\
     sta $1f21   ; | Set Mario's overworld position to a known value.
@@ -206,20 +165,20 @@ ResetLevel:
 fade_to_overworld:
     LDA !status_FastMode
     BEQ .done
-    LDA !FastMode_start_play
-    BEQ .done
-    LDA !util_byetudlr_hold
-    AND #$10
-    BEQ .start_play
-    LDA #$00
-    STA !FastMode_start_play
-    STA $0109
-    JSL set_position_to_yoshis_house
-    BRA .done
-    .start_play
-    LDA #$E9
-    STA $0109
-    RTL
+        LDA !FastMode_start_play
+        BEQ .done
+            LDA !util_byetudlr_hold
+            AND #$10
+            BEQ .start_play
+                LDA #$00
+                STA !FastMode_start_play
+                STA $0109
+                JSL set_position_to_yoshis_house
+                BRA .done
+            .start_play:
+            LDA #$E9
+            STA $0109
+            RTL
     .done:
         LDA !restore_status_from_backup
         BEQ +
@@ -277,8 +236,8 @@ draw_original_statusbar:
         PLB
 
         LDA $0d9b
-        AND #$FE
-        BNE .done
+        cmp #$c1
+        BEQ .done
 
         LDX #$A0
         -
@@ -329,7 +288,8 @@ draw_original_statusbar:
         JSL !_F+$008f8f             ; Bonus Stars
         PLB
 
-        .done:
+
+        .done
         PLP
         PLB
         RTL
