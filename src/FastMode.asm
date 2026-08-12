@@ -275,6 +275,11 @@ draw_original_statusbar:
         PHP
         PHK
         PLB
+
+        LDA $0d9b
+        AND #$FE
+        BNE .done
+
         LDX #$A0
         -
         LDA real_game_meters-1,X
@@ -324,7 +329,7 @@ draw_original_statusbar:
         JSL !_F+$008f8f             ; Bonus Stars
         PLB
 
-
+        .done:
         PLP
         PLB
         RTL
