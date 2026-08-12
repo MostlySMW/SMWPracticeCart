@@ -62,17 +62,17 @@ ORG !_F+$00A1DA
 ORG !_F+$00F9F5
 level_hijack:
         JSL level_tick
-        LDA !level_loaded
-        BEQ +
-        STZ !level_loaded
-        JSL level_mario_appear
-      + JSL test_last_frame
-        LDA $1426
         RTS
 level_load_hijack:
         JSL level_load
-        STZ $4200
-        INC !level_loaded
+        RTS
+pre_level_load_hijack:
+        JSL pre_level_loading
+        JSR $85FA
+        RTS
+fade_to_overworld_hijack:
+        JSL fade_to_overworld
+        JSR $A1A6
         RTS
 ; run on loading graphics from save state
 ORG !_F+$00CDD0
@@ -609,3 +609,8 @@ ORG !_F+$05BF42
         JSL pal_l2_3
 ORG !_F+$05C5ED
         JSL pal_l2_4
+
+org !_F+$00A093
+        JSR fade_to_overworld_hijack
+org !_F+$00968e
+        JSR pre_level_load_hijack

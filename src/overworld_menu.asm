@@ -9,6 +9,7 @@ overworld_menu_load:
         PHB
         PHK
         PLB
+        stz !FastMode_current_level
         
         LDA #$09 ; special world theme
         STA $1DFB ; apu i/o
@@ -68,7 +69,7 @@ overworld_menu_load:
         LDX #$0000
         STX $1E ; layer 2 x position
         STX $22 ; layer 3 x position
-        LDX #$0003
+        LDX #$0000
         STX $20 ; layer 2 y position
         STX $24 ; layer 3 y position
         STZ $2121 ; cgram address
@@ -80,7 +81,7 @@ overworld_menu_load:
         STA $2122 ; cgram data
         SEP #$10
         
-        LDX #!number_of_options-1
+        LDX #!number_of_options_pg1-1
       - JSL draw_menu_selection
         DEX
         BPL -
@@ -204,6 +205,10 @@ draw_menu_selection:
         LDA option_x_position,X
         STA $00
         LDA option_y_position,X
+        BIT #$20
+        BEQ +
+        EOR #$60
+        +
         STA $01
         
         REP #$30
@@ -274,27 +279,23 @@ draw_menu_selection:
 
 ;        db $00,$01,$02,$03,$04,$05,$06,$07,$08,$09,$0A,$0B,$0C,$0D,$0E,$0F,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$1A,$1B,$1C,$1D,$1E
 option_x_position:
-        db $06,$06,$06,$06,$06,$09,$09,$09,$09,$18,$0C,$15,$12,$12,$15,$0C,$0F,$0F,$0C,$0F,$18,$0F,$12,$15,$12,$15,$0E,$10,$12,$14,$0C
+        incbin "bin/OWMenu/tiles_X.bin"
 option_y_position:
-        db $03,$06,$09,$0C,$0F,$06,$09,$0C,$03,$0F,$09,$06,$0C,$09,$09,$0F,$06,$09,$06,$0C,$03,$0F,$06,$0C,$0F,$0F,$02,$02,$02,$02,$0C
+        incbin "bin/OWMenu/tiles_Y.bin"
 option_width:
-        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$08,$08,$08,$08,$10
+        incbin "bin/OWMenu/tiles_W.bin"
 option_height:
-        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
+        incbin "bin/OWMenu/tiles_H.bin"
 option_type:
-        db $01,$01,$01,$01,$01,$01,$01,$01,$02,$03,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$03,$01,$01,$01,$03,$03,$01,$01,$01,$01,$01
+        incbin "bin/OWMenu/tiles_type.bin"
 option_index:
-        dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
-        dw $030B,$030C,$0319,$031E,$0321,$0323,$0325,$0327
-        dw $0329,$032C,$0337,$033F,$0341,$0347,$0349,$03AE
-        dw $03B0,$03B2,$03C1,$03C1,$03C1,$03C1,$03BD
+        incbin "bin/OWMenu/menu_indices.bin"
 menu_option_tiles:
-        incbin "bin/menu_option_tiles.bin"
+        incbin "bin/OWMenu/menu_option_tiles.bin"
 menu_object_tiles:
         incbin "bin/menu_object_tiles.bin"
         
-; the text for option titles and descriptions
-        incsrc "option_text.asm"
+; See level_mario_appear.asm for option_text
 
 print "inserted ", bytes, "/32768 bytes into bank $18"
 
@@ -325,21 +326,21 @@ menu_palette:
 ; which selection to go to when a direction is pressed
 ;        db $00,$01,$02,$03,$04,$05,$06,$07,$08,$09,$0A,$0B,$0C,$0D,$0E,$0F,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$1A,$1B,$1C,$1D,$1E
 selection_press_up:
-        db $04,$00,$01,$02,$03,$08,$05,$06,$07,$14,$12,$1D,$0D,$16,$0B,$1E,$1B,$10,$1A,$11,$09,$13,$1C,$0E,$0C,$17,$0F,$15,$18,$19,$0A
+       incbin "bin/OWMenu/tiles_U.bin"
 selection_press_down:                                                                           
-        db $01,$02,$03,$04,$00,$06,$07,$08,$05,$14,$1E,$0E,$18,$0C,$17,$1A,$11,$13,$0A,$15,$09,$1B,$0D,$19,$1C,$1D,$12,$10,$16,$0B,$0F
+        incbin "bin/OWMenu/tiles_D.bin"
 selection_press_left:                                                                           
-        db $14,$0B,$0E,$17,$09,$01,$02,$03,$00,$19,$06,$16,$13,$11,$0D,$04,$12,$0A,$05,$1E,$1D,$0F,$10,$0C,$15,$18,$08,$1A,$1B,$1C,$07
+        incbin "bin/OWMenu/tiles_L.bin"
 selection_press_right:                                                                          
-        db $08,$05,$06,$07,$0F,$12,$0A,$1E,$1A,$04,$11,$01,$17,$0E,$02,$15,$16,$0D,$10,$0C,$00,$18,$0B,$03,$19,$09,$1B,$1C,$1D,$14,$13
+        incbin "bin/OWMenu/tiles_R.bin"
 
 ; the number of options to allow when holding x or y
 minimum_selection_extended:
-        db $01,$01,$01,$01,$01,$FF,$FF,$FF,$00,$0C,$04,$02,$01,$01,$01,$01,$02,$0A,$07,$01,$05,$01,$64,$01,$01,$0A,$28,$28,$28,$28,$03
+        incbin "bin/OWMenu/tiles_ext_options.bin"
 
 ; the number of options to allow when not holding x or y
 minimum_selection_normal:
-        db $01,$01,$01,$01,$01,$03,$04,$04,$00,$0C,$04,$02,$01,$01,$01,$01,$02,$0A,$07,$01,$05,$01,$37,$01,$01,$0A,$28,$28,$28,$28,$03
+        incbin "bin/OWMenu/tiles_norm_options.bin"
 
 ; this code is run on every frame during the overworld menu game mode (after fade in completes)
 ; GAME MODE #$1F
@@ -352,7 +353,63 @@ overworld_menu:
         INC $14
         JSL $7F8000
         
-        LDA !in_meter_editor
+        REP #$20
+        LDX !overworld_menu_mode
+
+        CPX #$00
+        BNE .check_mode_1
+        LDA $20
+        CMP #$0000
+        BEQ .done_scrolling_layer_2
+        LDA $20
+        SBC #$0004
+        STA $20
+        .done_scrolling_layer_2:
+        LDA $24
+        CMP #$0000
+        BEQ .done_scrolling_layer_3
+        SBC #$0004
+        STA $24
+        .done_scrolling_layer_3:
+        bra .done_scrolling
+        
+        .check_mode_1:
+        CPX #$01
+        BNE .check_mode_2
+        lda $20
+        CMP #$00A4
+        BCS +
+        ADC #$0004
+        STA $20
+        +
+        LDA $24
+        cmp #$00A0
+        BCS +
+        ADC #$0004
+        STA $24
+        +
+        bra .done_scrolling
+
+        .check_mode_2:
+        CPX #$02
+        BNE .done_scrolling
+        LDA $20
+        CMP #$0100
+        BCS +
+        ADC #$0004
+        STA $20
+        +
+        LDA $24
+        CMP #$0000
+        BCS +
+        SBC #$0004
+        STA $24
+        +
+        
+        .done_scrolling
+        SEP #$30
+
+        LDA !overworld_menu_mode
         ASL A
         TAX
         JSR (overworld_menu_submodes,X)
@@ -364,23 +421,216 @@ overworld_menu:
 overworld_menu_submodes:
         dw option_selection_mode
         dw meter_editor_mode
+        dw FastMode_editor_mode
         
+unpack_FastMode_level_settings:
+        LDA !FastMode_current_level
+        REP #$30
+        AND #$00FF
+        ASL #3
+        TAX
+        SEP #$20
+
+        LDA !FastMode_save_1_header+1
+        STA !status_FastMode_difficulty
+
+        LDA !FastMode_save_1+1,X
+        STA !status_FastMode_start_item
+
+        LDA !FastMode_save_1+2,X
+        STA !status_FastMode_end_item
+
+        LDA !FastMode_save_1+3,X
+        TAY : AND #$0F
+        STA !status_FastMode_start_powerup
+
+        TYA : LSR #4 : AND #$0F
+        STA !status_FastMode_end_powerup
+
+        LDA !FastMode_save_1+4,X
+        TAY : AND #$0F
+        STA !status_FastMode_start_yoshi
+
+        TYA : LSR #4 : AND #$0F
+        STA !status_FastMode_end_yoshi
+
+
+
+        LDA !FastMode_save_1+5,X
+        TAY : AND #$01
+        STA !status_FastMode_red
+
+        TYA : LSR : TAY : AND #$01
+        STA !status_FastMode_blue
+
+        TYA : LSR : TAY : AND #$01
+        STA !status_FastMode_yellow
+
+        TYA : LSR : TAY : AND #$01
+        STA !status_FastMode_green
+
+        TYA : LSR : TAY : AND #$01
+        STA !status_FastMode_special
+
+        TYA : LSR : TAY : AND #$01
+        STA !status_FastMode_midway
+
+        TYA : LSR : TAY : AND #$03
+        STA !status_FastMode_exit_type
+
+    ;     lda #$00
+    ;     sta !status_FastMode_green
+    ;     sta !status_FastMode_blue
+    ;     sta !status_FastMode_yellow
+    ;     sta !status_FastMode_red
+    ;     sta !status_FastMode_special
+    ;     LDA #$01
+    ;     XBA
+    ;     LDA !FastMode_save_1+4,X
+    ;     LSR
+    ;     bcc +
+    ;     XBA
+    ;     STA !status_FastMode_red
+    ;     XBA
+    ;   + LSR
+    ;     BCC +
+    ;     XBA
+    ;     STA !status_FastMode_blue
+    ;     XBA
+    ;   + LSR 
+    ;     BCC +
+    ;     XBA
+    ;     STA !status_FastMode_yellow
+    ;     XBA
+    ;   + LSR 
+    ;     BCC +
+    ;     XBA
+    ;     STA !status_FastMode_green
+    ;     XBA
+    ;   + LSR 
+    ;     BCC +
+    ;     XBA
+    ;     STA !status_FastMode_special
+    ;     XBA
+    ;   + 
+        
+        SEP #$30
+        RTS
+pack_FastMode_level_settings:
+        LDA !FastMode_current_level
+        REP #$30
+        AND #$00FF
+        ASL #3
+        TAX
+        SEP #$20
+
+        LDA !status_FastMode_difficulty
+        STA !FastMode_save_1_header+1
+        
+        LDA !status_FastMode_start_item
+        STA !FastMode_save_1+1,X
+        
+        LDA !status_FastMode_end_item
+        STA !FastMode_save_1+2,X
+        
+        LDA !status_FastMode_end_powerup
+        ASL #4
+        ORA !status_FastMode_start_powerup
+        STA !FastMode_save_1+3,X
+
+        LDA !status_FastMode_end_yoshi
+        ASL #4
+        ORA !status_FastMode_start_yoshi
+        STA !FastMode_save_1+4,X
+
+        LDA !status_FastMode_exit_type
+        ASL
+        ORA !status_FastMode_midway
+        ASL
+        ORA !status_FastMode_special
+        ASL
+        ORA !status_FastMode_green
+        ASL
+        ORA !status_FastMode_yellow
+        ASL
+        ORA !status_FastMode_blue
+        ASL
+        ORA !status_FastMode_red
+        STA !FastMode_save_1+5,X
+
+        
+        SEP #$30
+
+        RTS
+
+RedrawPg2:
+        LDX #!number_of_options_pg1                         ; \
+        -                                                   ; |
+        JSL draw_menu_selection                             ; | Draw all page 2 options
+        INX                                                 ; |
+        CPX #!number_of_options_pg1+!number_of_options_pg2  ; |
+        bne -                                               ; /
+        RTS
+FastMode_editor_mode:
+        JSR unpack_FastMode_level_settings
+        
+
+        lda !util_byetudlr_frame                            ; \
+        AND #$10                                            ; |
+        BEQ +                                               ; |
+            LDA #$00                                        ; |
+            STA !overworld_menu_mode                        ; |
+            sta !util_byetudlr_frame                        ; | Return to main menu on START
+            stz !text_timer                                 ; |
+            lda #$1f                                        ; |
+            STA !current_selection                          ; |
+            JMP .done                                       ; |
+        +                                                   ; /
+
+        lda !util_byetudlr_hold                             ; \
+        AND #$40                                            ; |
+        BEQ .no_y                                           ; |
+            lda !util_byetudlr_frame                        ; | 
+            BIT #$08                                        ; | if Y+UP, increment level counter
+            BEQ +                                           ; | 
+                jsr pack_FastMode_level_settings            ; | Pack away old values before increment
+                inc !FastMode_current_level                 ; |
+                LDA !FastMode_save_1_header+0
+                DEC A
+                CMP !FastMode_current_level
+                BCS .no_overflow
+                    lda #00
+                    sta !FastMode_current_level
+                .no_overflow:
+                stz !util_byetudlr_frame                    ; |
+                stz !text_timer                             ; |
+                jsr unpack_FastMode_level_settings          ; | unpack new values after increment
+                JSR RedrawPg2
+            +                                               ; |
+        lda !util_byetudlr_frame                            ; |
+        BIT #$04                                            ; | if Y+Down, decrement level counter
+        BEQ +                                               ; |
+            jsr pack_FastMode_level_settings                ; |
+            dec !FastMode_current_level                     ; |
+            BPL .no_underflow
+                LDA !FastMode_save_1_header
+                DEC A
+                STA !FastMode_current_level
+            .no_underflow:
+            stz !util_byetudlr_frame                        ; |
+            stz !text_timer                                 ; |
+            jsr unpack_FastMode_level_settings              ; |
+            JSR RedrawPg2
+        +                                                   ; /
+        .no_y:
+            JSR option_selection_mode
+        .done
+            JSR pack_FastMode_level_settings
+        RTS
 ; run the default part of the menu
 option_selection_mode:
         LDA !current_selection
         STA $0B
-        
-        LDA $24
-        CMP #$03
-        BEQ .no_scroll
-        SEC
-        SBC #$04
-        STA $24
-        LDA $20
-        SEC
-        SBC #$04
-        STA $20
-    .no_scroll:
         
         INC !fast_scroll_timer
         LDA !util_axlr_hold
@@ -530,6 +780,22 @@ option_selection_mode:
         dw .select_name
         dw .select_name
         dw .select_region
+        dw .select_fast_mode_save
+        dw .select_fast_mode_yellow
+        dw .select_fast_mode_green
+        dw .select_fast_mode_red
+        dw .select_fast_mode_blue
+        dw .select_fast_mode_special
+        dw .select_fast_mode_start_powerup
+        dw .select_fast_mode_start_item
+        dw .select_fast_mode_start_yoshi
+        dw .select_fast_mode_end_powerup
+        dw .select_fast_mode_end_item
+        dw .select_fast_mode_end_yoshi
+        dw .select_fast_mode_midway_enable
+        dw .select_fast_mode_difficulty
+        dw .select_fast_mode_exit_type
+        dw .select_fast_mode_delete_save
         dw .select_exit
         
     .select_yellow:
@@ -554,7 +820,38 @@ option_selection_mode:
     .select_placeholder:
     .select_region:
     .select_name:
+    .select_fast_mode_yellow:
+    .select_fast_mode_green:
+    .select_fast_mode_red:
+    .select_fast_mode_blue:
+    .select_fast_mode_special:
+    .select_fast_mode_powerup:
+    .select_fast_mode_start_powerup:
+    .select_fast_mode_start_item:
+    .select_fast_mode_start_yoshi:
+    .select_fast_mode_end_powerup:
+    .select_fast_mode_end_item:
+    .select_fast_mode_end_yoshi:
+    .select_fast_mode_midway_enable:
+    .select_fast_mode_difficulty:
+    .select_fast_mode_exit_type:
         JMP .finish_no_change
+    
+    .select_fast_mode_save:
+        lda #$02
+        sta !overworld_menu_mode
+        LDA #$20
+        STA !current_selection
+        stz !text_timer
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2
+        jmp .finish_no_change
+    .select_fast_mode_delete_save:
+        lda #$00
+        sta !FastMode_save_1_header+0
+        LDA #$0B ; itembox sound
+        STA $1DFC ; apu i/o
+        jmp .finish_no_change
     .select_meters:
         LDA.L !status_layout
         CMP #$03
@@ -568,7 +865,7 @@ option_selection_mode:
         JSL draw_meter_names
         JSR draw_edited_status_bar
         LDA #$01
-        STA !in_meter_editor
+        STA !overworld_menu_mode
         STZ !text_timer
         JMP .no_update_text
     .select_yoshi:
@@ -787,13 +1084,14 @@ draw_option_cursor:
         LDA option_type,X
         STA $03
         LDA option_y_position,X
-        ASL #3
-        SEC
-        SBC #$09
         REP #$20
         AND #$00FF
+        ASL #3
         SEC
-        SBC $24
+        SBC #$0009
+
+        SEC
+        SBC $20
         BPL +
         CMP #$FFE8
         BCC .done
@@ -985,6 +1283,17 @@ delete_all_data:
       + DEX
         DEX
         BPL -
+
+        LDA #$0000
+        LDX #$000E
+        -
+        STA.L !FastMode_save_1_header,X
+        dex
+        dex
+        bpl -
+
+        LDA #$0000
+        sta $70000a
         
         PLB
         PLP
@@ -1250,8 +1559,33 @@ draw_option_text:
       + LDA !text_timer
         BNE +
         BRL .draw_title_and_clear
-      + REP #$30
+      + SEP #$30
         LDA !current_selection
+        CMP #!number_of_options_pg1
+        bcc +
+            LDA !FastMode_save_1_header+0
+            BNE .saveExists
+                LDA #$00
+                REP #$30
+                bra .noSave
+            .saveExists:
+            REP #$30
+            LDA !FastMode_current_level
+
+            ASL #3
+            TAX 
+            LDA !FastMode_save_1+0,X
+            .noSave
+            AND #$00FF
+            ASL #5
+            ADC #level_names
+            sta $00
+            LDA.W #bank(level_names) ; bank of text
+            STA $02
+            lda #$0000
+            bra .cont
+      + 
+        REP #$30
         AND #$00FF
         ASL #6
         STA $00
@@ -1269,13 +1603,14 @@ draw_option_text:
         CLC
         ADC $00
         STA $00
-        LDA #$9898 ; bank of text
+        LDA.W #bank(option_description) ; bank of text
         STA $02
         LDA !text_timer
         AND #$00FF
         SEC
         SBC #$0008
         ASL #2
+        .cont
         CLC
         ADC #$52A0
         XBA
@@ -1292,7 +1627,7 @@ draw_option_text:
         CLC
         ADC #option_title
         STA $00
-        LDA #$9898 ; bank of text
+        LDA.W #bank(option_title) ; bank of text
         STA $02
         LDY #$4052
         LDX #$0020
@@ -1324,7 +1659,7 @@ draw_option_value:
         REP #$30
         LDA #option_empty
         STA $00
-        LDA #$9898 ; bank of text
+        LDA.W #bank(option_empty) ; bank of text
         STA $02
         LDA !current_selection
         AND #$00FF
@@ -1660,7 +1995,7 @@ failsafe_check_option_bounds:
         PLB
         SEP #$30
         
-        LDX #!number_of_options-1
+        LDX #!number_of_options
       - LDA.L !status_table,X
         DEC A
         CMP minimum_selection_extended,X
@@ -1685,20 +2020,9 @@ meter_editor_mode: ; w$5460
         BEQ +
         LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
-        STZ !in_meter_editor
+        STZ !overworld_menu_mode
         STZ !text_timer
         RTS
-        
-      + LDA $24
-        CMP #$A7
-        BEQ +
-        CLC
-        ADC #$04
-        STA $24
-        LDA $20
-        CLC
-        ADC #$04
-        STA $20
         
       + INC !fast_scroll_timer
         LDA !util_axlr_hold
@@ -2224,7 +2548,7 @@ meter_heights:
 
 draw_meter_names:
         PHP
-        LDA #$98 ; bank of text
+        LDA.b #bank(meter_names) ; bank of text
         STA $02
         REP #$30
         
@@ -2291,7 +2615,7 @@ draw_meter_text:
         CLC
         ADC $00
         STA $00
-        LDA #$9898 ; bank of text
+        LDA.W #bank(meter_description) ; bank of text
         STA $02
         LDA !text_timer
         AND #$00FF
@@ -2334,7 +2658,7 @@ draw_meter_text:
         CLC
         ADC #meter_names
         STA $00
-        LDA #$9898 ; bank of text
+        LDA.W #bank(meter_names) ; bank of text
         STA $02
         LDY #$C552
         LDX #$000E
@@ -2363,7 +2687,7 @@ draw_meter_text:
         CLC
         ADC $00
         STA $00
-        LDA #$9898 ; bank of text
+        LDA.W #bank(meter_types) ; bank of text
         STA $02
         LDY #$D452
         LDX #$000A

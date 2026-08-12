@@ -1,3 +1,7 @@
+org !_F+$049150
+        LDA !level_enter_flag
+        NOP #4
+
 ; point game mode 8 to start game
 ; this will skip all file and player menuing
 ORG !_F+$009339
@@ -31,7 +35,7 @@ ORG !_F+$00D0D8
 
 ; fix sprite loading table
 ORG !_F+$02ABF3
-		db $7F
+	db $7F
 
 ; disable midway points
 ORG !_F+$00CA2C
@@ -279,3 +283,45 @@ ORG !_F+$03B4F3
         db $05
 ORG !_F+$03B4F9
         db $18
+
+org !_F+$05d9D7
+        LDA !midway_enable_flag
+        NOP #2
+
+org !_F+$0DA691
+        LDA !midway_enable_flag
+        NOP #3
+org !_F+$00A267
+        nop #2                         ; Always allow Start+Select. Even if submap/translevel is wrong and in a level that is not counted as beaten
+
+org !_F+$008EF2                         ; \
+    RTL                                 ; |
+org !_F+$008EE7                         ; |
+    STA !status_bar+$77,X               ; |
+org !_F+$008EE0                         ; |
+    LDA !status_bar+$77,X               ; |
+                                        ; |
+org !_F+$009014                         ; |
+    STZ !status_bar+$77-$14,X           ; |
+org !_F+$009034                         ; |
+    INC !status_bar+$77-$14,X           ; |
+                                        ; |
+org !_F+$008fc5                         ; |
+    RTL                                 ; |     Restore original status bar functionality
+org !_F+$008F9D                         ; |
+    LDA !status_bar+$6c,X               ; |
+org !_F+$008FA4                         ; |
+    STA !status_bar+$6c,X               ; |
+org !_F+$008FA7                         ; |
+    STA !status_bar+$4c,X               ; |
+org !_F+$008FAF                         ; |
+    LDA !status_bar+$6c,X               ; |
+org !_F+$008FB7                         ; |
+    STA !status_bar+$4c,X               ; |
+org !_F+$008FBD                         ; |
+    STA !status_bar+$6C,X               ; |
+                                        ; |
+org !_F+$009053                         ; |
+    STZ !status_bar+$6c-$09,X           ; |
+org !_F+$009068                         ; |
+    inc !status_bar+$6c-$09,X           ; /

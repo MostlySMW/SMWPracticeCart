@@ -4,6 +4,7 @@ reset bytes
 
 ; this code is run once on overworld load
 overworld_load:
+
         LDA !spliced_run
         BNE .done_saving
         LDA !save_timer_address+2
@@ -87,7 +88,7 @@ overworld_load:
         STZ !in_playback_mode
         
         ; restore settings
-        LDX #$1F
+        LDX #!number_of_options
       - LDA.L !backup_status_table,X
         STA.L !status_table,X
         DEX
@@ -168,13 +169,13 @@ late_overworld_load:
         LDY #$0020
         JSL load_vram
         
-        LDX #$4130
-        STX $2116 ; vram address
-        PHK
-        PLA ; #bank of overworld_layer_3_tiles
-        LDX #overworld_layer_3_tiles+$160
-        LDY #$0010
-        JSL load_vram
+        ; LDX #$4130
+        ; STX $2116 ; vram address
+        ; PHK
+        ; PLA ; #bank of overworld_layer_3_tiles
+        ; LDX #overworld_layer_3_tiles+$160
+        ; LDY #$0010
+        ; JSL load_vram
         
         LDX #$4B70
         STX $2116 ; vram address
@@ -284,6 +285,35 @@ prepare_file:
         JSL restore_basic_settings
         JSR check_for_rtc
         JSL check_for_pal_music
+        LDA !status_FastMode 
+        BEQ .done
+        LDA !util_byetudlr_hold
+        AND #$30
+        BNE .done
+        LDA #$01
+        STA !FastMode_start_play
+
+        LDX #!number_of_options
+      - LDA.L !status_table,X
+        STA.L !backup_status_table,X
+        DEX
+        BPL -
+
+        lda #$01
+        STA !restore_status_from_backup
+
+        lda #$00
+        sta !status_states
+        
+        sta !status_pause
+        sta !status_slots
+        sta !status_lagometer
+        sta !status_timedeath
+        lda #$01
+        
+        sta !status_lrreset
+        sta !status_slowdown
+        .done:
         RTL
 
 ; initialize mario on the overworld
@@ -348,6 +378,9 @@ set_defaults:
         STA.L !status_moviesave
         STA.L !status_movieload
         STA.L !status_region
+        STA.L !status_lagometer
+        STA.L !status_FastMode
+        STA.L !status_FastMode_delete
         LDA #$01
         STA.L !status_scorelag
         STA.L !status_states

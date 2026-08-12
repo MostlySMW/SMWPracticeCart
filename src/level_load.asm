@@ -40,7 +40,8 @@ level_load:
         
         PLB
         PLP
-        
+        STZ $4200               ;restore from hijack
+        INC !level_loaded       ;
         RTL
         
 l_r_functions:
@@ -712,6 +713,12 @@ init_statusbar_properties:
         PHP
         PHB
         SEP #$30
+
+        LDA !FastMode_start_play
+        BEQ +
+          JSL init_original_statusbar_properties
+          bra .continue
+        +
         
         LDX #$A0
         LDA #$38
@@ -743,6 +750,8 @@ init_statusbar_properties:
       + DEY
         BPL -
         
+
+        .continue
         PHK
         PLB
         

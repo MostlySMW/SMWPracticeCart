@@ -59,6 +59,13 @@ level_tick:
     .done:
         PLB
         PLP
+
+        LDA !level_loaded         ;
+        BEQ +                     ;
+        STZ !level_loaded         ; Restore from hijack
+        JSL level_mario_appear    ;
+      + JSL test_last_frame       ;
+        LDA $1426                 ;
         RTL
 
 ; these routines are called on both level tick and level fade tick
@@ -114,6 +121,11 @@ display_meters_wrapper:
 
 ; display all the selected statusbar meters
 display_meters:
+        LDA !FastMode_start_play
+        BEQ +
+        JSL draw_original_statusbar
+        RTS
+        +
         PHP
         SEP #$30
         
