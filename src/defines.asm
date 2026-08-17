@@ -253,12 +253,26 @@
 !spliced_run                 = $700007
 ; flag = #$BD if the RTC is available on this system
 !clock_available             = $700009
-!restore_status_from_backup  = $70000a
 
-!midway_enable_flag          = $06a4
-!FastMode_tile_timer         = $06a3   ; Timer for flashing route tiles
-!FastMode_start_play         = $06a2   ; Used to determine if play should start on next overworld load
-!FastMode_current_level      = $06a0   ; 2 bytes
+!menu_tile_upload_bytes      = $0afe
+!menu_tile_upload_location   = $0b00
+
+!loram_savestate_location     = $705000;$7f9DFB? loram savestate in wram?
+!restore_status_from_backup   = $70000a
+!level_enter_flag             = $58
+!FastMode_save_current_header = $06b0
+!FastMode_save_current_level  = $06c0
+!most_recent_exit             = $06c1
+!midway_enable_flag           = $06a4
+!FastMode_tile_timer          = $06a3   ; Timer for flashing route tiles
+!FastMode_start_play          = $06a2   ; Used to determine if play should start on next overworld load
+!FastMode_current_level       = $06a0   ; 2 bytes
+
 !FastMode_save_1_header      = $710200 ; #Levels
 !FastMode_save_1             = $710210 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
-!level_enter_flag            = $58
+
+!FastMode_save_2_header      = $710600 ; #Levels
+!FastMode_save_2             = $710610 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+
+!FastMode_save_3_header      = $710A00 ; #Levels
+!FastMode_save_3             = $7106A0 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power

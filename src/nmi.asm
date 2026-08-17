@@ -483,17 +483,18 @@ break:
         STA $4200 ; enable nmi, controller
         CLI
         
+
+        LDA.L !save_state_exists
+        BEQ .forever
+        JSL activate_load_state
         REP #$30
         PLY
         PLX
         PLA
+        
         PLD
         PLB
         PLP
-        
-        LDA.L !save_state_exists
-        BEQ .forever
-        JSL activate_load_state
         RTI
         
 stripe_store_word:

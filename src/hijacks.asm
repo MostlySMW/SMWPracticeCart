@@ -32,6 +32,7 @@ m7_boss_hijack:
         JSR $995B
         RTL
 
+
 ; run on every frame
 ORG !_F+$008072
         JSR every_frame_hijack
@@ -125,41 +126,22 @@ ORG !_F+$008449
         JSL update_lagometer
         NOP
         
-; test if level completed this frame
-; X = 0 for normal exit, 1 for secret exit
-; return 1 in A for finished, 0 for not finished
+
 ORG !_F+$00CC68
         JMP $CCBB
-test_last_frame:
-        LDA !level_finished
-        BNE .exit
-        LDX $141C ; secret flag
-        LDA $9E ; sprite id
-        CMP #$C5
-        BNE +
-        LDX #$01
-      + LDA $1493 ; end level timer
-        BNE .trigger
-        LDA $190D ; bowser dead
-        BNE .trigger
-        LDX #$01
-        LDA $1434 ; keyhole timer
-        BNE .trigger
-        LDA $1B95 ; wings flag
-        BEQ .exit
-        LDA $0DD5 ; exit level flag
-        CMP #$01
-        BNE .exit
-        LDX #$00
-        BRA .trigger
-    .exit:
-        LDA #$00
-        RTL
-        
-    .trigger:
-        JSL level_finish
-        LDA #$01
-        RTL
+nmi_draw_hijack:
+        lda !in_overworld_menu
+        beq +
+        JSL menu_nmi_draw_tiles
+        rts
+        +
+        JSR $a4e3
+        JSR $a300
+        RTS
+
+ORG !_F+$008237
+        JSR nmi_draw_hijack
+        NOP #3
        
 ; hijack drawing titlescreen
 ORG !_F+$009A97

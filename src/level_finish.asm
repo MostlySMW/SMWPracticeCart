@@ -6,50 +6,13 @@ reset bytes
 ; X = 1 if the secret exit was activated, 0 otherwise
 level_finish:
         PHP
-
+        stx !most_recent_exit
         lda !FastMode_start_play
-        BEQ .no_advance
-            LDA #$0B
-            STA $0100                   ; End level quicker
-
-            LDA !status_FastMode_difficulty
-            CMP #$01
-                BNE +
-                    stx $00
-                    LDA !status_FastMode_exit_type
-                    CMP $00
-                    BNE .no_advance
-                        BRA .next_level
-          + CMP #$02
-            BNE .next_level
-                stx $00
-                LDA !status_FastMode_exit_type
-                CMP $00
-                BNE .no_advance
-                    lda !status_FastMode_end_item
-                    BEQ +
-                        CMP $0dc2
-                        BNE .no_advance
-                  + lda !status_FastMode_end_powerup
-                        BEQ +
-                            CMP $19
-                            BNE .no_advance
-                  + lda !status_FastMode_end_yoshi
-                        BEQ .next_level
-                            lda $187a
-                            BEQ .no_advance
-          +
-        .next_level:
-        INC !FastMode_current_level   ; Next level
-        LDA !FastMode_current_level   
-        CMP !FastMode_save_1_header+0
-        BCC .no_advance                           
-            LDA #$00                ;Exit if at the end
-            STA !FastMode_start_play  
-            sta !midway_enable_flag
-            JSL set_position_to_yoshis_house
-
-        .no_advance
+        BEQ +
+            LDA #$0B    ; End level quicker
+            STA $0100
+            
+        +
         LDA #$01
         STA !freeze_timer_flag
         STA !level_finished
@@ -57,6 +20,39 @@ level_finish:
         JSL add_additional_time
         
         PLP
+        RTL
+; test if level completed this frame
+; X = 0 for normal exit, 1 for secret exit
+; return 1 in A for finished, 0 for not finished
+test_last_frame:
+        LDA !level_finished
+        BNE .exit
+        LDX $141C ; secret flag
+        LDA $9E ; sprite id
+        CMP #$C5
+        BNE +
+        LDX #$01
+      + LDA $1493 ; end level timer
+        BNE .trigger
+        LDA $190D ; bowser dead
+        BNE .trigger
+        LDX #$01
+        LDA $1434 ; keyhole timer
+        BNE .trigger
+        LDA $1B95 ; wings flag
+        BEQ .exit
+        LDA $0DD5 ; exit level flag
+        CMP #$01
+        BNE .exit
+        LDX #$00
+        BRA .trigger
+    .exit:
+        LDA #$00
+        RTL
+        
+    .trigger:
+        JSL level_finish
+        LDA #$01
         RTL
 
 ; set the appropriate pointer corresponding to this level and exit

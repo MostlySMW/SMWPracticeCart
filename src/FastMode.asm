@@ -6,52 +6,340 @@
 ; 5 - eems gybr -> ee - Exit type : m = Midway enable : s = special enable  :  gybr = switches
 
 ;$00 = #$00 for normal, #$01 for secret
+
+FastMode_header_locations:
+    dd !FastMode_save_1_header, !FastMode_save_2_header, !FastMode_save_3_header 
+
+FastMode_save_locations:
+    dd !FastMode_save_1, !FastMode_save_2, !FastMode_save_3
+
+; Retrieves current header from either save 1,2,3 based on status_fastmode
+; stores to FastMode_save_current_header
+; on exit: A=0, if invalid, a=1 if valid
+;          x = 0 if save 1 -- 4 if save 2 -- 8 if save 3
+retrieve_current_header:
+    PHB
+    PHK
+    PLB
+    lda !status_FastMode
+    BNE +
+        JMP .done_fail
+    +
+
+    DEC 
+    ASL #2
+    tax
+    LDA FastMode_header_locations+0,X
+    sta $00
+    LDA FastMode_header_locations+1,X
+    sta $01
+    lda FastMode_header_locations+2,x
+    sta $02
+
+    ldy #$0F
+    -
+    LDA [$00],y
+    STA !FastMode_save_current_header,y
+    dey
+    bpl -
+    
+    .done_success:
+    PLB
+    LDA #$01
+    RTL
+    .done_fail:
+    PLB
+    LDA #$00
+    RTL
+
+menu_nmi_draw_tiles:
+    lda #$80
+    sta $2115  
+    REP #$10
+    LDX #!menu_tile_upload_location ;Source Offset into source bank
+    STX $4302       ;Set Source address lower 16-bits
+    LDA #00   ;Source bank
+    STA $4304       ;Set Source address upper 8-bits
+    LDX !menu_tile_upload_bytes   ;# of bytes to copy (16k)
+    beq .done
+    STX $4305       ;Set DMA transfer size
+    LDA #$16        ;$2118 is the destination, so
+    STA $4301       ;  set lower 8-bits of destination to $18
+    LDA #$04        ;Set DMA transfer mode: auto address increment
+    STA $4300       ;  using write mode 1 (meaning write a word to $2118/$2119)
+    LDA #$01        ;The registers we've been setting are for channel 0
+    STA $420B       ;  so Start DMA transfer on channel 0 (LSB of $420B)
+    .done:
+    sep #$30
+    stz !menu_tile_upload_bytes
+    stz !menu_tile_upload_bytes+1
+    RTL
+
+;Also retrieves header while called
+retrieve_current_level:
+    PHB
+    PHK
+    PLB
+    JSL retrieve_current_header
+    BNE +
+        JMP .done_fail
+    +
+    lda FastMode_save_locations,X
+    sta $00
+    lda FastMode_save_locations+1,X
+    sta $01
+    lda FastMode_save_locations+2,X
+    sta $02
+
+    lda !FastMode_current_level
+    CMP !FastMode_save_current_header+0
+    BCC +
+        JMP .done_fail
+    +
+    REP #$30
+    AND #$00FF
+    ASL #3
+    TAY
+    SEP #$20
+
+    LDA [$00],Y
+    sta !FastMode_save_current_level+0
+    
+    INY
+    LDA [$00],Y
+    STA !FastMode_save_current_level+1
+
+    INY
+    LDA [$00],Y
+    STA !FastMode_save_current_level+2
+    
+    INY
+    LDA [$00],Y
+    TAX
+    AND #$0F
+    STA !FastMode_save_current_level+3
+    TXA
+    LSR #4
+    STA !FastMode_save_current_level+4
+
+    INY
+    LDA [$00],Y
+    TAX
+    AND #$0F
+    sta !FastMode_save_current_level+5
+    TXA
+    LSR #4
+    STA !FastMode_save_current_level+6
+
+    INY 
+    LDA [$00],Y
+    TAX
+    AND #$01
+    STA !FastMode_save_current_level+7
+
+    TXA : LSR : TAX : AND #$01
+    STA !FastMode_save_current_level+8
+
+    TXA : LSR : TAX : AND #$01
+    STA !FastMode_save_current_level+9
+
+    TXA : LSR : TAX : AND #$01
+    STA !FastMode_save_current_level+10
+
+    TXA : LSR : TAX : AND #$01
+    STA !FastMode_save_current_level+11
+
+    TXA : LSR : TAX : AND #$01
+    STA !FastMode_save_current_level+12
+
+    TXA : LSR : TAX : AND #$03
+    STA !FastMode_save_current_level+13
+    .done_success:
+    SEP #$30
+    plb
+    LDA #$01
+    RTL
+    .done_fail:
+    SEP #$30
+    plb
+    LDA #$00
+    RTL
+
+store_current_header:
+    PHB
+    PHK
+    PLB
+    lda !status_FastMode
+    BNE +
+        JMP .done_fail
+    +
+    DEC 
+    ASL #2
+    tax
+    LDA FastMode_header_locations+0,X
+    sta $00
+    LDA FastMode_header_locations+1,X
+    sta $01
+    lda FastMode_header_locations+2,x
+    sta $02
+
+    ldy #$0F
+    -
+    LDA !FastMode_save_current_header,y
+    STA [$00],y
+    dey
+    bpl -
+
+    .done_success:
+    PLB
+    LDA #$01
+    RTL
+    .done_fail
+    PLB
+    LDA #$00
+    RTL
+
+; Also stores header while called
+store_current_level:
+    PHB
+    PHK
+    PLB
+    JSL store_current_header
+    BNE +
+        JMP .done_fail
+    +
+    lda FastMode_save_locations,X
+    sta $00
+    lda FastMode_save_locations+1,X
+    sta $01
+    lda FastMode_save_locations+2,X
+    sta $02
+
+    lda !FastMode_current_level
+    REP #$30
+    AND #$00FF
+    ASL #3
+    TAY
+    SEP #$20
+
+    LDA !FastMode_save_current_level+0    
+    STA [$00],Y
+
+    INY
+    LDA !FastMode_save_current_level+1    
+    STA [$00],Y
+
+    INY
+    LDA !FastMode_save_current_level+2
+    STA [$00],Y
+
+    INY
+    LDA !FastMode_save_current_level+4
+    ASL #4
+    STA $03
+    LDA !FastMode_save_current_level+3
+    AND #$0F
+    ORA $03
+    STA [$00],Y
+    
+    INY
+    LDA !FastMode_save_current_level+6
+    ASL #4
+    STA $03
+    LDA !FastMode_save_current_level+5
+    AND #$0F
+    ORA $03
+    STA [$00],Y
+
+    
+    LDA !FastMode_save_current_level+13
+    AND #$03 : ASL : STA $03
+
+    LDA !FastMode_save_current_level+12
+    AND #$01 : ORA $03 : ASL : STA $03
+
+    LDA !FastMode_save_current_level+11
+    AND #$01 : ORA $03 : ASL :  STA $03
+
+    LDA !FastMode_save_current_level+10
+    AND #$01 : ORA $03 : ASL : STA $03
+
+    LDA !FastMode_save_current_level+09
+    AND #$01 : ORA $03 : ASL : STA $03
+
+    LDA !FastMode_save_current_level+08
+    AND #$01 : ORA $03 : ASL : STA $03
+
+    LDA !FastMode_save_current_level+07
+    AND #$01 : ORA $03 : STA $03
+
+    INY
+    STA [$00],Y
+
+    .done_success:
+    SEP #$30
+    PLB
+    lda #$01
+    RTL
+    .done_fail:
+    SEP #$30
+    PLB
+    LDA #$00
+    RTL
+
+
 FastMode_add_level:
-        LDA #$02                            ; \
-        STA $1df9                           ; |                       
-        LDA !FastMode_save_1_header+0       ; |
-        INC                                 ; | Increment level pointer
-        STA !FastMode_save_1_header+0       ; | X = 16 bit index into level save data
-        DEC                                 ; |
-        REP #$30 
-        AND #$00FF
-        ASL #3                              ; |
-        TAX                                 ; |
-        SEP #$20                            ; /
+        JSL retrieve_current_header
+        lda !FastMode_save_current_header+0
+        sta !FastMode_current_level
+        inc !FastMode_save_current_header+0       ; |
         
         LDA !potential_translevel
-        STA !FastMode_save_1+0,X
+        STA !FastMode_save_current_level+0
 
         LDA !status_itembox
-        STA !FastMode_save_1+1,X
+        STA !FastMode_save_current_level+1
 
         LDA #$00
-        STA !FastMode_save_1+2,X
+        STA !FastMode_save_current_level+2
         
         LDA !status_powerup
-        AND #$0F
-        STA !FastMode_save_1+3,X
+        STA !FastMode_save_current_level+3
         
+        LDA #$00
+        STA !FastMode_save_current_level+4
+
         LDA !status_yoshi
-        AND #$0F
-        STA !FastMode_save_1+4,X
+        STA !FastMode_save_current_level+5
 
+        LDA #$00
+        STA !FastMode_save_current_level+6
 
-        LDA $00
-        ASL 
-        ORA #$00
-        ASL
-        ORA !status_special
-        ASL
-        ORA $1f27
-        ASL
-        ORA $1f28
-        ASL
-        ORA $1f29
-        ASL
-        ORA $1f2a
-        sta !FastMode_save_1+5,X
+        LDA $1f2a
+        STA !FastMode_save_current_level+7
 
+        LDA $1f2a
+        sta !FastMode_save_current_level+8
+
+        lda $1f28
+        sta !FastMode_save_current_level+9
+        
+        lda $1f27
+        sta !FastMode_save_current_level+10
+
+        lda !status_special
+        sta !FastMode_save_current_level+11
+
+        lda #$00
+        sta !FastMode_save_current_level+12
+
+        lda #$00
+        sta !FastMode_save_current_level+13
+        
+        JSL store_current_level
+
+        LDA #$02                            ; \
+        STA $1df9                           ; |
         .done:
         SEP #$30
         RTL
@@ -67,63 +355,52 @@ submap_table:
     db $05,$05,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06
 
 ResetLevel:
-    PHX
-    REP #$30                        ;
-    LDA !FastMode_current_level     ;
-    AND #$00FF                      ;
-    ASL #3                          ;Index to save table stored in X
-    TAX                             ;
-    SEP #$20                        ;
+    jsl retrieve_current_level
 
-    LDA !FastMode_save_1_header+1
+    LDA !FastMode_save_current_header+1
     STA !status_FastMode_difficulty
 
-    lda !FastMode_save_1+1, X
+    lda !FastMode_save_current_level+1
     sta $0dc2                       ;Item
 
-    LDA !FastMode_save_1+2,X
+    LDA !FastMode_save_current_level+2
     STA !status_FastMode_end_item
 
-    lda !FastMode_save_1+3, X
-    AND #$0F
+    lda !FastMode_save_current_level+3
     STA $19                         ;Powerup
 
-    lda !FastMode_save_1+3,X
-    LSR #4
+    lda !FastMode_save_current_level+4
     sta !status_FastMode_end_powerup
 
 
-    lda #$00
-    lda !FastMode_save_1+4,X
-    AND #$0F
+
+    lda !FastMode_save_current_level+5
     sta !status_yoshi
     sta $0dc1                       ; Yoshi
-    PHX
-    sep #$30
     JSL save_yoshi_color
-    REP #$10
-    PLX
 
-    LDA !FastMode_save_1+5,X
-    TAY : AND #$01
+    lda !FastMode_save_current_level+6
+    sta !status_FastMode_end_yoshi
+
+    lda !FastMode_save_current_level+7
     STA $1f2a
 
-    TYA : LSR : TAY : AND #$01
+    lda !FastMode_save_current_level+8
     STA $1f29
 
-    TYA : LSR : TAY : AND #$01
+    lda !FastMode_save_current_level+9
     STA $1f28
 
-    TYA : LSR : TAY : AND #$01
+    lda !FastMode_save_current_level+10
     STA $1f27
 
-    TYA : LSR : TAY : AND #$01
+    lda !FastMode_save_current_level+11
     STA !status_special
 
-    TYA : LSR : TAY : AND #$01
+    lda !FastMode_save_current_level+12
     STA !midway_enable_flag
 
-    TYA : LSR : TAY : AND #$03
+    lda !FastMode_save_current_level+13
     STA !status_FastMode_exit_type
 
     lda #$07    ;\
@@ -134,8 +411,7 @@ ResetLevel:
 
      
     
-     lda.L !FastMode_save_1+0,X   ;translevel
-     SEP #$30
+     lda.L !FastMode_save_current_level+0   ;translevel
      sta $13bf
      sta $7ed076    ; Overworld tile used in level loading routine. Main map/submap
      sta $7ed476    ; Address calculated from Mario's overworld position
@@ -157,9 +433,47 @@ ResetLevel:
      sta $0103
 
     
-    PLX
     RTL
 
+attempt_level_advance:
+        lda !FastMode_start_play
+        BEQ .no_advance
+
+            LDA !status_FastMode_difficulty
+            CMP #$01
+                BNE +
+                    LDA !status_FastMode_exit_type
+                    CMP !most_recent_exit
+                    BNE .no_advance
+                        BRA .next_level
+          + CMP #$02
+            BNE .next_level
+                LDA !status_FastMode_exit_type
+                CMP !most_recent_exit
+                BNE .no_advance
+                    lda !status_FastMode_end_item
+                    BEQ +
+                        CMP $0dc2
+                        BNE .no_advance
+                  + lda !status_FastMode_end_powerup
+                        BEQ +
+                            CMP $19
+                            BNE .no_advance
+                  + lda !status_FastMode_end_yoshi
+                        BEQ .next_level
+                            lda $187a
+                            BEQ .no_advance
+          +
+        .next_level:
+        INC !FastMode_current_level   ; Next level
+        LDA !FastMode_current_level   
+        CMP !FastMode_save_current_header+0
+        BCC +
+            lda #00
+            RTL
+        .no_advance:
+        LDA #$01
+        RTL
 
 
 fade_to_overworld:
@@ -170,15 +484,22 @@ fade_to_overworld:
             LDA !util_byetudlr_hold
             AND #$10
             BEQ .start_play
-                LDA #$00
-                STA !FastMode_start_play
-                STA $0109
-                JSL set_position_to_yoshis_house
-                BRA .done
+                bra .stop_play
             .start_play:
+            lda !level_finished
+            beq +
+                JSL attempt_level_advance
+                beq .stop_play
+            +
             LDA #$E9
             STA $0109
             RTL
+    .stop_play:
+        LDA #$00
+        STA !FastMode_start_play
+        sta !midway_enable_flag
+        STA $0109
+        JSL set_position_to_yoshis_house        
     .done:
         LDA !restore_status_from_backup
         BEQ +
@@ -194,12 +515,13 @@ fade_to_overworld:
         +
     RTL
 
+
 pre_level_loading:
     lda $0109
     CMP #$E9
     BNE .done
-    lda #$01
-    sta !status_FastMode
+    ; lda #$01
+    ; sta !status_FastMode
 
 
     JSL ResetLevel

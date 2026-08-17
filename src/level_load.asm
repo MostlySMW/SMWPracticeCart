@@ -11,6 +11,7 @@ level_load:
         SEP #$20
         
         JSR check_lagless
+        JSR check_midway
         JSR check_pal
         JSR check_midway_entrance
         
@@ -50,6 +51,14 @@ l_r_functions:
         dw setup_room_advance
         
 ; if lag is disabled, disable saving a time
+check_midway:
+        LDA.L !midway_enable_flag
+        BEQ +
+        lda #$01
+        STA.L !spliced_run
+        +
+        RTS
+
 check_lagless:
         LDA.L !status_scorelag
         BNE +

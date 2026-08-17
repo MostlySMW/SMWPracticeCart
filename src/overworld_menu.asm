@@ -10,7 +10,8 @@ overworld_menu_load:
         PHK
         PLB
         stz !FastMode_current_level
-        
+        stz !menu_tile_upload_bytes
+        stz !menu_tile_upload_bytes+1
         LDA #$09 ; special world theme
         STA $1DFB ; apu i/o
         STZ $0D9F ; hdmaen
@@ -195,23 +196,40 @@ upload_overworld_menu_graphics:
         RTS
 
 ; draw one of the menu options to the screen, where X = menu index
+
 draw_menu_selection:
         PHX
         PHP
         PHB
         PHK
         PLB
-        
+
+        REP #$20
+
         LDA option_x_position,X
+        AND #$00ff
         STA $00
         LDA option_y_position,X
-        BIT #$20
+        and #$00FF
+        BIT #$0020
         BEQ +
-        EOR #$60
+        EOR #$0060
         +
-        STA $01
-        
+        ASL #5
+        ADC $00
+        adc #$3000
         REP #$30
+        LDY !menu_tile_upload_bytes
+        STA !menu_tile_upload_location,Y
+        clc
+        INC A
+        sta !menu_tile_upload_location+4,y
+        clc
+        adc #$001f
+        sta !menu_tile_upload_location+8,y
+        INC A
+        sta !menu_tile_upload_location+12,y
+
         LDA.L !status_table,X
         AND #$00FF
         STA $0E
@@ -221,61 +239,27 @@ draw_menu_selection:
         LDA $0E
         CLC
         ADC option_index,X
-        STA $03
-        
-        LDA $7F837B
-        TAX
-        SEP #$20
-        
-        LDA $01
-        LSR #3
-        ORA #$30
-        STA $7F837D+00,X
-        LDA $01
-        INC A
-        LSR #3
-        ORA #$30
-        STA $7F837D+08,X
-        LDA $01
-        ASL #5
-        ORA $00
-        STA $7F837D+01,X
-        LDA $01
-        INC A
-        ASL #5
-        ORA $00
-        STA $7F837D+09,X
-        LDA #$00
-        STA $7F837D+02,X
-        STA $7F837D+10,X
-        LDA #$03
-        STA $7F837D+03,X
-        STA $7F837D+11,X
-        LDA #$FF
-        STA $7F837D+16,X
-        
-        REP #$20
-        LDA $03
         ASL #3
-        TAY
-        LDA menu_option_tiles,Y
-        STA $7F837D+04,X
-        LDA menu_option_tiles+2,Y
-        STA $7F837D+06,X
-        LDA menu_option_tiles+4,Y
-        STA $7F837D+12,X
-        LDA menu_option_tiles+6,Y
-        STA $7F837D+14,X
-        
-        TXA
-        CLC
-        ADC #$0010
-        STA $7F837B
-        
+        TAX
+
+        LDA menu_option_tiles,X
+        STA !menu_tile_upload_location+2,y
+        LDA menu_option_tiles+2,X
+        STA !menu_tile_upload_location+6,y
+        LDA menu_option_tiles+4,X
+        STA !menu_tile_upload_location+10,y
+        LDA menu_option_tiles+6,X
+        STA !menu_tile_upload_location+14,y
+
+        tya
+        adc #$0010
+        sta !menu_tile_upload_bytes
+
         PLB
         PLP
         PLX
         RTL
+
 
 ;        db $00,$01,$02,$03,$04,$05,$06,$07,$08,$09,$0A,$0B,$0C,$0D,$0E,$0F,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$1A,$1B,$1C,$1D,$1E
 option_x_position:
@@ -424,107 +408,97 @@ overworld_menu_submodes:
         dw FastMode_editor_mode
         
 unpack_FastMode_level_settings:
-        LDA !FastMode_current_level
-        REP #$30
-        AND #$00FF
-        ASL #3
-        TAX
-        SEP #$20
+        JSL retrieve_current_level
 
-        LDA !FastMode_save_1_header+1
+        LDA !FastMode_save_current_header+1
         STA !status_FastMode_difficulty
 
-        LDA !FastMode_save_1+1,X
+        LDA !FastMode_save_current_level+1
         STA !status_FastMode_start_item
 
-        LDA !FastMode_save_1+2,X
+        LDA !FastMode_save_current_level+2
         STA !status_FastMode_end_item
 
-        LDA !FastMode_save_1+3,X
-        TAY : AND #$0F
+        LDA !FastMode_save_current_level+3
         STA !status_FastMode_start_powerup
 
-        TYA : LSR #4 : AND #$0F
+        lda !FastMode_save_current_level+4
         STA !status_FastMode_end_powerup
 
-        LDA !FastMode_save_1+4,X
-        TAY : AND #$0F
+        LDA !FastMode_save_current_level+5
         STA !status_FastMode_start_yoshi
 
-        TYA : LSR #4 : AND #$0F
-        STA !status_FastMode_end_yoshi
+        LDA !FastMode_save_current_level+6
+        sta !status_FastMode_end_yoshi
 
+        lda !FastMode_save_current_level+7
+        sta !status_FastMode_red
 
+        lda !FastMode_save_current_level+8
+        sta !status_FastMode_blue
 
-        LDA !FastMode_save_1+5,X
-        TAY : AND #$01
-        STA !status_FastMode_red
+        lda !FastMode_save_current_level+9
+        sta !status_FastMode_yellow
 
-        TYA : LSR : TAY : AND #$01
-        STA !status_FastMode_blue
+        lda !FastMode_save_current_level+10
+        sta !status_FastMode_green
 
-        TYA : LSR : TAY : AND #$01
-        STA !status_FastMode_yellow
+        lda !FastMode_save_current_level+11
+        sta !status_FastMode_special
 
-        TYA : LSR : TAY : AND #$01
-        STA !status_FastMode_green
+        lda !FastMode_save_current_level+12
+        sta !status_FastMode_midway
 
-        TYA : LSR : TAY : AND #$01
-        STA !status_FastMode_special
+        lda !FastMode_save_current_level+13
+        sta !status_FastMode_exit_type
 
-        TYA : LSR : TAY : AND #$01
-        STA !status_FastMode_midway
-
-        TYA : LSR : TAY : AND #$03
-        STA !status_FastMode_exit_type
-        
-        SEP #$30
         RTS
 pack_FastMode_level_settings:
-        LDA !FastMode_current_level
-        REP #$30
-        AND #$00FF
-        ASL #3
-        TAX
-        SEP #$20
+        JSL retrieve_current_header
 
         LDA !status_FastMode_difficulty
-        STA !FastMode_save_1_header+1
-        
+        STA !FastMode_save_current_header+1
+
         LDA !status_FastMode_start_item
-        STA !FastMode_save_1+1,X
-        
+        STA !FastMode_save_current_level+1
+
         LDA !status_FastMode_end_item
-        STA !FastMode_save_1+2,X
-        
+        STA !FastMode_save_current_level+2
+
+        LDA !status_FastMode_start_powerup
+        STA !FastMode_save_current_level+3
+
         LDA !status_FastMode_end_powerup
-        ASL #4
-        ORA !status_FastMode_start_powerup
-        STA !FastMode_save_1+3,X
+        STA !FastMode_save_current_level+4
+
+        LDA !status_FastMode_start_yoshi
+        STA !FastMode_save_current_level+5
 
         LDA !status_FastMode_end_yoshi
-        ASL #4
-        ORA !status_FastMode_start_yoshi
-        STA !FastMode_save_1+4,X
+        STA !FastMode_save_current_level+6
+
+        LDA !status_FastMode_red
+        STA !FastMode_save_current_level+7
+
+        LDA !status_FastMode_blue
+        STA !FastMode_save_current_level+8
+
+        LDA !status_FastMode_yellow
+        STA !FastMode_save_current_level+9
+
+        LDA !status_FastMode_green
+        STA !FastMode_save_current_level+10
+
+        LDA !status_FastMode_special
+        STA !FastMode_save_current_level+11
+
+        LDA !status_FastMode_midway
+        STA !FastMode_save_current_level+12
 
         LDA !status_FastMode_exit_type
-        ASL
-        ORA !status_FastMode_midway
-        ASL
-        ORA !status_FastMode_special
-        ASL
-        ORA !status_FastMode_green
-        ASL
-        ORA !status_FastMode_yellow
-        ASL
-        ORA !status_FastMode_blue
-        ASL
-        ORA !status_FastMode_red
-        STA !FastMode_save_1+5,X
+        STA !FastMode_save_current_level+13
 
-        
-        SEP #$30
-
+        JSL store_current_level
         RTS
 
 RedrawPg2:
@@ -536,6 +510,7 @@ RedrawPg2:
         bne -                                               ; /
         RTS
 FastMode_editor_mode:
+        JSL retrieve_current_level
         JSR unpack_FastMode_level_settings
         
 
@@ -559,7 +534,7 @@ FastMode_editor_mode:
             BEQ +                                           ; | 
                 jsr pack_FastMode_level_settings            ; | Pack away old values before increment
                 inc !FastMode_current_level                 ; |
-                LDA !FastMode_save_1_header+0
+                LDA !FastMode_save_current_header+0
                 DEC A
                 CMP !FastMode_current_level
                 BCS .no_overflow
@@ -577,7 +552,7 @@ FastMode_editor_mode:
             jsr pack_FastMode_level_settings                ; |
             dec !FastMode_current_level                     ; |
             BPL .no_underflow
-                LDA !FastMode_save_1_header
+                LDA !FastMode_save_current_header+0
                 DEC A
                 STA !FastMode_current_level
             .no_underflow:
@@ -802,6 +777,12 @@ option_selection_mode:
         JMP .finish_no_change
     
     .select_fast_mode_save:
+        lda !status_FastMode
+        bne +
+            LDA #$2A ; wrong sound
+            STA $1DFC ; apu i/o
+            jmp .finish_no_change
+        +
         lda #$02
         sta !overworld_menu_mode
         LDA #$20
@@ -809,10 +790,13 @@ option_selection_mode:
         stz !text_timer
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
+        LDA #$0B ; on/off sound
+        STA $1DF9 ; apu i/o
         jmp .finish_no_change
     .select_fast_mode_delete_save:
         lda #$00
-        sta !FastMode_save_1_header+0
+        sta !FastMode_save_current_header+0
+        JSL store_current_header
         LDA #$0B ; itembox sound
         STA $1DFC ; apu i/o
         jmp .finish_no_change
@@ -1252,6 +1236,8 @@ delete_all_data:
         LDX #$000E
         -
         STA.L !FastMode_save_1_header,X
+        STA.L !FastMode_save_2_header,X
+        STA.L !FastMode_save_3_header,X
         dex
         dex
         bpl -
@@ -1527,19 +1513,15 @@ draw_option_text:
         LDA !current_selection
         CMP #!number_of_options_pg1
         bcc +
-            LDA !FastMode_save_1_header+0
+            JSL retrieve_current_level
+            LDA !FastMode_save_current_header+0
             BNE .saveExists
                 LDA #$00
-                REP #$30
                 bra .noSave
             .saveExists:
-            REP #$30
-            LDA !FastMode_current_level
-
-            ASL #3
-            TAX 
-            LDA !FastMode_save_1+0,X
+            LDA !FastMode_save_current_level+0
             .noSave
+            REP #$30
             AND #$00FF
             ASL #5
             ADC #level_names

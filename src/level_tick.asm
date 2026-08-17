@@ -1755,11 +1755,11 @@ test_savestate:
         AND #%00100000
         BEQ .no_load
         
-        LDA $705000+!in_record_mode ; save state was in movie
+        LDA !loram_savestate_location+!in_record_mode ; save state was in movie
         CMP !in_record_mode
         BNE .make_sound
         
-        LDA $705000+$13BF ; save state translevel
+        LDA !loram_savestate_location+$13BF ; save state translevel
         CMP $13BF
         BEQ .go
         
