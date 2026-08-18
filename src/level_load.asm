@@ -885,7 +885,7 @@ init_statusbar_properties:
         LDA !in_playback_mode
         BEQ +
         PLB
-        LDA #$2C
+        LDA #$3C
         JMP .store_4
       + PLB
         LDA [!statusbar_layout_ptr],Y
@@ -1097,7 +1097,7 @@ init_statusbar_properties:
         RTS
 
 name_colors:
-        db $28,$38,$3C,$28,$38,$3C ; green,white,yellow,red,blue,orange
+        db $28,$38,$3C,$28,$38 ; green,white,yellow,red,blue
         
 title_screen_load:
         PHB

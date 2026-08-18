@@ -719,7 +719,6 @@ meter_text_name:
         db "    YELLOW      "
         db "       RED      "
         db "      BLUE      "
-        db "    ORANGE      "
 meter_text_record:
         db "    VISUAL      "
         db "   NUMERIC      "

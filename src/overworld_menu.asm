@@ -2178,7 +2178,7 @@ draw_meter_cursors:
         RTL
 
 meter_subtype_counts:
-        db $01,$01,$01,$01,$02,$03,$03,$01,$03,$03,$03,$02,$03,$01,$05,$06,$02,$FF,$FF,$03
+        db $01,$01,$01,$01,$02,$03,$03,$01,$03,$03,$03,$02,$03,$01,$05,$05,$02,$FF,$FF,$03
 meter_widths:
         db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $04,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2195,7 +2195,7 @@ meter_widths:
         db $03,$05,$04,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $08,$06,$06,$03,$03,$FF,$FF,$FF
-        db $04,$04,$04,$04,$04,$04,$FF,$FF
+        db $04,$04,$04,$04,$04,$FF,$FF,$FF
         db $07,$04,$FF,$FF,$FF,$FF,$FF,$FF
         db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2216,7 +2216,7 @@ meter_heights:
         db $01,$01,$01,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $03,$02,$02,$04,$04,$FF,$FF,$FF
-        db $01,$01,$01,$01,$01,$01,$FF,$FF
+        db $01,$01,$01,$01,$01,$FF,$FF,$FF
         db $01,$01,$FF,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF

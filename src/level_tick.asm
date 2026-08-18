@@ -902,15 +902,23 @@ meter_name:
 
     .movie:
         LDA.L !movie_location+7
+        CLC
+        ADC #$A0 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+8
+        CLC
+        ADC #$A0 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+9
+        CLC
+        ADC #$A0 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+10
+        CLC
+        ADC #$A0 ; alt character set
         STA [$00]
         RTS
 
