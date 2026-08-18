@@ -448,7 +448,7 @@ meter_lag_frames:
         ADC #$A0 ; alt character set
         STA [$00]
         INC $00
-        LDA #$D7
+        LDA #$C9
         STA [$00]
 
         PLA
@@ -1015,7 +1015,7 @@ meter_movie_recording:
         ADC #$A0 ; alt character set
         STA [$00]
         INC $00
-        LDA #$D7
+        LDA #$C9
         STA [$00]
         PLP
         PLB

@@ -2680,7 +2680,7 @@ draw_edited_status_bar:
         LDA #$28AF
         STA [$00],Y
         INY #2
-        LDA #$28D7
+        LDA #$28C9
         STA [$00],Y
         RTS
         
@@ -3027,10 +3027,10 @@ draw_edited_status_bar:
         LDA #$28A3
         STA [$00],Y
         INY #2
-        LDA #$28D7
+        LDA #$28C9
         STA [$00],Y
         RTS
-        
+
     .edited_memory_7e:
         LDA #$3807
         STA [$00],Y
