@@ -2792,11 +2792,11 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$00D7
+        LDA #$002F
         ORA $05
         STA [$00],Y
         RTS
-        
+
     .edited_coin_count:
         LDA #$3C2E
         STA [$00],Y
