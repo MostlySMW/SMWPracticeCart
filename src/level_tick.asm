@@ -575,6 +575,7 @@ meter_timer_all:
         RTS
     
     .framecount:
+        PHY
         INC $00
         INC $00
         INC $00
@@ -628,6 +629,7 @@ meter_timer_all:
         PLA
         LSR #4
         STA [$00]
+        PLY
         
         RTS
         
@@ -2359,6 +2361,9 @@ play_input:
         CMP #%00110000
         BNE +
         LDA $0DB0 ; mosaic size
+        BNE +
+        LDA $0100
+        CMP #$14
         BNE +
         
         LDA #$0B
