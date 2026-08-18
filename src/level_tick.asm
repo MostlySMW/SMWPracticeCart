@@ -228,13 +228,11 @@ meter_mario_speed:
       + JSL !_F+$00974C ; hex2dec
         PHA
         TXA
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
 
         RTS
@@ -425,30 +423,26 @@ meter_lag_frames:
         LDA !dropped_frames+1
         PHA
         LSR #4
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
         AND #$0F
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA !dropped_frames
         PHA
         LSR #4
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
         AND #$0F
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
-        LDA #$C9
+        LDA #$AF
         STA [$00]
 
         PLA
@@ -456,7 +450,7 @@ meter_lag_frames:
 
         LDX #$00 ; replace 0's with spaces cause it looks better for a 4 digit number
       - LDA [$00]
-        CMP #$A0 ; alt '0' tile
+        CMP #$80 ; alt '0' tile
         BNE +
         LDA #$FC
         STA [$00]
@@ -474,7 +468,7 @@ meter_timer_level:
         LDA $13 ; true frame
         AND #%00100000
         BEQ +
-        LDA #$76
+        LDA #$2B
         BRA ++
       + LDA #$FC
      ++ STA [$00]
@@ -562,7 +556,7 @@ meter_timer_all:
         TXA
         STA [$00]
         DEC $00
-        LDA #$86
+        LDA #$2A
       + STA [$00]
         DEC $00
         
@@ -574,7 +568,7 @@ meter_timer_all:
         TXA
         STA [$00]
         DEC $00
-        LDA #$85
+        LDA #$29
         STA [$00]
         DEC $00
         
@@ -588,7 +582,7 @@ meter_timer_all:
         INC $00
         INC $00
         INC $00
-        LDA #$D7
+        LDA #$2F
         STA [$00]
         DEC $00
         
@@ -763,7 +757,7 @@ meter_in_game_time:
         CMP #$26
         BCC +
         CLC
-        ADC #$50
+        ADC #$05
       + STA [$00]
         
     .nothing:
@@ -777,8 +771,7 @@ meter_slowdown:
         STA [$00]
         RTS
       + INC A
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         RTS
 
@@ -880,45 +873,37 @@ meter_name:
 
     .alt_set:
         LDA.L !status_playername
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !status_playername+1
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !status_playername+2
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !status_playername+3
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         RTS
 
     .movie:
         LDA.L !movie_location+7
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+8
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+9
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+10
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         RTS
 
@@ -1006,24 +991,21 @@ meter_movie_recording:
         SEP #$20
         XBA
         AND #$0F
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         XBA
         PHA
         LSR #4
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
         AND #$0F
-        CLC
-        ADC #$A0 ; alt character set
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
-        LDA #$C9
+        LDA #$AF
         STA [$00]
         PLP
         PLB

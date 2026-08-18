@@ -2549,10 +2549,10 @@ draw_edited_status_bar:
         RTS
         
     .edited_mario_speed:
-        LDA #$28A4
+        LDA #$2884
         STA [$00],Y
         INY #2
-        LDA #$28A8
+        LDA #$2888
         STA [$00],Y
         RTS
         
@@ -2668,19 +2668,19 @@ draw_edited_status_bar:
         RTS
         
     .edited_lag_frames:
-        LDA #$28A1
+        LDA #$2881
         STA [$00],Y
         INY #2
-        LDA #$28AE
+        LDA #$288E
         STA [$00],Y
         INY #2
-        LDA #$28A7
+        LDA #$2887
+        STA [$00],Y
+        INY #2
+        LDA #$288F
         STA [$00],Y
         INY #2
         LDA #$28AF
-        STA [$00],Y
-        INY #2
-        LDA #$28C9
         STA [$00],Y
         RTS
         
@@ -2722,7 +2722,7 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$0085
+        LDA #$0029
         ORA $05
         STA [$00],Y
         INY #2
@@ -2751,7 +2751,7 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$0085
+        LDA #$0029
         ORA $05
         STA [$00],Y
         INY #2
@@ -2763,7 +2763,7 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$0086
+        LDA #$002A
         ORA $05
         STA [$00],Y
         INY #2
@@ -2864,7 +2864,7 @@ draw_edited_status_bar:
         RTS
         
     .edited_slowdown:
-        LDA #$28A2
+        LDA #$2882
         STA [$00],Y
         RTS
         
@@ -2957,29 +2957,25 @@ draw_edited_status_bar:
     .alt_set:
         LDA.L !status_playername
         AND #$00FF
-        CLC
-        ADC #$00A0 ; alt character set
+        ORA #$0080 ; alt character set
         ORA $05
         STA [$00],Y
         INY #2
         LDA.L !status_playername+1
         AND #$00FF
-        CLC
-        ADC #$00A0 ; alt character set
+        ORA #$0080 ; alt character set
         ORA $05
         STA [$00],Y
         INY #2
         LDA.L !status_playername+2
         AND #$00FF
-        CLC
-        ADC #$00A0 ; alt character set
+        ORA #$0080 ; alt character set
         ORA $05
         STA [$00],Y
         INY #2
         LDA.L !status_playername+3
         AND #$00FF
-        CLC
-        ADC #$00A0 ; alt character set
+        ORA #$0080 ; alt character set
         ORA $05
         STA [$00],Y
         RTS
@@ -3018,16 +3014,16 @@ draw_edited_status_bar:
         STA [$00],Y
         RTS
     .recording_types_hex:
-        LDA #$28A5
+        LDA #$2885
         STA [$00],Y
         INY #2
-        LDA #$28AE
+        LDA #$288E
         STA [$00],Y
         INY #2
-        LDA #$28A3
+        LDA #$2883
         STA [$00],Y
         INY #2
-        LDA #$28C9
+        LDA #$28AF
         STA [$00],Y
         RTS
 

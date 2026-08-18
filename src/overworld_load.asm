@@ -120,22 +120,22 @@ late_overworld_load:
         
         LDA #$80
         STA $2115 ; vram increment
-        LDX #$4490
+        LDX #$4698
         STX $2116 ; vram address
         PHK
         PLA ; #bank of overworld_layer_3_tiles
         LDX #overworld_layer_3_tiles
-        LDY #$0030
+        LDY #$0060
         JSL load_vram
-        
-        LDX #$46A0
+
+        LDX #$46C8
         STX $2116 ; vram address
         PHK
         PLA ; #bank of overworld_layer_3_tiles
-        LDX #overworld_layer_3_tiles+$30
+        LDX #overworld_layer_3_tiles+$150
         LDY #$0030
         JSL load_vram
-        
+
         LDX #$4200
         STX $2116 ; vram address
         PHK
@@ -160,44 +160,36 @@ late_overworld_load:
         LDY #$0060
         JSL load_vram
         
-        LDX #$46B8
-        STX $2116 ; vram address
-        PHK
-        PLA ; #bank of overworld_layer_3_tiles
-        LDX #overworld_layer_3_tiles+$150
-        LDY #$0020
-        JSL load_vram
-        
         LDX #$4130
         STX $2116 ; vram address
         PHK
         PLA ; #bank of overworld_layer_3_tiles
-        LDX #overworld_layer_3_tiles+$160
+        LDX #overworld_layer_3_tiles+$180
         LDY #$0010
         JSL load_vram
-        
+
         LDX #$4B70
         STX $2116 ; vram address
         PHK
         PLA ; #bank of overworld_layer_3_tiles
-        LDX #overworld_layer_3_tiles+$170
+        LDX #overworld_layer_3_tiles+$190
         LDY #$0070
         JSL load_vram
 
-        LDX #$4500
+        LDX #$4400
         STX $2116 ; vram address
         PHK
         PLA ; #bank of overworld_layer_3_tiles
         LDX #overworld_layer_3_tiles+$200
-        LDY #$0290
+        LDY #$0300
         JSL load_vram
 
-        LDX #$4648
+        LDX #$4148
         STX $2116 ; vram address
         PHK
         PLA ; #bank of overworld_layer_3_tiles
-        LDX #overworld_layer_3_tiles+$1E0
-        LDY #$0010
+        LDX #overworld_layer_3_tiles+$550
+        LDY #$0070
         JSL load_vram
 
         LDX #$6B00
