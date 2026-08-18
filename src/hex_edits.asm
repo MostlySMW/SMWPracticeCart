@@ -148,7 +148,11 @@ ORG !_F+$00B5EC
         dw $7393,$3E75,$3212,$25AF
         dw $7393,$573B,$7FFF,$0000
         dw $7393,$573B,$47F1,$0000
-        
+
+; change dark red layer3 color to lighter red
+ORG !_F+$00B174
+        dw $2D7F
+
 ; remove intro sequence
 ORG !_F+$009CB1
         db $00
