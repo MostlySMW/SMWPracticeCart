@@ -17,6 +17,68 @@ FastMode_save_locations:
 ; stores to FastMode_save_current_header
 ; on exit: A=0, if invalid, a=1 if valid
 ;          x = 0 if save 1 -- 4 if save 2 -- 8 if save 3
+default_header_1:
+db $00, $00
+db $1c, $0a, $1f, $0e, $26, $00, $26, $26
+db $00, $00, $00, $00, $00, $00
+default_header_2:
+db $00, $00
+db $1c, $0a, $1f, $0e, $26, $01, $26, $26
+db $00, $00, $00, $00, $00, $00
+default_header_3:
+db $00, $00
+db $1c, $0a, $1f, $0e, $26, $02, $26, $26
+db $00, $00, $00, $00, $00, $00
+
+reset_header:
+    PHB
+    PHk
+    PLB
+    LDX #$0F
+    LDA !status_FastMode
+    CMP #$01
+    BNE +
+    -
+    LDA default_header_1,X
+    STA !FastMode_save_1_header,X
+    STA !FastMode_save_current_header,X
+    dex
+    BPL -
+    JMP .done
+    +
+    CMP #$02
+    BNE +
+    -
+    LDA default_header_2,X
+    STA !FastMode_save_2_header,X
+    STA !FastMode_save_current_header,X
+    dex
+    BPL -
+    JMP .done
+    +
+    CMP #$03
+    BNE +
+    -
+    LDA default_header_3,X
+    STA !FastMode_save_3_header,X
+    STA !FastMode_save_current_header,X
+    dex
+    BPL -
+    JMP .done
+    +
+    -
+    LDA default_header_1,X
+    STA !FastMode_save_1_header,X
+    LDA default_header_2,X
+    STA !FastMode_save_2_header,X
+    LDA default_header_3,X
+    STA !FastMode_save_3_header,X
+    dex
+    bpl -
+    .done:
+    PLB
+    RTL
+
 retrieve_current_header:
     PHB
     PHK
@@ -52,28 +114,7 @@ retrieve_current_header:
     LDA #$00
     RTL
 
-menu_nmi_draw_tiles:
-    lda #$80
-    sta $2115  
-    REP #$10
-    LDX #!menu_tile_upload_location ;Source Offset into source bank
-    STX $4302       ;Set Source address lower 16-bits
-    LDA #00   ;Source bank
-    STA $4304       ;Set Source address upper 8-bits
-    LDX !menu_tile_upload_bytes   ;# of bytes to copy (16k)
-    beq .done
-    STX $4305       ;Set DMA transfer size
-    LDA #$16        ;$2118 is the destination, so
-    STA $4301       ;  set lower 8-bits of destination to $18
-    LDA #$04        ;Set DMA transfer mode: auto address increment
-    STA $4300       ;  using write mode 1 (meaning write a word to $2118/$2119)
-    LDA #$01        ;The registers we've been setting are for channel 0
-    STA $420B       ;  so Start DMA transfer on channel 0 (LSB of $420B)
-    .done:
-    sep #$30
-    stz !menu_tile_upload_bytes
-    stz !menu_tile_upload_bytes+1
-    RTL
+
 
 ;Also retrieves header while called
 retrieve_current_level:
@@ -287,6 +328,28 @@ store_current_level:
     LDA #$00
     RTL
 
+menu_nmi_draw_tiles:
+    lda #$80
+    sta $2115  
+    REP #$10
+    LDX #!menu_tile_upload_location ;Source Offset into source bank
+    STX $4302       ;Set Source address lower 16-bits
+    LDA #00   ;Source bank
+    STA $4304       ;Set Source address upper 8-bits
+    LDX !menu_tile_upload_bytes   ;# of bytes to copy (16k)
+    beq .done
+    STX $4305       ;Set DMA transfer size
+    LDA #$16        ;$2118 is the destination, so
+    STA $4301       ;  set lower 8-bits of destination to $18
+    LDA #$04        ;Set DMA transfer mode: auto address increment
+    STA $4300       ;  using write mode 1 (meaning write a word to $2118/$2119)
+    LDA #$01        ;The registers we've been setting are for channel 0
+    STA $420B       ;  so Start DMA transfer on channel 0 (LSB of $420B)
+    .done:
+    sep #$30
+    stz !menu_tile_upload_bytes
+    stz !menu_tile_upload_bytes+1
+    RTL
 
 FastMode_add_level:
         JSL retrieve_current_header
@@ -533,12 +596,25 @@ init_original_statusbar_properties:
         PHB
         PHK
         PLB
+        PHP
         ldx #$A0
         -
         lda original_properties-1,X
         sta $0904,X
         dex
         bne -
+        
+        REP #$10
+        SEP #$20
+        LDX #$4130
+        STX $2116 ; vram address
+        LDA.B #bank(overworld_layer_3_tiles)
+        LDX #overworld_layer_3_tiles+$1E0
+        LDY #$0010
+
+        JSL load_vram
+
+        PLP
         PLB
         RTL
 

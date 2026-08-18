@@ -82,59 +82,60 @@
 !current_meter_selection     = $0EFE
 
 ; the number of options in the overworld menu
-!number_of_options           = 47
+!number_of_options           = 55
 !number_of_options_pg1       = 32
-!number_of_options_pg2       = 15
+!number_of_options_pg2       = 23
 ; status flags for each of the overworld menu options
-!status_table                = $710000 ; $20 bytes
-!status_yellow               = $710000 ; off | on
-!status_green                = $710001 ; off | on
-!status_red                  = $710002 ; off | on
-!status_blue                 = $710003 ; off | on
-!status_special              = $710004 ; disable | enable
-!status_powerup              = $710005 ; small | big | cape | fire | ...
-!status_itembox              = $710006 ; empty | mush | fire | star | cape | ...
-!status_yoshi                = $710007 ; none | yellow | blue | red | green | ...
-!status_enemy                = $710008 ;
-!status_erase                = $710009 ; all | level | slots... | statusbars...
-!status_slots                = $71000A ; none | onscreen | offscreen | all | bounce
-!status_controller           = $71000B ; 1P | 1/2 P | 2P
-!status_pause                = $71000C ; disable | enable
-!status_timedeath            = $71000D ; death | life
-!status_music                = $71000E ; music | mute
-!status_drop                 = $71000F ; disable | normal
-!status_states               = $710010 ; disable | enable | exclude RNG/framerule
-!status_statedelay           = $710011 ; count...
-!status_dynmeter             = $710012 ; none | speed | takeout | pmeter | spx | yoshispx | itemspx | itemspeed
-!status_slowdown             = $710013 ; enable | disable
-!status_layout               = $710014 ; default | lagcalibrated | empty | custom1 | custom2 | custom3
-!status_lrreset              = $710015 ; enable | disable
-!status_scorelag             = $710016 ; none | count...
-!status_lagometer            = $710017 ; off | on
-!status_moviesave            = $710018 ; sram1 | sram2
-!status_movieload            = $710019 ; sram1 | sram2 | demo1 | demo2
-!status_playername           = $71001A ; 4 bytes
-!status_region               = $71001E ; J | U | E1.0 | E1.1
-!status_FastMode             = $71001F
+!status_table                = $705000 ; $20 bytes
+!status_yellow               = !status_table+$00 ; off | on
+!status_green                = !status_table+$01 ; off | on
+!status_red                  = !status_table+$02 ; off | on
+!status_blue                 = !status_table+$03 ; off | on
+!status_special              = !status_table+$04 ; disable | enable
+!status_powerup              = !status_table+$05 ; small | big | cape | fire | ...
+!status_itembox              = !status_table+$06 ; empty | mush | fire | star | cape | ...
+!status_yoshi                = !status_table+$07 ; none | yellow | blue | red | green | ...
+!status_enemy                = !status_table+$08 ;
+!status_erase                = !status_table+$09 ; all | level | slots... | statusbars...
+!status_slots                = !status_table+$0a ; none | onscreen | offscreen | all | bounce
+!status_controller           = !status_table+$0b ; 1P | 1/2 P | 2P
+!status_pause                = !status_table+$0c ; disable | enable
+!status_timedeath            = !status_table+$0d ; death | life
+!status_music                = !status_table+$0e ; music | mute
+!status_drop                 = !status_table+$0f ; disable | normal
+!status_states               = !status_table+$10 ; disable | enable | exclude RNG/framerule
+!status_statedelay           = !status_table+$11 ; count...
+!status_dynmeter             = !status_table+$12 ; none | speed | takeout | pmeter | spx | yoshispx | itemspx | itemspeed
+!status_slowdown             = !status_table+$13 ; enable | disable
+!status_layout               = !status_table+$14 ; default | lagcalibrated | empty | custom1 | custom2 | custom3
+!status_lrreset              = !status_table+$15 ; enable | disable
+!status_scorelag             = !status_table+$16 ; none | count...
+!status_lagometer            = !status_table+$17 ; off | on
+!status_moviesave            = !status_table+$18 ; sram1 | sram2
+!status_movieload            = !status_table+$19 ; sram1 | sram2 | demo1 | demo2
+!status_playername           = !status_table+$1a ; 4 bytes
+!status_region               = !status_table+$1e ; J | U | E1.0 | E1.1
+!status_FastMode             = !status_table+$1f
 
-!status_FastMode_yellow         = $710020
-!status_FastMode_green          = $710021
-!status_FastMode_red            = $710022
-!status_FastMode_blue           = $710023
-!status_FastMode_special        = $710024
-!status_FastMode_start_powerup  = $710025
-!status_FastMode_start_item     = $710026
-!status_FastMode_start_yoshi    = $710027
-!status_FastMode_end_powerup    = $710028
-!status_FastMode_end_item       = $710029
-!status_FastMode_end_yoshi      = $71002A
-!status_FastMode_midway         = $71002B
-!status_FastMode_difficulty     = $71002C
-!status_FastMode_exit_type      = $71002D
-!status_FastMode_delete         = $71002E
+!status_FastMode_yellow         = !status_table+$20
+!status_FastMode_green          = !status_table+$21
+!status_FastMode_red            = !status_table+$22
+!status_FastMode_blue           = !status_table+$23
+!status_FastMode_special        = !status_table+$24
+!status_FastMode_start_powerup  = !status_table+$25
+!status_FastMode_start_item     = !status_table+$26
+!status_FastMode_start_yoshi    = !status_table+$27
+!status_FastMode_end_powerup    = !status_table+$28
+!status_FastMode_end_item       = !status_table+$29
+!status_FastMode_end_yoshi      = !status_table+$2a
+!status_FastMode_midway         = !status_table+$2b
+!status_FastMode_difficulty     = !status_table+$2c
+!status_FastMode_exit_type      = !status_table+$2d
+!status_FastMode_delete         = !status_table+$2e
+!status_FastMode_save_name      = !status_table+$2f ; 8 bytes
 
 ; $7003FF reserved for future expansion
-!backup_status_table         = $710100 ; $20 bytes
+!backup_status_table         = $705100 ; $20 bytes
 
 ; table for status bar meters
 !statusbar_meters            = $704D50 ; $120 bytes (4x24)x3
@@ -257,7 +258,7 @@
 !menu_tile_upload_bytes      = $0afe
 !menu_tile_upload_location   = $0b00
 
-!loram_savestate_location     = $705000;$7f9DFB? loram savestate in wram?
+!loram_savestate_location     = $7f9DFB ;$705000? loram savestate in wram?
 !restore_status_from_backup   = $70000a
 !level_enter_flag             = $58
 !FastMode_save_current_header = $06b0
@@ -266,13 +267,13 @@
 !midway_enable_flag           = $06a4
 !FastMode_tile_timer          = $06a3   ; Timer for flashing route tiles
 !FastMode_start_play          = $06a2   ; Used to determine if play should start on next overworld load
-!FastMode_current_level       = $06a0   ; 2 bytes
+!FastMode_current_level       = $06a0   ; 
 
-!FastMode_save_1_header      = $710200 ; #Levels
-!FastMode_save_1             = $710210 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!FastMode_save_1_header      = $705200 ; #Levels
+!FastMode_save_1             = $705210 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
 
-!FastMode_save_2_header      = $710600 ; #Levels
-!FastMode_save_2             = $710610 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!FastMode_save_2_header      = $705600 ; #Levels
+!FastMode_save_2             = $705610 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
 
-!FastMode_save_3_header      = $710A00 ; #Levels
-!FastMode_save_3             = $7106A0 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!FastMode_save_3_header      = $705A00 ; #Levels
+!FastMode_save_3             = $705A10 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power

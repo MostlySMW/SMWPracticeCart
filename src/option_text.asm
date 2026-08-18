@@ -1,5 +1,4 @@
-table "../text_table.txt"
-
+table "text_table.txt"
 option_title:
 	db "     YELLOW SWITCH BLOCKS       "
 	db "     GREEN SWITCH BLOCKS        "
@@ -48,6 +47,14 @@ option_title:
 	db "     STRICT MODE                "
 	db "     EXIT TYPE                  "
 	db "     DELETE SAVE DATA           "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
+	db "     SAVE NAME                  "
 option_description:
 	db "  TURN THE YELLOW               "
 	db "  SWITCH PALACE BLOCKS          "
@@ -331,59 +338,110 @@ option_description:
 	db "  STANDING ON OR ONLY A         "
 	db "  PARTICULAR SAVED TIME         "
 	db "                                "
-
-
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
+	db "  SAVE NAME                     "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  OR REALLY WHATEVER TEXT       "
+	db "  YOU WANT TO PUT HERE          "
 option_value_lists:
-        dw option_off_on                ;#$00
-        dw option_off_on                ;#$01
-        dw option_off_on                ;#$02
-        dw option_off_on                ;#$03
-        dw option_off_on                ;#$04
-        dw option_powerups&$7FFF        ;#$05
-        dw option_sprites               ;#$06
-        dw option_yoshi_color&$7FFF     ;#$07
-        dw $0000                        ;#$08
-        dw option_delete_saves          ;#$09
-        dw option_slot_numbers          ;#$0a
-        dw option_player_2              ;#$0b
-        dw option_frame_advance         ;#$0c
-        dw option_time_up               ;#$0d
-        dw option_on_off                ;#$0e
-        dw option_enabled_disabled      ;#$0f
-        dw option_save_states           ;#$10
-        dw $0000                        ;#$11
-        dw option_dynmeter              ;#$12
-        dw option_enabled_disabled      ;#$13
-        dw $0000                        ;#$14
-        dw option_enabled_disabled      ;#$15
-        dw $0000                        ;#$16
-        dw option_off_on                ;#$17
-        dw option_save_movie            ;#$18
-        dw option_load_movie            ;#$19
-        dw $0000                        ;#$1a
-        dw $0000                        ;#$1b
-        dw $0000                        ;#$1c
-        dw $0000                        ;#$1d
-        dw option_region                ;#$1e
-	dw $0000                        ;#$2f
-	dw option_off_on                ;#$20
-	dw option_off_on                ;#$21
-	dw option_off_on                ;#$22
-	dw option_off_on                ;#$23
-	dw option_off_on                ;#$24
-	dw option_powerups&$7FFF        ;#$25
-	dw option_sprites               ;#$26
-	dw option_yoshi_color&$7FFF     ;#$27
-        dw option_powerups&$7FFF        ;#$28
-        dw option_sprites               ;#$29
-        dw option_yoshi_color&$7FFF     ;#$2a
-        dw option_off_on                ;#$2b
-        dw option_difficulty            ;#$2c
-        dw option_exit_type             ;#$2d
-        dw $0000                        ;#$2e
-
-		
-
+	dw option_off_on                   ;00
+	dw option_off_on                   ;01
+	dw option_off_on                   ;02
+	dw option_off_on                   ;03
+	dw option_off_on                   ;04
+	dw option_powerups&$7FFF           ;05
+	dw option_sprites                  ;06
+	dw option_yoshi_color&$7FFF        ;07
+	dw $0000                           ;08
+	dw option_delete_saves             ;09
+	dw option_slot_numbers             ;0A
+	dw option_player_2                 ;0B
+	dw option_frame_advance            ;0C
+	dw option_time_up                  ;0D
+	dw option_on_off                   ;0E
+	dw option_enabled_disabled         ;0F
+	dw option_save_states              ;10
+	dw $0000                           ;11
+	dw option_dynmeter                 ;12
+	dw option_enabled_disabled         ;13
+	dw $0000                           ;14
+	dw option_enabled_disabled         ;15
+	dw $0000                           ;16
+	dw option_off_on                   ;17
+	dw option_save_movie               ;18
+	dw option_load_movie               ;19
+	dw $0000                           ;1A
+	dw $0000                           ;1B
+	dw $0000                           ;1C
+	dw $0000                           ;1D
+	dw option_region                   ;1E
+	dw $0001                           ;1F
+	dw option_off_on                   ;20
+	dw option_off_on                   ;21
+	dw option_off_on                   ;22
+	dw option_off_on                   ;23
+	dw option_off_on                   ;24
+	dw option_powerups&$7FFF           ;25
+	dw option_sprites                  ;26
+	dw option_yoshi_color&$7FFF        ;27
+	dw option_powerups&$7FFF           ;28
+	dw option_sprites                  ;29
+	dw option_yoshi_color&$7FFF        ;2A
+	dw option_off_on                   ;2B
+	dw option_difficulty               ;2C
+	dw option_exit_type                ;2D
+	dw $0000                           ;2E
+	dw $0000                           ;2F
+	dw $0000                           ;30
+	dw $0000                           ;31
+	dw $0000                           ;32
+	dw $0000                           ;33
+	dw $0000                           ;34
+	dw $0000                           ;35
+	dw $0000                           ;36
 option_exit_type:
         db "      NORMAL                    "
         db "      SECRET                    "

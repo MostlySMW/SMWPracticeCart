@@ -169,14 +169,16 @@ late_overworld_load:
         LDY #$0020
         JSL load_vram
         
-        ; LDX #$4130
-        ; STX $2116 ; vram address
-        ; PHK
-        ; PLA ; #bank of overworld_layer_3_tiles
-        ; LDX #overworld_layer_3_tiles+$160
-        ; LDY #$0010
-        ; JSL load_vram
+        LDX #$4130
+        STX $2116 ; vram address
+        PHK
+        PLA ; #bank of overworld_layer_3_tiles
+        LDX #overworld_layer_3_tiles+$160
+        LDY #$0010
+        JSL load_vram
         
+
+
         LDX #$4B70
         STX $2116 ; vram address
         PHK
@@ -285,11 +287,16 @@ prepare_file:
         JSL restore_basic_settings
         JSR check_for_rtc
         JSL check_for_pal_music
+        lda #$00
+        sta !save_state_exists
         LDA !status_FastMode 
         BEQ .done
         LDA !util_byetudlr_hold
         AND #$30
         BNE .done
+        JSL retrieve_current_header
+        LDA !FastMode_save_current_header+0
+        BEQ .done
         LDA #$01
         STA !FastMode_start_play
 
@@ -301,7 +308,8 @@ prepare_file:
 
         lda #$01
         STA !restore_status_from_backup
-
+        sta !status_lrreset
+        sta !status_slowdown
         lda #$00
         sta !status_states
         
@@ -309,10 +317,6 @@ prepare_file:
         sta !status_slots
         sta !status_lagometer
         sta !status_timedeath
-        lda #$01
-        
-        sta !status_lrreset
-        sta !status_slowdown
         .done:
         RTL
 

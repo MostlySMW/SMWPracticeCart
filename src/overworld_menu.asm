@@ -413,6 +413,13 @@ unpack_FastMode_level_settings:
         LDA !FastMode_save_current_header+1
         STA !status_FastMode_difficulty
 
+        ldx #$07
+        -
+        LDA !FastMode_save_current_header+2,X
+        STA !status_FastMode_save_name,X
+        dex 
+        bpl -
+
         LDA !FastMode_save_current_level+1
         STA !status_FastMode_start_item
 
@@ -458,6 +465,13 @@ pack_FastMode_level_settings:
 
         LDA !status_FastMode_difficulty
         STA !FastMode_save_current_header+1
+
+        LDX #$07
+        -
+        LDA !status_FastMode_save_name,X
+        STA !FastMode_save_current_header+2,X
+        dex 
+        bpl -
 
         LDA !status_FastMode_start_item
         STA !FastMode_save_current_level+1
@@ -584,12 +598,20 @@ option_selection_mode:
         
     .test_select:
         LDA !erase_records_flag
-        BEQ .test_dup
+        BEQ .test_start
         LDA !util_byetudlr_hold
         AND #%00100000
-        BEQ .test_dup
+        BEQ .test_start
         JSR delete_data
         JMP .finish_no_change
+    
+    .test_start:
+        LDA !util_byetudlr_frame
+        AND #%00010000
+        BEQ .test_dup
+        LDA #$29 ; ding sound
+        STA $1DFC ; apu i/o
+        JMP .quit
         
     .test_dup:
         LDA !util_byetudlr_frame
@@ -680,101 +702,75 @@ option_selection_mode:
         ORA !util_byetudlr_frame
         AND #%10000000
         BNE .make_selection
-        JMP .test_start
+        JMP .finish_no_change
     .make_selection:
         LDA !current_selection
         ASL A
         TAX
+        LDA .selection_table,X
+        BNE +
+        JMP .finish_no_change
+        +
         JMP (.selection_table,X)
         
-    .selection_table:
-        dw .select_yellow
-        dw .select_green
-        dw .select_red
-        dw .select_blue
-        dw .select_special
-        dw .select_powerup
-        dw .select_itembox
-        dw .select_yoshi
-        dw .select_enemy
-        dw .select_records
-        dw .select_slots
-        dw .select_fractions
-        dw .select_pause
-        dw .select_timedeath
-        dw .select_music
-        dw .select_drop
-        dw .select_states
-        dw .select_statedelay
-        dw .select_dynmeter
-        dw .select_slowdown
-        dw .select_meters
-        dw .select_lrreset
-        dw .select_scorelag
-        dw .select_placeholder
-        dw .select_moviesave
-        dw .select_movieload
-        dw .select_name
-        dw .select_name
-        dw .select_name
-        dw .select_name
-        dw .select_region
-        dw .select_fast_mode_save
-        dw .select_fast_mode_yellow
-        dw .select_fast_mode_green
-        dw .select_fast_mode_red
-        dw .select_fast_mode_blue
-        dw .select_fast_mode_special
-        dw .select_fast_mode_start_powerup
-        dw .select_fast_mode_start_item
-        dw .select_fast_mode_start_yoshi
-        dw .select_fast_mode_end_powerup
-        dw .select_fast_mode_end_item
-        dw .select_fast_mode_end_yoshi
-        dw .select_fast_mode_midway_enable
-        dw .select_fast_mode_difficulty
-        dw .select_fast_mode_exit_type
-        dw .select_fast_mode_delete_save
-        dw .select_exit
-        
-    .select_yellow:
-    .select_green:
-    .select_red:
-    .select_blue:
-    .select_special:
-    .select_powerup:
-    .select_itembox:
-    .select_slots:
-    .select_fractions:
-    .select_pause:
-    .select_timedeath:
-    .select_music:
-    .select_drop:
-    .select_dynmeter:
-    .select_states:
-    .select_statedelay:
-    .select_slowdown:
-    .select_lrreset:
-    .select_scorelag:
-    .select_placeholder:
-    .select_region:
-    .select_name:
-    .select_fast_mode_yellow:
-    .select_fast_mode_green:
-    .select_fast_mode_red:
-    .select_fast_mode_blue:
-    .select_fast_mode_special:
-    .select_fast_mode_powerup:
-    .select_fast_mode_start_powerup:
-    .select_fast_mode_start_item:
-    .select_fast_mode_start_yoshi:
-    .select_fast_mode_end_powerup:
-    .select_fast_mode_end_item:
-    .select_fast_mode_end_yoshi:
-    .select_fast_mode_midway_enable:
-    .select_fast_mode_difficulty:
-    .select_fast_mode_exit_type:
-        JMP .finish_no_change
+	.selection_table:
+		dw $0000                           ;00
+		dw $0000                           ;01
+		dw $0000                           ;02
+		dw $0000                           ;03
+		dw $0000                           ;04
+		dw $0000                           ;05
+		dw $0000                           ;06
+		dw .select_yoshi                   ;07
+		dw .select_enemy                   ;08
+		dw .select_records                 ;09
+		dw $0000                           ;0A
+		dw $0000                           ;0B
+		dw $0000                           ;0C
+		dw $0000                           ;0D
+		dw $0000                           ;0E
+		dw $0000                           ;0F
+		dw $0000                           ;10
+		dw $0000                           ;11
+		dw $0000                           ;12
+		dw $0000                           ;13
+		dw .select_meters                  ;14
+		dw $0000                           ;15
+		dw $0000                           ;16
+		dw $0000                           ;17
+		dw .select_moviesave               ;18
+		dw .select_movieload               ;19
+		dw $0000                           ;1A
+		dw $0000                           ;1B
+		dw $0000                           ;1C
+		dw $0000                           ;1D
+		dw $0000                           ;1E
+		dw .select_fast_mode_save          ;1F
+		dw $0000                           ;20
+		dw $0000                           ;21
+		dw $0000                           ;22
+		dw $0000                           ;23
+		dw $0000                           ;24
+		dw $0000                           ;25
+		dw $0000                           ;26
+		dw $0000                           ;27
+		dw $0000                           ;28
+		dw $0000                           ;29
+		dw .select_yoshi                   ;2A
+		dw $0000                           ;2B
+		dw $0000                           ;2C
+		dw $0000                           ;2D
+		dw .select_fast_mode_delete_save   ;2E
+		dw $0000                           ;2F
+		dw $0000                           ;30
+		dw $0000                           ;31
+		dw $0000                           ;32
+		dw $0000                           ;33
+		dw $0000                           ;34
+		dw $0000                           ;35
+		dw $0000                           ;36
+
+
     
     .select_fast_mode_save:
         lda !status_FastMode
@@ -794,9 +790,9 @@ option_selection_mode:
         STA $1DF9 ; apu i/o
         jmp .finish_no_change
     .select_fast_mode_delete_save:
-        lda #$00
-        sta !FastMode_save_current_header+0
-        JSL store_current_header
+        JSL reset_header
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2
         LDA #$0B ; itembox sound
         STA $1DFC ; apu i/o
         jmp .finish_no_change
@@ -841,18 +837,9 @@ option_selection_mode:
         JMP .finish_no_change
     .select_movieload:
         JSR load_movie
-        JMP .finish_no_change
-    .select_exit:
-        LDA #$29 ; ding sound
-        STA $1DFC ; apu i/o
-        JMP .quit
-    
-    .test_start:
-        LDA !util_byetudlr_frame
-        AND #%00010000
-        BEQ .finish_no_change
-        JMP .select_exit
-        
+        JMP .finish_no_change    
+
+
     .quit:
         LDA #$0B
         STA $0100 ; game mode
@@ -1233,18 +1220,9 @@ delete_all_data:
         BPL -
 
         LDA #$0000
-        LDX #$000E
-        -
-        STA.L !FastMode_save_1_header,X
-        STA.L !FastMode_save_2_header,X
-        STA.L !FastMode_save_3_header,X
-        dex
-        dex
-        bpl -
-
-        LDA #$0000
         sta $70000a
-        
+        SEP #$30
+        JSL reset_header
         PLB
         PLP
         RTL
@@ -1614,6 +1592,26 @@ draw_option_value:
         LDA option_value_lists,X
         BEQ .exit
         BMI .continue
+        CMP #$0001
+        BNE .yoshi_powerup_hybrid
+            PHP
+            SEP #$30
+            JSL retrieve_current_header
+            BNE +
+            PLP
+                BRA .exit
+            +
+            LDA.B #(!FastMode_save_current_header+2)
+            sta $00
+            LDA.B #(!FastMode_save_current_header+2)>>8
+            sta $01
+            LDA.B #bank(!FastMode_save_current_header+2)
+            sta $02
+            PLP
+            LDX #$0008
+            LDY #$6652
+            BRA .exit+6
+        .yoshi_powerup_hybrid
         ORA #$8000
         PHA ; special case for yoshi color/powerup which is a hybrid
         LDA !current_selection
@@ -1639,8 +1637,8 @@ draw_option_value:
         ADC $00
         STA $00
     .exit:
-        LDY #$6052
         LDX #$0020
+        LDY #$6052
         LDA #$3030
         JSL draw_text_string
         
