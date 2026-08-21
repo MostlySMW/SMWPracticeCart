@@ -410,7 +410,7 @@ overworld_menu_submodes:
 unpack_FastMode_level_settings:
         JSL retrieve_current_level
 
-        LDA !FastMode_save_current_header+1
+        LDA !FastMode_save_current_level+14
         STA !status_FastMode_difficulty
 
         ldx #$07
@@ -464,7 +464,7 @@ pack_FastMode_level_settings:
         JSL retrieve_current_header
 
         LDA !status_FastMode_difficulty
-        STA !FastMode_save_current_header+1
+        STA !FastMode_save_current_level+14
 
         LDX #$07
         -
@@ -746,20 +746,20 @@ option_selection_mode:
 		dw $0000                           ;1D
 		dw $0000                           ;1E
 		dw .select_fast_mode_save          ;1F
-		dw $0000                           ;20
-		dw $0000                           ;21
-		dw $0000                           ;22
-		dw $0000                           ;23
-		dw $0000                           ;24
-		dw $0000                           ;25
-		dw $0000                           ;26
-		dw $0000                           ;27
-		dw $0000                           ;28
-		dw $0000                           ;29
-		dw .select_yoshi                   ;2A
-		dw $0000                           ;2B
-		dw $0000                           ;2C
-		dw $0000                           ;2D
+		dw .propogate_forward              ;20
+		dw .propogate_forward              ;21
+		dw .propogate_forward              ;22
+		dw .propogate_forward              ;23
+		dw .propogate_forward              ;24
+		dw .propogate_forward              ;25
+		dw .propogate_forward              ;26
+		dw .propogate_forward              ;27
+		dw .propogate_forward              ;28
+		dw .propogate_forward              ;29
+		dw .propogate_forward              ;2A
+		dw .propogate_forward              ;2B
+		dw .propogate_forward              ;2C
+		dw .propogate_forward              ;2D
 		dw .select_fast_mode_delete_save   ;2E
 		dw $0000                           ;2F
 		dw $0000                           ;30
@@ -771,7 +771,16 @@ option_selection_mode:
 		dw $0000                           ;36
 
 
-    
+    .propogate_forward:
+        LDA !util_byetudlr_hold
+        AND !util_axlr_hold
+        AND #$80
+        BEQ +
+        JSR FastMode_propogate_forward
+        LDA #$01 ; coin sound
+        STA $1DFC ; apu i/o
+        +
+        jmp .finish_no_change
     .select_fast_mode_save:
         lda !status_FastMode
         bne +
@@ -871,6 +880,41 @@ option_selection_mode:
         STZ !text_timer
     .no_update_text:
         RTS
+
+FastMode_propogate_forward:
+    LDA !current_selection
+    TAX
+    LDA selection_to_uncompressed_table-$20,X
+    TAX
+    sta $04
+    lda !FastMode_current_level
+    sta $05
+    lda !FastMode_save_current_level,X
+    sta $06
+
+    LDY !FastMode_save_current_header+0
+
+    -
+    INC !FastMode_current_level
+    JSL retrieve_current_level
+    BEQ .done
+
+    lda $04
+    tax
+    lda $06
+    STA !FastMode_save_current_level,X
+    JSL store_current_level
+    BRA -
+
+    .done:
+    LDA $05
+    sta !FastMode_current_level
+    JSL retrieve_current_level
+
+    RTS
+
+selection_to_uncompressed_table:
+    db $09, $0a, $07, $08, $0b, $03, $01, $05, $04, $02, $06, $0c, $0e, $0d  
         
 ; copy currently loaded movie to sram
 export_movie_to_sram:

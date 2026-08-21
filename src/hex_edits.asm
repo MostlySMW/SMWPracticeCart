@@ -291,8 +291,13 @@ org !_F+$05d9D7
 org !_F+$0DA691
         LDA !midway_enable_flag
         NOP #3
+        
 org !_F+$00A267
-        nop #2                         ; Always allow Start+Select. Even if submap/translevel is wrong and in a level that is not counted as beaten
+        db $80, $07                         ; Always allow Start+Select. Even if submap/translevel is wrong and in a level that is not counted as beaten
+org !_F+$00a270                           ;\
+        LDA #$81                          ;| How level was exited flag. Original game had both start+select and dying set this to #$80 
+org !_F+$00d0cb                           ;| Seperate that out so we can detect the difference.
+        LDA #$82                          ;/
 
 org !_F+$008EF2                         ; \
     RTL                                 ; |

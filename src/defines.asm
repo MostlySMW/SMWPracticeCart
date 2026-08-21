@@ -130,7 +130,7 @@
 !status_FastMode_end_yoshi      = !status_table+$2a
 !status_FastMode_midway         = !status_table+$2b
 !status_FastMode_difficulty     = !status_table+$2c
-!status_FastMode_exit_type      = !status_table+$2d
+!status_FastMode_exit_type      = !status_table+$2d ;normal | secret | Ss | Death | 
 !status_FastMode_delete         = !status_table+$2e
 !status_FastMode_save_name      = !status_table+$2f ; 8 bytes
 
@@ -264,6 +264,7 @@
 !FastMode_save_current_header = $06b0
 !FastMode_save_current_level  = $06c0
 !most_recent_exit             = $06c1
+!level_is_no_yoshi            = $06a5
 !midway_enable_flag           = $06a4
 !FastMode_tile_timer          = $06a3   ; Timer for flashing route tiles
 !FastMode_start_play          = $06a2   ; Used to determine if play should start on next overworld load

@@ -181,7 +181,7 @@ test_main_enter_level:
         LDA !util_byetudlr_frame
         AND #$80
         BEQ .exit
-        
+      
         ; if level is no-yoshi level, temporarily remove yoshi
         STZ !give_yoshi_back
         LDX #$12

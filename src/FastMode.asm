@@ -8,10 +8,13 @@
 ;$00 = #$00 for normal, #$01 for secret
 
 FastMode_header_locations:
-    dd !FastMode_save_1_header, !FastMode_save_2_header, !FastMode_save_3_header 
+    dd !FastMode_save_1_header, !FastMode_save_2_header, !FastMode_save_3_header, #ALL_CASTLES_SAVE
 
 FastMode_save_locations:
-    dd !FastMode_save_1, !FastMode_save_2, !FastMode_save_3
+    dd !FastMode_save_1, !FastMode_save_2, !FastMode_save_3, #ALL_CASTLES_SAVE+$10
+
+ALL_CASTLES_SAVE:
+    incbin "bin/routes/AllCastles.bin"
 
 ; Retrieves current header from either save 1,2,3 based on status_fastmode
 ; stores to FastMode_save_current_header
@@ -157,19 +160,28 @@ retrieve_current_level:
     INY
     LDA [$00],Y
     TAX
-    AND #$0F
+    AND #$01
+    STA !FastMode_save_current_level+11
+    TXA : LSR : TAX
+    AND #$01
+    STA !FastMode_save_current_level+12
+    TXA : LSR : TAX
+    AND #$07
     STA !FastMode_save_current_level+3
     TXA
-    LSR #4
+    LSR #3
     STA !FastMode_save_current_level+4
 
     INY
     LDA [$00],Y
     TAX
-    AND #$0F
+    AND #$03
+    sta !FastMode_save_current_level+14
+    TXA : LSR #2 : TAX
+    AND #$07
     sta !FastMode_save_current_level+5
     TXA
-    LSR #4
+    LSR #3
     STA !FastMode_save_current_level+6
 
     INY 
@@ -187,13 +199,7 @@ retrieve_current_level:
     TXA : LSR : TAX : AND #$01
     STA !FastMode_save_current_level+10
 
-    TXA : LSR : TAX : AND #$01
-    STA !FastMode_save_current_level+11
-
-    TXA : LSR : TAX : AND #$01
-    STA !FastMode_save_current_level+12
-
-    TXA : LSR : TAX : AND #$03
+    TXA : LSR : TAX : AND #$07
     STA !FastMode_save_current_level+13
     .done_success:
     SEP #$30
@@ -276,31 +282,40 @@ store_current_level:
 
     INY
     LDA !FastMode_save_current_level+4
-    ASL #4
+    ASL #3
     STA $03
     LDA !FastMode_save_current_level+3
-    AND #$0F
+    AND #$07
+    ORA $03
+    ASL #1
+    STA $03
+    LDA !FastMode_save_current_level+12
+    AND #$01
+    ORA $03
+    ASL #1
+    STA $03
+    LDA !FastMode_save_current_level+11
+    AND #$01
     ORA $03
     STA [$00],Y
     
     INY
     LDA !FastMode_save_current_level+6
-    ASL #4
+    ASL #3
     STA $03
     LDA !FastMode_save_current_level+5
-    AND #$0F
+    AND #$07
+    ORA $03
+    ASL #2
+    STA $03
+    LDA !FastMode_save_current_level+14
+    AND #$03
     ORA $03
     STA [$00],Y
 
     
     LDA !FastMode_save_current_level+13
-    AND #$03 : ASL : STA $03
-
-    LDA !FastMode_save_current_level+12
-    AND #$01 : ORA $03 : ASL : STA $03
-
-    LDA !FastMode_save_current_level+11
-    AND #$01 : ORA $03 : ASL :  STA $03
+    AND #$07 : ASL : STA $03
 
     LDA !FastMode_save_current_level+10
     AND #$01 : ORA $03 : ASL : STA $03
@@ -352,7 +367,11 @@ menu_nmi_draw_tiles:
     RTL
 
 FastMode_add_level:
+        lda !potential_translevel
+        BEQ .done
+        PHX
         JSL retrieve_current_header
+        PLX
         lda !FastMode_save_current_header+0
         sta !FastMode_current_level
         inc !FastMode_save_current_header+0       ; |
@@ -396,8 +415,11 @@ FastMode_add_level:
         lda #$00
         sta !FastMode_save_current_level+12
 
+        
+        stx !FastMode_save_current_level+13
+
         lda #$00
-        sta !FastMode_save_current_level+13
+        sta !FastMode_save_current_level+14
         
         JSL store_current_level
 
@@ -420,7 +442,7 @@ submap_table:
 ResetLevel:
     jsl retrieve_current_level
 
-    LDA !FastMode_save_current_header+1
+    LDA !FastMode_save_current_level+14
     STA !status_FastMode_difficulty
 
     lda !FastMode_save_current_level+1
@@ -440,6 +462,20 @@ ResetLevel:
     lda !FastMode_save_current_level+5
     sta !status_yoshi
     sta $0dc1                       ; Yoshi
+    stz !level_is_no_yoshi
+    LDX #$12
+    -
+    LDA.L no_yoshi_translevels,X
+    CMP !FastMode_save_current_level+0
+    BEQ .remove_yoshi
+    DEX
+    BPL -
+    BRA +
+    .remove_yoshi:
+    STZ $0DBA
+    stz $0dc1
+    inc !level_is_no_yoshi
+    +
     JSL save_yoshi_color
 
     lda !FastMode_save_current_level+6
@@ -490,6 +526,7 @@ ResetLevel:
      stz $0109
      stz $141a
      stz $141d
+     stz $0DD5
      lda #$ff
      sta $0101
      sta $0102
@@ -500,33 +537,119 @@ ResetLevel:
 
 attempt_level_advance:
         lda !FastMode_start_play
-        BEQ .no_advance
-
+        BEQ .no_advance_hop
             LDA !status_FastMode_difficulty
+            CMP #$00
+            BEQ .check_advance_mode_0
             CMP #$01
-                BNE +
-                    LDA !status_FastMode_exit_type
-                    CMP !most_recent_exit
-                    BNE .no_advance
-                        BRA .next_level
-          + CMP #$02
-            BNE .next_level
-                LDA !status_FastMode_exit_type
-                CMP !most_recent_exit
+            BEQ .check_advance_mode_1
+            CMP #$02
+            BEQ .check_advance_mode_2
+            BRA .next_level_hop
+
+        .check_advance_mode_0:
+            LDA !level_finished
+            BNE .next_level_hop
+            lda !status_FastMode_exit_type
+            CMP #$02
+            BEQ .start_select
+            CMP #$03
+            BEQ .death
+            bra .no_advance_hop
+            .start_select:
+                lda $0dd5
+                CMP #$81
+                BEQ .next_level_hop
+                BRA .no_advance_hop
+            .death:
+                lda $0dd5
+                CMP #$82
+                BEQ .next_level_hop
+                BRA .no_advance_hop
+        .check_advance_mode_1:
+            LDA !status_FastMode_exit_type
+            CMP #$00
+            BNE +
+                LDA !level_finished
+                BEQ .no_advance_hop
+                LDA !most_recent_exit
+                CMP #$00
+                BNE .no_advance_hop
+                BRA .next_level_hop
+            +
+            CMP #$01
+            BNE +
+                LDA !level_finished
+                BEQ .no_advance_hop
+                LDA !most_recent_exit
+                CMP #$01
+                BNE .no_advance_hop
+                BRA .next_level_hop
+            +
+            CMP #$02
+                LDA $0dd5
+                CMP #$81
+                BNE .no_advance_hop
+                .next_level_hop
+                BRA .next_level
+            CMP #$03
+                LDA $0dd5
+                CMP #$82
+                BEQ .next_level
+                .no_advance_hop:
+                BRA .no_advance
+
+        .check_advance_mode_2:
+            lda !status_FastMode_end_item
+            BEQ +
+                CMP $0dc2
                 BNE .no_advance
-                    lda !status_FastMode_end_item
-                    BEQ +
-                        CMP $0dc2
-                        BNE .no_advance
-                  + lda !status_FastMode_end_powerup
-                        BEQ +
-                            CMP $19
-                            BNE .no_advance
-                  + lda !status_FastMode_end_yoshi
-                        BEQ .next_level
-                            lda $187a
-                            BEQ .no_advance
-          +
+            + 
+            lda !status_FastMode_end_powerup
+            BEQ +
+                CMP $19
+                BNE .no_advance
+            + 
+            lda !status_FastMode_end_yoshi
+            BEQ +
+                lda !level_is_no_yoshi
+                BNE +
+                lda $187a
+                BEQ .no_advance
+            +
+            LDA !status_FastMode_exit_type 
+            CMP #$00
+            BNE +
+                LDA !level_finished
+                BEQ .no_advance
+                LDA !most_recent_exit
+                CMP #$00
+                BNE .no_advance
+                BRA .next_level
+            +
+            CMP #$01
+            BNE +
+                LDA !level_finished
+                BEQ .no_advance
+                LDA !most_recent_exit
+                CMP #$01
+                BNE .no_advance
+                BRA .next_level
+            +
+            CMP #$02
+            BNE +
+                LDA $0dd5
+                CMP #$81
+                BNE .no_advance
+                BRA .next_level
+            +
+            CMP #$03
+            BNE .next_level
+                LDA $0dd5
+                CMP #$82
+                BNE .no_advance
+                BRA .next_level
+
         .next_level:
         INC !FastMode_current_level   ; Next level
         LDA !FastMode_current_level   
@@ -534,6 +657,7 @@ attempt_level_advance:
         BCC +
             lda #00
             RTL
+        +
         .no_advance:
         LDA #$01
         RTL
@@ -549,11 +673,8 @@ fade_to_overworld:
             BEQ .start_play
                 bra .stop_play
             .start_play:
-            lda !level_finished
-            beq +
                 JSL attempt_level_advance
                 beq .stop_play
-            +
             LDA #$E9
             STA $0109
             RTL

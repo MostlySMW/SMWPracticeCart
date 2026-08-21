@@ -14,9 +14,10 @@ overworld_load:
         
         ; if you used an orb to complete the level, you must let the parade play out for it to count
         LDA $0DD5 ; level exit type
-        CMP #$80 ; type = death or start/select
+        CMP #$81 ; type = start/select
         BEQ .done_saving
-        
+        CMP #$82  ;type = death 
+        BEQ .done_saving
         ; failsafe: if level was beaten in under 1 second, just discard the time, it was probably a glitch
       + LDA !level_timer_minutes
         ORA !level_timer_seconds
@@ -299,7 +300,8 @@ prepare_file:
         BEQ .done
         LDA #$01
         STA !FastMode_start_play
-
+        lda !restore_status_from_backup
+        BNE .done
         LDX #!number_of_options
       - LDA.L !status_table,X
         STA.L !backup_status_table,X

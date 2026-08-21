@@ -446,7 +446,7 @@ option_exit_type:
         db "      NORMAL                    "
         db "      SECRET                    "
         db "      START SELECT              "
-        db "      WEIRD GOALTAPE            "
+        db "      DEATH                     "
 
 option_difficulty:
         db "      ANY LEVEL FINISH          "
