@@ -2646,24 +2646,24 @@ draw_edited_status_bar:
         dw .held_subpixel_type_Xx
         dw .held_subpixel_type_Yy
     .held_subpixel_type_XY:
-        LDA #$3C03
+        LDA #$3883
         STA [$00],Y
         INY #2
-        LDA #$3C05
+        LDA #$3885
         STA [$00],Y
         RTS
     .held_subpixel_type_Xx:
-        LDA #$3C03
+        LDA #$3883
         STA [$00],Y
         INY #2
-        LDA #$3C00
+        LDA #$3880
         STA [$00],Y
         RTS
     .held_subpixel_type_Yy:
-        LDA #$3C05
+        LDA #$3885
         STA [$00],Y
         INY #2
-        LDA #$3C00
+        LDA #$3880
         STA [$00],Y
         RTS
         

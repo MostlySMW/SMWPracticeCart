@@ -386,10 +386,12 @@ meter_held_subpixel:
         TAX
         LDA $14F8,X ; sprite x subpixel
         LSR #4
+        ORA #$80
         STA [$00]
         INC $00
         LDA $14EC,X ; sprite y subpixel
         LSR #4
+        ORA #$80
         STA [$00]
         RTS
         
@@ -405,10 +407,12 @@ meter_held_subpixel:
         LDA $14EC,X ; sprite y subpixel
       + PHA
         LSR #4
+        ORA #$80
         STA [$00]
         INC $00
         PLA
         AND #$0F
+        ORA #$80
         STA [$00]
         RTS
     

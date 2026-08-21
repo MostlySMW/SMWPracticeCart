@@ -821,6 +821,7 @@ init_statusbar_properties:
         
     .memory_7e:
     .mario_takeoff:
+    .held_subpixel:
         LDA #$38
         JMP .store_2
         
@@ -830,7 +831,6 @@ init_statusbar_properties:
         
     .mario_pmeter:
     .memory_7f:
-    .held_subpixel:
         LDA #$3C
         JMP .store_2
         
