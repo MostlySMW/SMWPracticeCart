@@ -1,4 +1,4 @@
-table "../text_table.txt"
+incsrc "../text_table.txt"
 
 option_title:
         db "     YELLOW SWITCH BLOCKS       "
