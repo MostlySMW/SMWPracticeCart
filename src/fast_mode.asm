@@ -730,7 +730,7 @@ init_original_statusbar_properties:
         LDX #$4130
         STX $2116 ; vram address
         LDA.B #bank(overworld_layer_3_tiles)
-        LDX #overworld_layer_3_tiles+$1E0
+        LDX #overworld_layer_3_tiles+$5C0
         LDY #$0010
 
         JSL load_vram
