@@ -14,7 +14,7 @@ FastMode_save_locations:
     dd !FastMode_save_1, !FastMode_save_2, !FastMode_save_3, #ALL_CASTLES_SAVE+$10
 
 ALL_CASTLES_SAVE:
-    incbin "bin/routes/AllCastles.bin"
+    incbin "bin/routes/AllCastles.smwroute"
 
 ; Retrieves current header from either save 1,2,3 based on status_fastmode
 ; stores to FastMode_save_current_header
@@ -22,15 +22,15 @@ ALL_CASTLES_SAVE:
 ;          x = 0 if save 1 -- 4 if save 2 -- 8 if save 3
 default_header_1:
 db $00, $00
-db $1c, $0a, $1f, $0e, $26, $00, $26, $26
+db $1c, $0a, $1f, $0e, $26, $01, $26, $26
 db $00, $00, $00, $00, $00, $00
 default_header_2:
 db $00, $00
-db $1c, $0a, $1f, $0e, $26, $01, $26, $26
+db $1c, $0a, $1f, $0e, $26, $02, $26, $26
 db $00, $00, $00, $00, $00, $00
 default_header_3:
 db $00, $00
-db $1c, $0a, $1f, $0e, $26, $02, $26, $26
+db $1c, $0a, $1f, $0e, $26, $03, $26, $26
 db $00, $00, $00, $00, $00, $00
 
 reset_header:
