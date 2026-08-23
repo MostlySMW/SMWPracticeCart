@@ -244,11 +244,13 @@ meter_mario_speed:
       + JSL !_F+$00974C ; hex2dec
         PHA
         TXA
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
+        ORA #$80 ; alt character set
         STA [$00]
-        
+
         RTS
 
 ; draw the mario takeoff meter
@@ -261,7 +263,7 @@ meter_mario_takeoff:
         INC $00
         PLA
         STA [$00]
-        
+
         RTS
 
 ; draw the mario p meter
@@ -396,10 +398,12 @@ meter_held_subpixel:
         TAX
         LDA $14F8,X ; sprite x subpixel
         LSR #4
+        ORA #$80
         STA [$00]
         INC $00
         LDA $14EC,X ; sprite y subpixel
         LSR #4
+        ORA #$80
         STA [$00]
         RTS
         
@@ -415,10 +419,12 @@ meter_held_subpixel:
         LDA $14EC,X ; sprite y subpixel
       + PHA
         LSR #4
+        ORA #$80
         STA [$00]
         INC $00
         PLA
         AND #$0F
+        ORA #$80
         STA [$00]
         RTS
     
@@ -433,33 +439,38 @@ meter_held_subpixel:
 meter_lag_frames:
         LDA $00
         PHA
-        
+
         LDA !dropped_frames+1
         PHA
         LSR #4
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
         AND #$0F
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA !dropped_frames
         PHA
         LSR #4
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
         AND #$0F
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
-        LDA #$D7
+        LDA #$AF
         STA [$00]
-        
+
         PLA
         STA $00
-        
+
         LDX #$00 ; replace 0's with spaces cause it looks better for a 4 digit number
       - LDA [$00]
+        CMP #$80 ; alt '0' tile
         BNE +
         LDA #$FC
         STA [$00]
@@ -467,7 +478,7 @@ meter_lag_frames:
         INX
         CPX #$03
         BNE -
-        
+
       + RTS
 
 ; draw the level timer meter
@@ -477,7 +488,7 @@ meter_timer_level:
         LDA $13 ; true frame
         AND #%00100000
         BEQ +
-        LDA #$76
+        LDA #$2B
         BRA ++
       + LDA #$FC
      ++ STA [$00]
@@ -565,7 +576,7 @@ meter_timer_all:
         TXA
         STA [$00]
         DEC $00
-        LDA #$86
+        LDA #$2A
       + STA [$00]
         DEC $00
         
@@ -577,7 +588,7 @@ meter_timer_all:
         TXA
         STA [$00]
         DEC $00
-        LDA #$85
+        LDA #$29
         STA [$00]
         DEC $00
         
@@ -587,11 +598,12 @@ meter_timer_all:
         RTS
     
     .framecount:
+        PHY
         INC $00
         INC $00
         INC $00
         INC $00
-        LDA #$D7
+        LDA #$2F
         STA [$00]
         DEC $00
         
@@ -640,6 +652,7 @@ meter_timer_all:
         PLA
         LSR #4
         STA [$00]
+        PLY
         
         RTS
         
@@ -766,7 +779,7 @@ meter_in_game_time:
         CMP #$26
         BCC +
         CLC
-        ADC #$50
+        ADC #$05
       + STA [$00]
         
     .nothing:
@@ -776,8 +789,11 @@ meter_in_game_time:
 meter_slowdown:
         LDA !slowdown_speed
         BNE +
-        LDA #$FB
+        LDA #$FC
+        STA [$00]
+        RTS
       + INC A
+        ORA #$80 ; alt character set
         STA [$00]
         RTS
 
@@ -858,8 +874,12 @@ layout_locations:
 ; display the name meter
 meter_name:
         LDA !in_playback_mode
-        BNE +
-        
+        BNE .movie
+
+        LDA [!statusbar_layout_ptr],Y ; color option
+        CMP #$03
+        BCS .alt_set
+
         LDA.L !status_playername
         STA [$00]
         INC $00
@@ -872,17 +892,40 @@ meter_name:
         LDA.L !status_playername+3
         STA [$00]
         RTS
-    
-      + LDA.L !movie_location+7
+
+    .alt_set:
+        LDA.L !status_playername
+        ORA #$80 ; alt character set
+        STA [$00]
+        INC $00
+        LDA.L !status_playername+1
+        ORA #$80 ; alt character set
+        STA [$00]
+        INC $00
+        LDA.L !status_playername+2
+        ORA #$80 ; alt character set
+        STA [$00]
+        INC $00
+        LDA.L !status_playername+3
+        ORA #$80 ; alt character set
+        STA [$00]
+        RTS
+
+    .movie:
+        LDA.L !movie_location+7
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+8
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+9
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         LDA.L !movie_location+10
+        ORA #$80 ; alt character set
         STA [$00]
         RTS
 
@@ -970,18 +1013,21 @@ meter_movie_recording:
         SEP #$20
         XBA
         AND #$0F
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         XBA
         PHA
         LSR #4
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
         PLA
         AND #$0F
+        ORA #$80 ; alt character set
         STA [$00]
         INC $00
-        LDA #$D7
+        LDA #$AF
         STA [$00]
         PLP
         PLB
@@ -2371,6 +2417,9 @@ play_input:
         CMP #%00110000
         BNE +
         LDA $0DB0 ; mosaic size
+        BNE +
+        LDA $0100
+        CMP #$14
         BNE +
         
         LDA #$0B

@@ -365,7 +365,7 @@ go_save_state:
         PHP
         REP #$10
         
-        ; save wram $0000-$1FFF to wram $705000-$706FFF
+        ; save wram $0000-$1FFF to wram $7023A0-$70439F
         ; mirrored wram
         LDX #$1FFF
       - LDA $7E0000,X
@@ -405,14 +405,95 @@ go_save_state:
 ;        DEX
 ;        BPL -
         
-        ; save wram $C800-$FFFF to $700BA0-$70439F
+;        ; save wram $C800-$FFFF to $700BA0-$70439F
+;        ; level tilemap low byte
+;        LDX #$37FF
+;      - LDA $7EC800,X
+;        STA $700BA0,X
+;        DEX
+;        BPL -
+
+        ; save wram $C800-$FFFF to $700BA0~$70239F
         ; level tilemap low byte
-        LDX #$37FF
-      - LDA $7EC800,X
-        STA $700BA0,X
-        DEX
-        BPL -
+        ; basic RLE compression, worst case I could find was lemmy
+        ; room 3, which only compressed to ~$1500 from $3800 bytes
+        ; I'll give this section $1800 bytes to be safe
+        LDX #$0000
+        LDY #$7070
+        STY $01
+        LDY #$0BA0
+        STY $00
+        LDY #$0000
+
+    .loop:
+        CPX #$3800
+        BCC +
+        JMP .done
+      + LDA $7EC800,X
+        CMP $7EC800+1,X
+        BNE .not_similar
+        CMP $7EC800+2,X
+        BNE .not_similar
         
+    .similar:
+        STX $03
+        INX #2
+      - INX
+        CPX #$3800
+        BEQ +
+        CMP $7EC800,X
+        BEQ -
+      + PHX
+        REP #$20
+        TXA
+        SEC
+        SBC $03
+        STA [$00],Y
+        INY #2
+        SEP #$20
+        LDX $03
+        LDA $7EC800,X
+        STA [$00],Y
+        INY
+        PLX
+        BRA .loop
+    .not_similar:
+        PHX
+        STX $03
+      - INX
+        CPX #$3800
+        BEQ +
+        LDA $7EC800,X
+        CMP $7EC800+1,X
+        BNE -
+        CMP $7EC800+2,X
+        BNE -
+      + REP #$20
+        TXA
+        SEC
+        SBC $03
+        ORA #$4000
+        STA [$00],Y
+        INY #2
+        SEP #$20
+        STX $03
+        PLX
+        
+      - LDA $7EC800,X
+        STA [$00],Y
+        INY
+        INX
+        CPX $03
+        BNE -
+        BRA .loop
+
+    .done:
+        LDA #$FF
+        STA [$00],Y
+        INY
+        STA [$00],Y
+        STY $F0 ; debug
+    
         ; save wram $7FC800-$7FFFFF to $7043A0-$704A9F
         ; level tilemap high bit
         ; since only bit 0 is used for this data, crunch it into a 1:8 ratio
@@ -561,7 +642,7 @@ go_load_state:
         PHP        
         REP #$10
         
-        ; load wram $705000-$706FFF to wram $0000-$1FFF
+        ; load wram $7023A0-$70439F to wram $0000-$1FFF
         ; mirror wram
         ; copy old graphics files into state
         LDX #$0007
@@ -608,12 +689,63 @@ go_load_state:
 ;        DEX
 ;        BPL -
         
-        ; load $700BA0-$70439F to wram $C800-$FFFF
-        LDX #$37FF
-      - LDA $700BA0,X
+;        ; load $700BA0-$70439F to wram $C800-$FFFF
+;        LDX #$37FF
+;      - LDA $700BA0,X
+;        STA $7EC800,X
+;        DEX
+;        BPL -
+
+        ; load $700BA0-$70239F to wram $C800-$FFFF
+        ; basic RLE
+        ; EFLLLLLL LLLLLLLL AAAAAAAA ...
+        ; L = length of section
+        ; F = 0: repeat A L times
+        ;     1: output the next L bytes as is
+        ; E = end
+        LDY #$7070
+        STY $01
+        LDY #$0BA0
+        STY $00
+        LDY #$0000
+        LDX #$0000
+        
+    .loop:
+        REP #$20
+        LDA [$00],Y
+        BMI .done
+        AND #$3FFF
+        STA $03
+        TXA
+        CLC
+        ADC $03
+        STA $03
+        LDA [$00],Y
+        INY #2
+        ASL #2
+        SEP #$20
+        BCS .raw
+        
+    .repeat:
+        LDA [$00],Y
+        INY
+      - STA $7EC800,X
+        INX
+        CPX $03
+        BNE -
+        BRA .loop
+    
+    .raw:
+        LDA [$00],Y
+        INY
         STA $7EC800,X
-        DEX
-        BPL -
+        INX
+        CPX $03
+        BNE .raw
+        BRA .loop
+        
+    .done:
+        SEP #$20
         
         ; load $7043A0-$704A9F to wram $7FC800-$7FFFFF
         ; since only bit 0 is used for this data, expand it into a 8:1 ratio

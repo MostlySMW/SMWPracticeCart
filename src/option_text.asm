@@ -1,4 +1,5 @@
-table "text_table.txt"
+incsrc "../text_table.txt"
+
 option_title:
 	db "     YELLOW SWITCH BLOCKS       "
 	db "     GREEN SWITCH BLOCKS        "
@@ -1009,6 +1010,8 @@ meter_text_name:
         db "     GREEN      "
         db "     WHITE      "
         db "    YELLOW      "
+        db "       RED      "
+        db "      BLUE      "
 meter_text_record:
         db "    VISUAL      "
         db "   NUMERIC      "

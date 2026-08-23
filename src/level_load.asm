@@ -834,11 +834,12 @@ init_statusbar_properties:
         dw .rng
         
     .mario_speed:
-        LDA #$2C
+        LDA #$28 ; dark red (alt set)
         JMP .store_2
         
     .memory_7e:
     .mario_takeoff:
+    .held_subpixel:
         LDA #$38
         JMP .store_2
         
@@ -848,12 +849,11 @@ init_statusbar_properties:
         
     .mario_pmeter:
     .memory_7f:
-    .held_subpixel:
         LDA #$3C
         JMP .store_2
         
     .lag_frames:
-        LDA #$2C
+        LDA #$28 ; dark red (alt set)
         JMP .store_5
         
     .timer_level:
@@ -912,7 +912,7 @@ init_statusbar_properties:
         RTS
     
     .slowdown:
-        LDA #$2C
+        LDA #$28 ; dark red (alt set)
         JMP .store_1
         
     .name:
@@ -922,7 +922,7 @@ init_statusbar_properties:
         LDA !in_playback_mode
         BEQ +
         PLB
-        LDA #$2C
+        LDA #$3C
         JMP .store_4
       + PLB
         LDA [!statusbar_layout_ptr],Y
@@ -966,7 +966,7 @@ init_statusbar_properties:
     .movie_recording:
         LDA [!statusbar_layout_ptr],Y
         BEQ +
-        LDA #$2C
+        LDA #$28 ; dark red (alt set)
         JMP .store_4
       + LDA #$28
         STA [$00]
@@ -1134,7 +1134,7 @@ init_statusbar_properties:
         RTS
 
 name_colors:
-        db $28,$38,$3C
+        db $28,$38,$3C,$28,$38 ; green,white,yellow,red,blue
         
 title_screen_load:
         PHB

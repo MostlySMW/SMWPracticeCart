@@ -66,8 +66,10 @@ $700000-$70001F ($20 bytes)
 	: special vars
 $700020-$700B9F ($B80 bytes)
 	: saved times
-$700BA0-$70439F ($3800 bytes)
-	: save state wram 7EC800-7EFFFF (low byte layer 1) ; this will compress well if needed eventually
+$700BA0-$70239F ($1800 bytes)
+	: save state wram 7EC800-7EFFFF (low byte layer 1) ; basic RLE compressed
+$7023A0-$70439F ($2000 bytes)
+	; save state wram 7E0000-7E1FFF (mirror ram)
 $7043A0-$704ADF ($740 bytes)
 	: save state wram 7FC800-7FFFFF (high byte layer 1 compressed) + mode 7 tilemaps
 $704AE0-$704CDF ($200 bytes)
@@ -85,7 +87,7 @@ $704E70-$704E7F ($10 bytes)
 $704E80-$704FFF ($180 bytes)
 	: save state wram 7F9C7B (item memory backup)
 $705000-$706FFF ($2000 bytes)
-	; save state wram 7E0000-7E1FFF (mirror ram)
+    : EMPTY!!!!!
 $707000-$707FFF ($1000 bytes)
 	: movie slots 1 and 2
 

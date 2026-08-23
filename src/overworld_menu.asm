@@ -1359,12 +1359,12 @@ meterset_default:
         db $05,$00,$00,$24,$06,$00,$00,$44,$08,$00,$00,$26,$09,$00,$00,$47
         db $0A,$00,$00,$67,$07,$00,$00,$89,$0B,$00,$00,$32,$11,$8D,$14,$52
         db $11,$8E,$14,$54,$0C,$01,$00,$72,$0D,$00,$00,$36,$0E,$00,$00,$37
-        db $0F,$00,$00,$81,$10,$00,$00,$98,$00,$00,$00,$00,$00,$00,$00,$00
+        db $0F,$04,$00,$81,$10,$00,$00,$98,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
 meterset_lagcalibrated:
         db $01,$00,$00,$21,$02,$00,$00,$41,$04,$00,$00,$43,$01,$00,$00,$24
         db $08,$00,$00,$46,$09,$00,$00,$67,$07,$00,$00,$72,$0C,$01,$00,$52
-        db $0E,$02,$00,$59,$0F,$00,$00,$61,$00,$00,$00,$98,$00,$00,$00,$00
+        db $0E,$02,$00,$59,$0F,$04,$00,$61,$00,$00,$00,$98,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2527,7 +2527,7 @@ draw_meter_cursors:
         RTL
 
 meter_subtype_counts:
-        db $01,$01,$01,$01,$02,$03,$03,$01,$03,$03,$03,$02,$03,$01,$05,$03,$02,$FF,$FF,$03
+        db $01,$01,$01,$01,$02,$03,$03,$01,$03,$03,$03,$02,$03,$01,$05,$05,$02,$FF,$FF,$03
 meter_widths:
         db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $04,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2544,7 +2544,7 @@ meter_widths:
         db $03,$05,$04,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $08,$06,$06,$03,$03,$FF,$FF,$FF
-        db $04,$04,$04,$FF,$FF,$FF,$FF,$FF
+        db $04,$04,$04,$04,$04,$FF,$FF,$FF
         db $07,$04,$FF,$FF,$FF,$FF,$FF,$FF
         db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2565,7 +2565,7 @@ meter_heights:
         db $01,$01,$01,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $03,$02,$02,$04,$04,$FF,$FF,$FF
-        db $01,$01,$01,$FF,$FF,$FF,$FF,$FF
+        db $01,$01,$01,$01,$01,$FF,$FF,$FF
         db $01,$01,$FF,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2898,10 +2898,10 @@ draw_edited_status_bar:
         RTS
         
     .edited_mario_speed:
-        LDA #$2C04
+        LDA #$2884
         STA [$00],Y
         INY #2
-        LDA #$2C08
+        LDA #$2888
         STA [$00],Y
         RTS
         
@@ -2995,41 +2995,41 @@ draw_edited_status_bar:
         dw .held_subpixel_type_Xx
         dw .held_subpixel_type_Yy
     .held_subpixel_type_XY:
-        LDA #$3C03
+        LDA #$3883
         STA [$00],Y
         INY #2
-        LDA #$3C05
+        LDA #$3885
         STA [$00],Y
         RTS
     .held_subpixel_type_Xx:
-        LDA #$3C03
+        LDA #$3883
         STA [$00],Y
         INY #2
-        LDA #$3C00
+        LDA #$3880
         STA [$00],Y
         RTS
     .held_subpixel_type_Yy:
-        LDA #$3C05
+        LDA #$3885
         STA [$00],Y
         INY #2
-        LDA #$3C00
+        LDA #$3880
         STA [$00],Y
         RTS
         
     .edited_lag_frames:
-        LDA #$2C01
+        LDA #$2881
         STA [$00],Y
         INY #2
-        LDA #$2C0E
+        LDA #$288E
         STA [$00],Y
         INY #2
-        LDA #$2C07
+        LDA #$2887
         STA [$00],Y
         INY #2
-        LDA #$2C0F
+        LDA #$288F
         STA [$00],Y
         INY #2
-        LDA #$2CD7
+        LDA #$28AF
         STA [$00],Y
         RTS
         
@@ -3071,7 +3071,7 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$0085
+        LDA #$0029
         ORA $05
         STA [$00],Y
         INY #2
@@ -3100,7 +3100,7 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$0085
+        LDA #$0029
         ORA $05
         STA [$00],Y
         INY #2
@@ -3112,7 +3112,7 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$0086
+        LDA #$002A
         ORA $05
         STA [$00],Y
         INY #2
@@ -3141,11 +3141,11 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         INY #2
-        LDA #$00D7
+        LDA #$002F
         ORA $05
         STA [$00],Y
         RTS
-        
+
     .edited_coin_count:
         LDA #$3C2E
         STA [$00],Y
@@ -3213,7 +3213,7 @@ draw_edited_status_bar:
         RTS
         
     .edited_slowdown:
-        LDA #$2C02
+        LDA #$2882
         STA [$00],Y
         RTS
         
@@ -3273,12 +3273,16 @@ draw_edited_status_bar:
         INY
         LDA [!statusbar_layout_ptr],Y
         AND #$00FF
+        STA $07 ; color option, for alt-set check
         PLY
         TAX
         LDA.L name_colors,X
         AND #$00FF
         XBA
         STA $05
+        LDA $07
+        CMP #$0003
+        BCS .alt_set
         LDA.L !status_playername
         AND #$00FF
         ORA $05
@@ -3299,7 +3303,32 @@ draw_edited_status_bar:
         ORA $05
         STA [$00],Y
         RTS
-        
+    .alt_set:
+        LDA.L !status_playername
+        AND #$00FF
+        ORA #$0080 ; alt character set
+        ORA $05
+        STA [$00],Y
+        INY #2
+        LDA.L !status_playername+1
+        AND #$00FF
+        ORA #$0080 ; alt character set
+        ORA $05
+        STA [$00],Y
+        INY #2
+        LDA.L !status_playername+2
+        AND #$00FF
+        ORA #$0080 ; alt character set
+        ORA $05
+        STA [$00],Y
+        INY #2
+        LDA.L !status_playername+3
+        AND #$00FF
+        ORA #$0080 ; alt character set
+        ORA $05
+        STA [$00],Y
+        RTS
+
     .edited_movie_recording:
         PHY
         LDA $05,S
@@ -3334,19 +3363,19 @@ draw_edited_status_bar:
         STA [$00],Y
         RTS
     .recording_types_hex:
-        LDA #$2C05
+        LDA #$2885
         STA [$00],Y
         INY #2
-        LDA #$2C0E
+        LDA #$288E
         STA [$00],Y
         INY #2
-        LDA #$2C03
+        LDA #$2883
         STA [$00],Y
         INY #2
-        LDA #$2CD7
+        LDA #$28AF
         STA [$00],Y
         RTS
-        
+
     .edited_memory_7e:
         LDA #$3807
         STA [$00],Y
