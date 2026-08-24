@@ -453,6 +453,7 @@ draw_times:
         RTS
         
     .start:
+        JSL display_fast_mode_finish_time
         PHB
         PHK
         PLB

@@ -290,10 +290,13 @@ attempt_timer_save:
 
 ; this will run when exiting the title screen
 prepare_file:
-        JSR set_overworld_position
+        JSL set_overworld_position
         JSL restore_basic_settings
         JSR check_for_rtc
         JSL check_for_pal_music
+        
+        LDA #$FF
+        STA !total_frames ; don't show the finish time if there is none
         
         LDA !status_fast_mode 
         BEQ .done ; fast mode enabled
@@ -307,6 +310,11 @@ prepare_file:
         
         LDA #$01
         STA !fast_mode_start_play ; start fast mode!
+        
+        STZ !total_frames
+        STZ !total_seconds
+        STZ !total_minutes
+        STZ !total_hours
         
         LDA !restore_status_from_backup
         BNE .done
@@ -371,7 +379,7 @@ set_overworld_position:
         
     .reset:
         JSL set_position_to_yoshis_house
-      + RTS
+      + RTL
 
 ; set default settings for all the overworld menu options
 set_defaults:
@@ -636,6 +644,10 @@ shadow_palette_hdma:
         dw $0E0E,$3212
         db $01
         dw $0F0F,$25AF
+        db $01
+        dw $1D1D,$0000
+        db $01
+        dw $1F1F,$47F1
         db $00
 
 print "inserted ", bytes, "/32768 bytes into bank $11"

@@ -1,7 +1,7 @@
 ; the version of this patch Va.b.c
 !version_a                   = $03
 !version_b                   = $27
-!version_c                   = $09
+!version_c                   = $0A
 
 ; practice cart data exists!
 !version_alpha_code          = $BD
@@ -221,10 +221,11 @@
 ; the number of intentional exit types completed upon system boot
 !exit_type_count             = $0E35
 ; sum of all intentional exit type times (only valid if all exit types completed)
-!total_frames                = $0E37
-!total_seconds               = $0E38
-!total_minutes               = $0E39
-!total_hours                 = $0E3A
+; also used to keep track of a fast mode run time
+!total_frames                = $0E3C
+!total_seconds               = $0E3D
+!total_minutes               = $0E3E
+!total_hours                 = $0E3F
 
 ; the translevels of the current movies, 00 = no movie
 !level_movie_slots           = $0695 ; 3 bytes

@@ -383,7 +383,17 @@ process_layer_3_position:
         JSR $C40C
         PLB
         RTL
-
+        
+; run routine on start select
+ORG !_F+$00A270 
+        JSL on_start_select
+        JMP $A281
+        
+; run routine on mario death
+ORG !_F+$00D0B8
+        JSL on_mario_death
+        JMP $D0C6
+        
 ;;;;;;;;;;;;; REGION DIFFERENCES ;;;;;;;;;;;;;
 
 ; ldadDolphin

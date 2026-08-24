@@ -565,16 +565,7 @@ meter_timer_all:
         STA $00
         LDA [$03]
         DEC $03
-        TAX
-        PHX
-        LDA.L !status_region
-        CMP #$02
-        BCS .pal
-        LDA.L fractional_seconds,X
-        BRA +
-    .pal:
-        LDA.L fractional_seconds_pal,X
-      + PLX
+        JSL convert_frames_to_centiseconds
         JSL !_F+$00974C ; hex2dec
         STA [$00]
         DEC $00
@@ -676,6 +667,21 @@ meter_timer_all:
         PLY
         
         RTS
+
+; input in A
+; output in A, old input in X
+convert_frames_to_centiseconds:
+        TAX
+        PHX
+        LDA.L !status_region
+        CMP #$02
+        BCS .pal
+        LDA.L fractional_seconds,X
+        BRA +
+    .pal:
+        LDA.L fractional_seconds_pal,X
+      + PLX
+        RTL
         
 frames_in_a_second:
         db $3C,$3C,$32,$32
@@ -2218,6 +2224,43 @@ out_of_time:
         ORA $0F33 ; timer
         BNE +
         LDA.L !status_timedeath
+      + RTL
+
+
+; runs the frame start+select exiting the level is triggered
+on_start_select:
+        LDA #$81 ; new start+select marker
+        STA $0DD5
+        
+        LDA !fast_mode_start_play
+        BEQ +
+        
+        JSL add_additional_exit_time
+        JSL accumulate_fastmode_time
+        JSL display_fastmode_run_time
+        
+      + RTL
+
+; runs the frame mario dies
+on_mario_death:
+        LDA #$82 ; new death marker
+        STA $0DD5
+        LDA #$3E
+        STA $13E0 ; restore routine
+        
+        LDA !fast_mode_start_play
+        BEQ +
+        
+        STZ $1496 ; instant fade out
+        JSL add_additional_exit_time
+        JSL accumulate_fastmode_time
+        JSL display_fastmode_run_time
+        RTL
+        
+      + LDA $13 ; frame counter
+        AND #$03
+        BNE +
+        DEC $1496
       + RTL
 
 ; display a score sprite only if sprite slot numbers are disabled

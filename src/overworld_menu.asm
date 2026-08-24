@@ -309,7 +309,7 @@ option_index:
         dw $0329,$032C,$0337,$033F,$0341,$0347,$0349,$03AE
         dw $03B0,$03B2,$03BA,$03BA,$03BA,$03BA,$03B6,$03E3
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
-        dw $000B,$010B,$020B,$03EA,$03EC,$03E8,$030C,$03BA
+        dw $000B,$010B,$020B,$03EC,$03EE,$03E8,$030C,$03BA
         dw $03BA,$03BA,$03BA,$03BA,$03BA,$03BA,$03BA
 menu_option_tiles:
         incbin "bin/menu_option_tiles.bin"

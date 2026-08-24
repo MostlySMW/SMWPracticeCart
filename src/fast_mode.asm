@@ -1,12 +1,3 @@
-; 0 - Translevel 
-; 1 - itembox start
-; 2 - itembox end
-; 3 - pppp PPPP -> PPPP=Starting powerup  pppp=Ending powerup
-; 4 - yyyy YYYY -> YYYY=Starting Yoshi yyyy=ending yoshi
-; 5 - eems gybr -> ee - Exit type : m = Midway enable : s = special enable  :  gybr = switches
-
-;$00 = #$00 for normal, #$01 for secret
-
 FastMode_header_locations:
         dd !fast_mode_save_1_header
         dd !fast_mode_save_2_header
@@ -659,12 +650,13 @@ attempt_level_advance:
         INC !fast_mode_current_level   ; Next level
         LDA !fast_mode_current_level   
         CMP !fast_mode_save_current_header+0
-        BCC +
+        BCC .finished
         LDA #00
         RTL
         
+    .finished:
     .no_advance:
-      + LDA #$01
+        LDA #$01
         RTL
 
 
@@ -676,8 +668,11 @@ fade_to_overworld:
         BEQ .done
         
         LDA !util_byetudlr_hold
-        AND #$10
+        AND #$10 ; hold start to exit the run early
         BEQ .start_play
+        
+        LDA #$FF
+        STA !total_frames ; don't show the final time if you quit
         
         BRA .stop_play
     .start_play:
@@ -693,7 +688,7 @@ fade_to_overworld:
         STA !fast_mode_start_play
         STA !midway_enable_flag
         STA $0109
-        JSL set_position_to_yoshis_house   
+        JSL set_overworld_position   
         
     .done:
         LDA !restore_status_from_backup
@@ -831,5 +826,126 @@ translevel_locations_2:
         dw $1933,$1C33,$1736,$1238,$1538,$1738,$1938,$1C38
         dw $143A,$1A3A,$173B,$123D,$1C3D
 
+; add the time of the current level to the run timer
+; no matter how the level was exited
+accumulate_fastmode_time:
+        LDA.L !status_region
+        CMP #$02
+        BCS .pal_frames
+    .ntsc_frames:
+        LDA !level_timer_frames
+        CLC
+        ADC !total_frames
+        CMP #60
+        BCC .seconds
+        SBC #60
+        BRA .seconds
+        
+    .pal_frames:
+        LDA !level_timer_frames
+        CLC
+        ADC !total_frames
+        CMP #50
+        BCC .seconds
+        SBC #50
+        BRA .seconds
+    
+    .seconds:
+        STA !total_frames
+        
+        LDA !level_timer_seconds
+        ADC !total_seconds
+        CMP #60
+        BCC .minutes
+        SBC #60
+        
+    .minutes:
+        STA !total_seconds
+        
+        LDA !level_timer_minutes
+        ADC !total_minutes
+        CMP #60
+        BCC .hours
+        SBC #60
+        
+    .hours:
+        STA !total_minutes
+        
+        LDA #$00
+        ADC !total_hours
+        STA !total_hours
+        
+        RTL
 
+; display the run time front and center
+display_fastmode_run_time:
+        LDA !total_hours
+        JSL !_F+$00974C ; hex2dec
+        STX !status_bar+$22
+        STA !status_bar+$23
+        
+        LDA !total_minutes
+        JSL !_F+$00974C ; hex2dec
+        STX !status_bar+$25
+        STA !status_bar+$26
+        
+        LDA !total_seconds
+        JSL !_F+$00974C ; hex2dec
+        STX !status_bar+$28
+        STA !status_bar+$29
+        
+        LDA !total_frames
+        JSL convert_frames_to_centiseconds
+        JSL !_F+$00974C ; hex2dec
+        STX !status_bar+$2B
+        STA !status_bar+$2C
+        
+        LDA #$78
+        STA !status_bar+$24
+        STA !status_bar+$27
+        LDA #$24
+        STA !status_bar+$2A
+        
+        RTL
 
+; on overworld load, if just finished a run,
+; display the time on the top left
+display_fast_mode_finish_time:
+        PHP
+        LDA !total_frames
+        BMI .nope ; no run
+        LDA $0DD5
+        BMI .nope ; run aborted
+        
+        REP #$30
+        LDA.L $7F837B ; size
+        TAX
+        LDA #$E350
+        STA.L $7F837D,X ; stripe
+        INX #2
+        LDA.W #$1500
+        STA.L $7F837D,X ; stripe
+        INX #2
+        
+        SEP #$20
+        LDY #$0000
+      - LDA !status_bar+$22,Y
+        STA.L $7F837D,X ; stripe
+        INX
+        LDA #$3C
+        STA.L $7F837D,X ; stripe
+        INX
+        INY
+        CPY.W #$0B
+        BNE -
+        
+        LDA #$FF
+        STA !total_frames ; don't draw it again
+        STA.L $7F837D,X ; stripe
+        STA.L $7F837D+1,X ; stripe
+        TXA
+        STA.L $7F837B ; size
+        
+    .nope:
+        PLP
+        RTL

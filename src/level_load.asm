@@ -1496,6 +1496,10 @@ draw_title_screen_extras:
         STA.L $7F837B
         
     .done:
+        SEP #$20
+        LDA #$FF ; invalidate the total timer for fast mode
+        STA !total_frames
+        
         PLP
         RTS
 
