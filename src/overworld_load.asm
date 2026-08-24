@@ -335,13 +335,20 @@ prepare_file:
 ; initialize mario on the overworld
 set_overworld_position:
         LDA !save_data_exists
-        CMP #$BD
-        BEQ +
+        CMP #!version_beta_code
+        BEQ .load_data
+        CMP #!version_alpha_code
+        BNE .reset_data
+        JSL migrate_data_alpha_to_beta
+        BRA .load_data
+        
+    .reset_data:
         JSL delete_all_data
         JSR set_defaults
         BRA .reset
         
-      + LDA.L !save_overworld_submap
+    .load_data:
+        LDA.L !save_overworld_submap
         CMP #$07
         BCS .reset
         STA $1F11
@@ -421,7 +428,7 @@ set_defaults:
 
 ; set marios position on the overworld to yoshi's house
 set_position_to_yoshis_house:
-        LDA #$BD
+        LDA #!version_beta_code
         STA.L !save_data_exists
         LDA #$01
         STA.L !save_overworld_submap
@@ -454,6 +461,37 @@ update_ow_position_pointers:
         DEX #2
         BPL -
         SEP #$20
+        RTL
+        
+; convert from old save data format (v3.-.9 and previous)
+; to new save data format (v3.-.10 onwards)
+migrate_data_alpha_to_beta:
+        PHP
+        SEP #$30
+        
+        LDA #$00
+        STA.L !restore_status_from_backup
+        
+        LDX #$FF
+      - STA.L !backup_status_table,X
+        STA.L !status_table,X
+        DEX
+        CPX #$1E ; alpha amount of settings
+        BNE -
+        
+      - LDA.L $7006C0,X ; alpha location of backup status table
+        STA.L !backup_status_table,X
+        LDA.L $700320,X ; alpha location of main status table
+        STA.L !status_table,X
+        DEX
+        BPL -
+        
+        ;; TODO initialize new route data
+        
+        LDA #!version_beta_code
+        STA.L !save_data_exists
+        
+        PLP
         RTL
 
 ; check if realtime clock is available on this system

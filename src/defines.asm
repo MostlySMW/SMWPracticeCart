@@ -3,6 +3,10 @@
 !version_b                   = $27
 !version_c                   = $09
 
+; practice cart data exists!
+!version_alpha_code          = $BD
+!version_beta_code           = $67
+
 ; controller regs
 !mario_byetudlr_hold         = $15
 !mario_byetudlr_frame        = $16
