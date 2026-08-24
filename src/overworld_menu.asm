@@ -159,7 +159,21 @@ upload_overworld_menu_graphics:
         LDY #$0800
         JSL load_vram
         
+        LDX #$3400
+        STX $2116 ; vram address
+        LDA #$19 ; #bank of menu_layer2_tilemap
+        LDX #menu_layer2_tilemap
+        LDY #$0800
+        JSL load_vram
+        
         LDX #$3800
+        STX $2116 ; vram address
+        LDA #$19 ; #bank of menu_layer2_tilemap
+        LDX #menu_layer2_tilemap
+        LDY #$0800
+        JSL load_vram
+        
+        LDX #$3C00
         STX $2116 ; vram address
         LDA #$19 ; #bank of menu_layer2_tilemap
         LDX #menu_layer2_tilemap
@@ -209,12 +223,15 @@ draw_menu_selection:
 
         LDA option_x_position,X
         AND #$00FF
-        STA $00
+        BIT #$0020
+        BEQ +
+        EOR #$0420 ; on the second page
+      + STA $00
         LDA option_y_position,X
         AND #$00FF
         BIT #$0020
         BEQ +
-        EOR #$0060 ; on the second page
+        EOR #$0060 ; on the second page (so technically 3rd page)
       + ASL #5
         ADC $00
         ADC #$3000
@@ -264,13 +281,13 @@ draw_menu_selection:
 option_x_position:
         db $06,$06,$06,$06,$06,$09,$09,$09,$09,$18,$0C,$15,$12,$12,$15,$0C
         db $0F,$0F,$0C,$0F,$18,$0F,$12,$15,$12,$15,$0E,$10,$12,$14,$0C,$18
-        db $03,$03,$03,$03,$0C,$06,$06,$06,$09,$09,$09,$09,$0F,$06,$0F,$03
-        db $05,$07,$09,$0B,$0D,$0F,$11
+        db $23,$23,$23,$23,$2C,$26,$26,$26,$29,$29,$29,$29,$2F,$26,$2F,$23
+        db $25,$27,$29,$2B,$2D,$2F,$31
 option_y_position:
         db $03,$06,$09,$0C,$0F,$06,$09,$0C,$03,$0F,$09,$06,$0C,$09,$09,$0F
         db $06,$09,$06,$0C,$03,$0F,$06,$0C,$0F,$0F,$02,$02,$02,$02,$0C,$0C
-        db $23,$26,$29,$2C,$23,$26,$29,$2C,$26,$29,$2C,$23,$23,$23,$26,$2F
-        db $2F,$2F,$2F,$2F,$2F,$2F,$2F
+        db $03,$06,$09,$0C,$03,$06,$09,$0C,$06,$09,$0C,$03,$03,$03,$06,$0F
+        db $0F,$0F,$0F,$0F,$0F,$0F,$0F
 option_width:
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$08,$08,$08,$08,$10,$10
@@ -375,9 +392,12 @@ overworld_menu:
         JSL $7F8000
         
         JSL scroll_screens
-
+        PHP
         LDA !overworld_menu_mode
-        ASL A
+        PLP
+        BMI +
+        STA !menu_screen_moved
+      + ASL A
         TAX
         JSR (overworld_menu_submodes,X)
     
@@ -394,56 +414,90 @@ overworld_menu_submodes:
 scroll_screens:
         PHP
         REP #$20
+        LDY #$00
         LDX !overworld_menu_mode
 
         CPX #$00
         BNE .check_mode_1
+        
+        ; main menu @ ($00,$00)
         LDA $20
-        BEQ .done_scrolling_layer_2
+        BEQ +
         LDA $20
         SEC
         SBC #$0004
         STA $20
-    .done_scrolling_layer_2:
-        LDA $24
-        BEQ .done_scrolling_layer_3
+        INY
+      + LDA $24
+        BEQ +
         SEC
         SBC #$0004
         STA $24
-    .done_scrolling_layer_3:
-        BRA .done_scrolling
+        INY
+      + LDA $1E
+        BEQ +
+        SEC
+        SBC #$0008
+        STA $1E
+        INY
+      + BRA .done_scrolling
         
     .check_mode_1:
         CPX #$01
         BNE .check_mode_2
+        
+        ; status bar editor @ ($00,$A4)
         LDA $20
         CMP #$00A4
         BCS +
         ADC #$0004
         STA $20
+        INY
       + LDA $24
         CMP #$00A0
         BCS +
         ADC #$0004
         STA $24
+        INY
+      + LDA $1E
+        BEQ +
+        SEC
+        SBC #$0008
+        STA $1E
+        INY
       + BRA .done_scrolling
 
     .check_mode_2:
         CPX #$02
         BNE .done_scrolling
+        
+        ; route editor @ ($100,$00)
         LDA $20
-        CMP #$0100
-        BCS +
-        ADC #$0004
+        BEQ +
+        SEC
+        SBC #$0004
         STA $20
+        INY
       + LDA $24
-        CMP #$0000
-        BCS +
+        BEQ +
+        SEC
         SBC #$0004
         STA $24
+        INY
+      + LDA $1E
+        CMP #$0100
+        BEQ +
+        CLC
+        ADC #$0008
+        STA $1E
+        INY
         
     .done_scrolling:
       + PLP
+        DEY
+        TYA
+        EOR #$FF
+        STA !menu_screen_moved
         RTL
         
 unpack_FastMode_level_settings:
@@ -498,6 +552,7 @@ unpack_FastMode_level_settings:
         STA !status_fast_mode_exit_type
 
         RTS
+        
 pack_FastMode_level_settings:
         JSL retrieve_current_header
 
@@ -1121,9 +1176,18 @@ draw_option_cursor:
       + SEP #$20
         TAY
         LDA option_x_position,X
+        REP #$20
+        AND #$00FF
         ASL #3
         SEC
-        SBC #$08
+        SBC #$0008
+        
+        SEC
+        SBC $1E
+        BPL +
+        CMP #$FFE8
+        BCC .done
+      + SEP #$20
         TAX
         
         LDA !util_axlr_hold
@@ -1837,7 +1901,13 @@ draw_text_string:
 ; draw a cursor
 ; where X = x pos, Y = y pos, $00 = width, $01 = height, $02 = squeezed, $03 = cursor type, $04 = change color, $0A = pointer to OAM
 draw_generic_cursor:
-        PHX
+        LDA !menu_screen_moved
+        BMI +
+        CMP !overworld_menu_mode
+        BEQ ++
+      + RTS
+
+     ++ PHX
         PHY
         
         LDA $02

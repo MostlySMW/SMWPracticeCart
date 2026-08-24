@@ -258,6 +258,7 @@
 ; flag = #$BD if the RTC is available on this system
 !clock_available             = $700009
 
+!menu_screen_moved           = $0AFD
 !menu_tile_upload_bytes      = $0AFE
 !menu_tile_upload_location   = $0B00
 
