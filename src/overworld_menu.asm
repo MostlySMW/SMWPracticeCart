@@ -1425,6 +1425,7 @@ metersets:
         dd !statusbar_meters
         dd !statusbar_meters+$60
         dd !statusbar_meters+$C0
+        dd meterset_vanilla
 meterset_default:
         db $01,$00,$00,$21,$02,$00,$00,$21,$03,$00,$00,$41,$04,$00,$00,$61
         db $05,$00,$00,$24,$06,$00,$00,$44,$08,$00,$00,$26,$09,$00,$00,$47
@@ -1442,6 +1443,13 @@ meterset_lagcalibrated:
 meterset_empty:
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+meterset_vanilla:
+        db $01,$00,$00,$24,$15,$00,$00,$42,$0B,$00,$00,$5B,$0C,$00,$00,$73
+        db $14,$00,$00,$77,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
         db $00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
@@ -2186,7 +2194,7 @@ meter_editor_mode: ; w$5460
         LDA [!statusbar_layout_ptr],Y
         DEC A
         BPL +
-        LDA #$13 ; number of meters
+        LDA #$14 ; number of meters
       + STA [!statusbar_layout_ptr],Y
         LDA #$00
         INY
@@ -2236,7 +2244,7 @@ meter_editor_mode: ; w$5460
         TAY
         LDA [!statusbar_layout_ptr],Y
         INC A
-        CMP #$14 ; number of meters + 1
+        CMP #$15 ; number of meters + 1
         BNE +
         LDA #$00
       + STA [!statusbar_layout_ptr],Y
@@ -2546,8 +2554,10 @@ draw_meter_cursors:
         ASL #2
         TAY
         LDA [!statusbar_layout_ptr],Y
-        BEQ .done
-        ASL #3
+        BNE +
+        JMP .done
+        
+      + ASL #3
         CMP #$88 ; $7E memory viewer
         BEQ +
         CMP #$90 ; $7F memory viewer
@@ -2575,10 +2585,14 @@ draw_meter_cursors:
         STA $0A
         LDA [!statusbar_layout_ptr],Y
         CMP #$01 ; item box
-        BNE +
-        LDA #$08
+        BEQ +
+        CMP #$15 ; vanilla hud
+        BNE +++
+        LDA #$10
         BRA ++
-      + INY #3
+      + LDA #$08
+        BRA ++
+    +++ INY #3
         LDA [!statusbar_layout_ptr],Y
         DEY #3
         AND #$E0
@@ -2595,10 +2609,14 @@ draw_meter_cursors:
         PHA
         LDA [!statusbar_layout_ptr],Y
         CMP #$01 ; item box
-        BNE +
-        LDA #$68
+        BEQ +
+        CMP #$15 ; vanilla hud
+        BNE +++
+        LDA #$08
         BRA ++
-      + INY #3
+      + LDA #$68
+        BRA ++
+    +++ INY #3
         LDA [!statusbar_layout_ptr],Y
         AND #$1F
         DEC A
@@ -2611,7 +2629,7 @@ draw_meter_cursors:
         RTL
 
 meter_subtype_counts:
-        db $01,$01,$01,$01,$02,$03,$03,$01,$03,$03,$03,$02,$03,$01,$05,$05,$02,$FF,$FF,$03
+        db $01,$01,$01,$01,$02,$03,$03,$01,$03,$03,$03,$02,$03,$01,$05,$05,$02,$FF,$FF,$03,$01,$01
 meter_widths:
         db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $04,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2633,6 +2651,8 @@ meter_widths:
         db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $05,$04,$04,$FF,$FF,$FF,$FF,$FF
+        db $07,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        db $1C,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 meter_heights:
         db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $04,$FF,$FF,$FF,$FF,$FF,$FF,$FF
@@ -2654,6 +2674,8 @@ meter_heights:
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
         db $01,$01,$01,$FF,$FF,$FF,$FF,$FF
+        db $01,$FF,$FF,$FF,$FF,$FF,$FF,$FF
+        db $02,$FF,$FF,$FF,$FF,$FF,$FF,$FF
 
 draw_meter_names:
         PHP
@@ -2884,7 +2906,7 @@ draw_edited_status_bar:
       - LDA [!statusbar_layout_ptr],Y
         AND #$00FF
         BEQ +
-        CMP #$0014
+        CMP #$0016
         BCS +
         INY #3
         LDA [!statusbar_layout_ptr],Y
@@ -2931,6 +2953,8 @@ draw_edited_status_bar:
         dw .edited_memory_7e
         dw .edited_memory_7f
         dw .edited_rng
+        dw .edited_score
+        dw .edited_vanilla_hud
         
     .edited_item_box:
         LDA $03
@@ -3491,7 +3515,7 @@ draw_edited_status_bar:
         dw .rng_types_index
         dw .rng_types_value
         dw .rng_types_seed
-    .rng_types_index
+    .rng_types_index:
         LDA #$3801
         STA [$00],Y
         INY #2
@@ -3507,8 +3531,8 @@ draw_edited_status_bar:
         LDA #$3805
         STA [$00],Y
         RTS
-    .rng_types_value
-    .rng_types_seed
+    .rng_types_value:
+    .rng_types_seed:
         LDA #$3800
         STA [$00],Y
         INY #2
@@ -3516,6 +3540,95 @@ draw_edited_status_bar:
         INY #2
         STA [$00],Y
         INY #2
+        STA [$00],Y
+        RTS
+
+    .edited_score:
+        LDA #$3801
+        STA [$00],Y
+        INY #2
+        LDA #$3802
+        STA [$00],Y
+        INY #2
+        LDA #$3803
+        STA [$00],Y
+        INY #2
+        LDA #$3804
+        STA [$00],Y
+        INY #2
+        LDA #$3805
+        STA [$00],Y
+        INY #2
+        LDA #$3806
+        STA [$00],Y
+        INY #2
+        LDA #$3800
+        STA [$00],Y
+        RTS
+
+    .edited_vanilla_hud:
+        LDA $03
+        CLC
+        ADC #$0084
+        STA $00
+        LDA #$2830
+        STA [$00],Y
+        INY #2
+        LDA #$2831
+        STA [$00],Y
+        INY #2
+        LDA #$2832
+        STA [$00],Y
+        INY #2
+        LDA #$2833
+        STA [$00],Y
+        INY #2
+        LDA #$2834
+        STA [$00],Y
+        TYA
+        CLC
+        ADC #$000E
+        TAY
+        LDA #$38B7
+        STA [$00],Y
+        TYA
+        CLC
+        ADC #$000C
+        TAY
+        LDA #$3C3D
+        STA [$00],Y
+        INY #2
+        LDA #$3C3E
+        STA [$00],Y
+        INY #2
+        LDA #$3C3F
+        STA [$00],Y
+        INY #8
+        LDA #$3C2E
+        STA [$00],Y
+        INY #2
+        LDA #$38DC
+        STA [$00],Y
+        INY #2
+        LDA #$38FC
+        STA [$00],Y
+        TYA
+        CLC
+        ADC #$0010
+        TAY
+        LDA #$38DC
+        STA [$00],Y
+        INY #4
+        LDA #$3805
+        STA [$00],Y
+        INY #8
+        LDA #$2864
+        STA [$00],Y
+        INY #2
+        LDA #$38DC
+        STA [$00],Y
+        INY #6
+        LDA #$38C3
         STA [$00],Y
         RTS
 

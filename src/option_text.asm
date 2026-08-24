@@ -957,6 +957,8 @@ meter_names:
         db "MEMORY VIEWER   "
         db "MEMORY VIEWER   "
         db "RANDOM NUMBER   "
+        db "SCORE           "
+        db "VANILLA HUD     "
 
 meter_types:
         dw meter_text_none
@@ -979,6 +981,8 @@ meter_types:
         dw meter_text_none
         dw meter_text_none
         dw meter_text_rng
+        dw meter_text_none
+        dw meter_text_none
         
 meter_text_none:
         db "                "
@@ -1101,3 +1105,11 @@ meter_description:
         db "  HELD VALUE ON THE             "
         db "  RANDOM NUMBER GENERATOR       "
         db "  OR INDEX OF THE VALUE         "
+        db "  DISPLAYS SCORE ACHIEVED       "
+        db "  IN THE CURRENT LEVEL          "
+        db "                                "
+        db "                                "
+        db "  DISPLAYS THE VANILLA HUD      "
+        db "                                "
+        db "                                "
+        db "                                "

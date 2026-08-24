@@ -121,15 +121,25 @@ display_meters_wrapper:
 
 ; display all the selected statusbar meters
 display_meters:
-        LDA !fast_mode_start_play
-        BEQ +
-        JSL draw_original_statusbar
-        RTS
-        +
         PHP
         SEP #$30
+        LDA !statusbar_layout_ptr
+        PHA
+        LDA !statusbar_layout_ptr+1
+        PHA
+        LDA !statusbar_layout_ptr+2
+        PHA
         
-        LDA #$7E
+        LDA !fast_mode_start_play
+        BEQ +
+        LDA.B #bank(meterset_vanilla)
+        STA !statusbar_layout_ptr+2
+        LDA.B #meterset_vanilla>>8
+        STA !statusbar_layout_ptr+1
+        LDA.B #meterset_vanilla
+        STA !statusbar_layout_ptr
+        
+      + LDA #$7E
         STA $02
         LDA #$1F
         STA $01
@@ -138,7 +148,7 @@ display_meters:
         
       - LDA [!statusbar_layout_ptr],Y
         BEQ ++
-        CMP #$14
+        CMP #$16 ; number of meters
         BCS ++
         INY #3
         LDA [!statusbar_layout_ptr],Y
@@ -165,6 +175,13 @@ display_meters:
      ++ DEY #4
         BPL -
         
+        SEP #$30
+        PLA
+        STA !statusbar_layout_ptr+2
+        PLA
+        STA !statusbar_layout_ptr+1
+        PLA
+        STA !statusbar_layout_ptr
         PLP
     .nothing:
         RTS
@@ -190,6 +207,8 @@ display_meters:
         dw meter_memory_7e
         dw meter_memory_7f
         dw meter_rng
+        dw meter_score
+        dw meter_vanilla_hud
     
     .meter_fade:
         dw .nothing
@@ -212,6 +231,8 @@ display_meters:
         dw meter_memory_7e
         dw meter_memory_7f
         dw meter_rng
+        dw .nothing
+        dw .nothing
 
 ; draw the item box meter (fixed position)
 meter_item_box:
@@ -1155,6 +1176,118 @@ meter_rng:
         PLA
         AND #$0F
         STA [$00]
+        RTS
+
+meter_score:
+        PHP
+        PHY
+        REP #$20
+        LDA $00
+        PHA
+        PHA
+        SEP #$20
+        LDA $0F36 ; score 3
+        STA $03
+        STZ $04
+        LDA $0F35 ; score 2
+        STA $06
+        LDA $0F34 ; score 1
+        STA $05
+        
+        ; basically ripped from vanilla
+        LDY #$00
+     -- SEP #$20
+        LDA #$00
+        STA [$00]
+        
+      - REP #$20
+        LDA $05
+        SEC
+        SBC score_places+2,Y
+        STA $09
+        LDA $03
+        SBC score_places,Y
+        STA $07
+        BCC +
+        LDA $09
+        STA $05
+        LDA $07
+        STA $03
+        SEP #$20
+        LDA [$00]
+        INC A
+        STA [$00]
+        BRA -
+        
+      + INC $00
+        INY #4
+        CPY #4*6
+        BNE --
+        
+        PLA
+        STA $00
+        SEP #$20
+      - LDA [$00]
+        BNE +
+        LDA #$FC
+        STA [$00]
+        INC $00
+        BRA -
+        
+      + REP #$20
+        PLA
+        CLC
+        ADC #$0006
+        STA $00
+        SEP #$20
+        LDA #$00
+        STA [$00]
+        
+        PLY        
+        PLP
+        RTS
+        
+score_places:
+        dw $0001,$86A0
+        dw $0000,$2710
+        dw $0000,$03E8
+        dw $0000,$0064
+        dw $0000,$000A
+        dw $0000,$0001
+        
+meter_vanilla_hud:
+        LDA #$30
+        STA !status_bar+$42
+        INC A
+        STA !status_bar+$43
+        INC A
+        STA !status_bar+$44
+        INC A
+        STA !status_bar+$45
+        INC A
+        STA !status_bar+$46
+        LDA #$3D
+        STA !status_bar+$53
+        INC A
+        STA !status_bar+$54
+        INC A
+        STA !status_bar+$55
+        LDA #$B7
+        STA !status_bar+$4D
+        LDA #$C3
+        STA !status_bar+$6D
+        LDA #$2E
+        STA !status_bar+$59
+        LDA #$FC
+        STA !status_bar+$5B
+        LDA #$05
+        STA !status_bar+$65
+        LDA #$64
+        STA !status_bar+$69
+        LDA #$26
+        STA !status_bar+$63
+        STA !status_bar+$6A
+        STA !status_bar+$5A
         RTS
         
 ; slow down the game depending on how large the slowdown number is

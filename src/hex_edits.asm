@@ -305,37 +305,3 @@ ORG !_F+$00A270                           ;\
         LDA #$81                          ;| How level was exited flag. Original game had both start+select and dying set this to #$80 
 ORG !_F+$00D0CB                           ;| Seperate that out so we can detect the difference.
         LDA #$82                          ;/
-
-
-
-org !_F+$008EF2                         ; \
-    RTL                                 ; |
-org !_F+$008EE7                         ; |
-    STA !status_bar+$77,X               ; |
-org !_F+$008EE0                         ; |
-    LDA !status_bar+$77,X               ; |
-                                        ; |
-org !_F+$009014                         ; |
-    STZ !status_bar+$77-$14,X           ; |
-org !_F+$009034                         ; |
-    INC !status_bar+$77-$14,X           ; |
-                                        ; |
-org !_F+$008fc5                         ; |
-    RTL                                 ; |     Restore original status bar functionality
-org !_F+$008F9D                         ; |
-    LDA !status_bar+$6c,X               ; |
-org !_F+$008FA4                         ; |
-    STA !status_bar+$6c,X               ; |
-org !_F+$008FA7                         ; |
-    STA !status_bar+$4c,X               ; |
-org !_F+$008FAF                         ; |
-    LDA !status_bar+$6c,X               ; |
-org !_F+$008FB7                         ; |
-    STA !status_bar+$4c,X               ; |
-org !_F+$008FBD                         ; |
-    STA !status_bar+$6C,X               ; |
-                                        ; |
-org !_F+$009053                         ; |
-    STZ !status_bar+$6c-$09,X           ; |
-org !_F+$009068                         ; |
-    inc !status_bar+$6c-$09,X           ; /
