@@ -82,11 +82,11 @@
 !current_meter_selection     = $0EFE
 
 ; the number of options in the overworld menu
-!number_of_options           = 55
 !number_of_options_pg1       = 32
 !number_of_options_pg2       = 23
+!number_of_options           = !number_of_options_pg1+!number_of_options_pg2
 ; status flags for each of the overworld menu options
-!status_table                = $705000 ; $20 bytes
+!status_table                = $705000 ; $37 bytes
 !status_yellow               = !status_table+$00 ; off | on
 !status_green                = !status_table+$01 ; off | on
 !status_red                  = !status_table+$02 ; off | on
@@ -115,26 +115,25 @@
 !status_movieload            = !status_table+$19 ; sram1 | sram2 | demo1 | demo2
 !status_playername           = !status_table+$1a ; 4 bytes
 !status_region               = !status_table+$1e ; J | U | E1.0 | E1.1
-!status_FastMode             = !status_table+$1f
+!status_fast_mode            = !status_table+$1f
 
-!status_FastMode_yellow         = !status_table+$20
-!status_FastMode_green          = !status_table+$21
-!status_FastMode_red            = !status_table+$22
-!status_FastMode_blue           = !status_table+$23
-!status_FastMode_special        = !status_table+$24
-!status_FastMode_start_powerup  = !status_table+$25
-!status_FastMode_start_item     = !status_table+$26
-!status_FastMode_start_yoshi    = !status_table+$27
-!status_FastMode_end_powerup    = !status_table+$28
-!status_FastMode_end_item       = !status_table+$29
-!status_FastMode_end_yoshi      = !status_table+$2a
-!status_FastMode_midway         = !status_table+$2b
-!status_FastMode_difficulty     = !status_table+$2c
-!status_FastMode_exit_type      = !status_table+$2d ;normal | secret | Ss | Death | 
-!status_FastMode_delete         = !status_table+$2e
-!status_FastMode_save_name      = !status_table+$2f ; 8 bytes
+!status_fast_mode_yellow         = !status_table+$20
+!status_fast_mode_green          = !status_table+$21
+!status_fast_mode_red            = !status_table+$22
+!status_fast_mode_blue           = !status_table+$23
+!status_fast_mode_special        = !status_table+$24
+!status_fast_mode_start_powerup  = !status_table+$25
+!status_fast_mode_start_item     = !status_table+$26
+!status_fast_mode_start_yoshi    = !status_table+$27
+!status_fast_mode_end_powerup    = !status_table+$28
+!status_fast_mode_end_item       = !status_table+$29
+!status_fast_mode_end_yoshi      = !status_table+$2a
+!status_fast_mode_midway         = !status_table+$2b
+!status_fast_mode_difficulty     = !status_table+$2c
+!status_fast_mode_exit_type      = !status_table+$2d ;normal | secret | Ss | Death | 
+!status_fast_mode_delete         = !status_table+$2e
+!status_fast_mode_save_name      = !status_table+$2f ; 8 bytes
 
-; $7003FF reserved for future expansion
 !backup_status_table         = $705100 ; $20 bytes
 
 ; table for status bar meters
@@ -255,26 +254,26 @@
 ; flag = #$BD if the RTC is available on this system
 !clock_available             = $700009
 
-!menu_tile_upload_bytes      = $0afe
-!menu_tile_upload_location   = $0b00
+!menu_tile_upload_bytes      = $0AFE
+!menu_tile_upload_location   = $0B00
 
-!loram_savestate_location     = $7f9DFB ;$705000? loram savestate in wram?
-!restore_status_from_backup   = $70000a
-!level_enter_flag             = $58
-!FastMode_save_current_header = $06b0
-!FastMode_save_current_level  = $06c0
-!most_recent_exit             = $06c1
-!level_is_no_yoshi            = $06a5
-!midway_enable_flag           = $06a4
-!FastMode_tile_timer          = $06a3   ; Timer for flashing route tiles
-!FastMode_start_play          = $06a2   ; Used to determine if play should start on next overworld load
-!FastMode_current_level       = $06a0   ; 
+!loram_savestate_location      = $7023A0 ;$705000? loram savestate in wram?
+!restore_status_from_backup    = $70000A
+!level_enter_flag              = $58
+!fast_mode_save_current_header = $06B0
+!fast_mode_save_current_level  = $06C0
+!most_recent_exit              = $06C1
+!level_is_no_yoshi             = $06A5
+!midway_enable_flag            = $06A4
+!fast_mode_tile_timer          = $06A3   ; Timer for flashing route tiles
+!fast_mode_start_play          = $06A2   ; Used to determine if play should start on next overworld load
+!fast_mode_current_level       = $06A0   ; 
 
-!FastMode_save_1_header      = $705200 ; #Levels
-!FastMode_save_1             = $705210 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!fast_mode_save_1_header       = $705200 ; #Levels
+!fast_mode_save_1              = $705210 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
 
-!FastMode_save_2_header      = $705600 ; #Levels
-!FastMode_save_2             = $705610 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!fast_mode_save_2_header       = $705600 ; #Levels
+!fast_mode_save_2              = $705610 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
 
-!FastMode_save_3_header      = $705A00 ; #Levels
-!FastMode_save_3             = $705A10 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!fast_mode_save_3_header       = $705A00 ; #Levels
+!fast_mode_save_3              = $705A10 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power

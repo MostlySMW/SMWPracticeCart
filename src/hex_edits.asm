@@ -1,4 +1,5 @@
-org !_F+$049150
+; use better flag for detecting to enter a level on the overworld
+ORG !_F+$049150
         LDA !level_enter_flag
         NOP #4
 
@@ -35,7 +36,7 @@ ORG !_F+$00D0D8
 
 ; fix sprite loading table
 ORG !_F+$02ABF3
-	db $7F
+        db $7F
 
 ; disable midway points
 ORG !_F+$00CA2C
@@ -288,20 +289,24 @@ ORG !_F+$03B4F3
 ORG !_F+$03B4F9
         db $18
 
-org !_F+$05d9D7
+; check midway flag for fast routing to start from midway
+ORG !_F+$05D9D7
         LDA !midway_enable_flag
         NOP #2
-
-org !_F+$0DA691
+; check midway flag to build midway tape
+ORG !_F+$0DA691
         LDA !midway_enable_flag
         NOP #3
         
-org !_F+$00A267
+ORG !_F+$00A267
+        ; BRA +7
         db $80, $07                         ; Always allow Start+Select. Even if submap/translevel is wrong and in a level that is not counted as beaten
-org !_F+$00a270                           ;\
+ORG !_F+$00A270                           ;\
         LDA #$81                          ;| How level was exited flag. Original game had both start+select and dying set this to #$80 
-org !_F+$00d0cb                           ;| Seperate that out so we can detect the difference.
+ORG !_F+$00D0CB                           ;| Seperate that out so we can detect the difference.
         LDA #$82                          ;/
+
+
 
 org !_F+$008EF2                         ; \
     RTL                                 ; |

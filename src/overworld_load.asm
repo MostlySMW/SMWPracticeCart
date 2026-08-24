@@ -294,38 +294,42 @@ prepare_file:
         JSL restore_basic_settings
         JSR check_for_rtc
         JSL check_for_pal_music
-        lda #$00
-        sta !save_state_exists
-        LDA !status_FastMode 
-        BEQ .done
+        
+        LDA !status_fast_mode 
+        BEQ .done ; fast mode enabled
         LDA !util_byetudlr_hold
         AND #$30
-        BNE .done
+        BNE .done ; pressed start or select
+        
         JSL retrieve_current_header
-        LDA !FastMode_save_current_header+0
-        BEQ .done
+        LDA !fast_mode_save_current_header+0
+        BEQ .done ; header of route exists
+        
         LDA #$01
-        STA !FastMode_start_play
-        lda !restore_status_from_backup
+        STA !fast_mode_start_play ; start fast mode!
+        
+        LDA !restore_status_from_backup
         BNE .done
+        
+        ; save the current settings
         LDX #!number_of_options
       - LDA.L !status_table,X
         STA.L !backup_status_table,X
         DEX
         BPL -
 
-        lda #$01
-        STA !restore_status_from_backup
-        sta !status_lrreset
-        sta !status_slowdown
-        lda #$00
-        sta !status_states
-        
-        sta !status_pause
-        sta !status_slots
-        sta !status_lagometer
-        sta !status_timedeath
-        .done:
+        ; default settings for fast mode
+        LDA #$01
+        STA.L !restore_status_from_backup
+        STA.L !status_lrreset
+        STA.L !status_slowdown
+        LDA #$00
+        STA.L !status_states
+        STA.L !status_pause
+        STA.L !status_slots
+        STA.L !status_lagometer
+        STA.L !status_timedeath
+    .done:
         RTL
 
 ; initialize mario on the overworld
@@ -391,8 +395,8 @@ set_defaults:
         STA.L !status_movieload
         STA.L !status_region
         STA.L !status_lagometer
-        STA.L !status_FastMode
-        STA.L !status_FastMode_delete
+        STA.L !status_fast_mode
+        STA.L !status_fast_mode_delete
         LDA #$01
         STA.L !status_scorelag
         STA.L !status_states

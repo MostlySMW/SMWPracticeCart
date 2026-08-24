@@ -9,9 +9,11 @@ overworld_menu_load:
         PHB
         PHK
         PLB
-        stz !FastMode_current_level
-        stz !menu_tile_upload_bytes
-        stz !menu_tile_upload_bytes+1
+        
+        STZ !fast_mode_current_level
+        STZ !menu_tile_upload_bytes
+        STZ !menu_tile_upload_bytes+1
+        
         LDA #$09 ; special world theme
         STA $1DFB ; apu i/o
         STZ $0D9F ; hdmaen
@@ -196,7 +198,6 @@ upload_overworld_menu_graphics:
         RTS
 
 ; draw one of the menu options to the screen, where X = menu index
-
 draw_menu_selection:
         PHX
         PHP
@@ -207,28 +208,27 @@ draw_menu_selection:
         REP #$20
 
         LDA option_x_position,X
-        AND #$00ff
+        AND #$00FF
         STA $00
         LDA option_y_position,X
-        and #$00FF
+        AND #$00FF
         BIT #$0020
         BEQ +
-        EOR #$0060
-        +
-        ASL #5
+        EOR #$0060 ; on the second page
+      + ASL #5
         ADC $00
-        adc #$3000
+        ADC #$3000
         REP #$30
         LDY !menu_tile_upload_bytes
         STA !menu_tile_upload_location,Y
-        clc
+        CLC
         INC A
-        sta !menu_tile_upload_location+4,y
-        clc
-        adc #$001f
-        sta !menu_tile_upload_location+8,y
+        STA !menu_tile_upload_location+4,y
+        CLC
+        ADC #$001F
+        STA !menu_tile_upload_location+8,y
         INC A
-        sta !menu_tile_upload_location+12,y
+        STA !menu_tile_upload_location+12,y
 
         LDA.L !status_table,X
         AND #$00FF
@@ -251,9 +251,9 @@ draw_menu_selection:
         LDA menu_option_tiles+6,X
         STA !menu_tile_upload_location+14,y
 
-        tya
-        adc #$0010
-        sta !menu_tile_upload_bytes
+        TYA
+        ADC #$0010
+        STA !menu_tile_upload_bytes
 
         PLB
         PLP
@@ -374,61 +374,7 @@ overworld_menu:
         INC $14
         JSL $7F8000
         
-        REP #$20
-        LDX !overworld_menu_mode
-
-        CPX #$00
-        BNE .check_mode_1
-        LDA $20
-        CMP #$0000
-        BEQ .done_scrolling_layer_2
-        LDA $20
-        SBC #$0004
-        STA $20
-        .done_scrolling_layer_2:
-        LDA $24
-        CMP #$0000
-        BEQ .done_scrolling_layer_3
-        SBC #$0004
-        STA $24
-        .done_scrolling_layer_3:
-        bra .done_scrolling
-        
-        .check_mode_1:
-        CPX #$01
-        BNE .check_mode_2
-        lda $20
-        CMP #$00A4
-        BCS +
-        ADC #$0004
-        STA $20
-        +
-        LDA $24
-        cmp #$00A0
-        BCS +
-        ADC #$0004
-        STA $24
-        +
-        bra .done_scrolling
-
-        .check_mode_2:
-        CPX #$02
-        BNE .done_scrolling
-        LDA $20
-        CMP #$0100
-        BCS +
-        ADC #$0004
-        STA $20
-        +
-        LDA $24
-        CMP #$0000
-        BCS +
-        SBC #$0004
-        STA $24
-        +
-        
-        .done_scrolling
-        SEP #$30
+        JSL scroll_screens
 
         LDA !overworld_menu_mode
         ASL A
@@ -443,180 +389,235 @@ overworld_menu_submodes:
         dw option_selection_mode
         dw meter_editor_mode
         dw FastMode_editor_mode
+
+; move the screen if not in the right spot
+scroll_screens:
+        PHP
+        REP #$20
+        LDX !overworld_menu_mode
+
+        CPX #$00
+        BNE .check_mode_1
+        LDA $20
+        BEQ .done_scrolling_layer_2
+        LDA $20
+        SEC
+        SBC #$0004
+        STA $20
+    .done_scrolling_layer_2:
+        LDA $24
+        BEQ .done_scrolling_layer_3
+        SEC
+        SBC #$0004
+        STA $24
+    .done_scrolling_layer_3:
+        BRA .done_scrolling
+        
+    .check_mode_1:
+        CPX #$01
+        BNE .check_mode_2
+        LDA $20
+        CMP #$00A4
+        BCS +
+        ADC #$0004
+        STA $20
+      + LDA $24
+        CMP #$00A0
+        BCS +
+        ADC #$0004
+        STA $24
+      + BRA .done_scrolling
+
+    .check_mode_2:
+        CPX #$02
+        BNE .done_scrolling
+        LDA $20
+        CMP #$0100
+        BCS +
+        ADC #$0004
+        STA $20
+      + LDA $24
+        CMP #$0000
+        BCS +
+        SBC #$0004
+        STA $24
+        
+    .done_scrolling:
+      + PLP
+        RTL
         
 unpack_FastMode_level_settings:
         JSL retrieve_current_level
 
-        LDA !FastMode_save_current_level+14
-        STA !status_FastMode_difficulty
+        LDA !fast_mode_save_current_level+14
+        STA !status_fast_mode_difficulty
 
-        ldx #$07
-        -
-        LDA !FastMode_save_current_header+2,X
-        STA !status_FastMode_save_name,X
-        dex 
-        bpl -
+        LDX #$07
+      - LDA !fast_mode_save_current_header+2,X
+        STA !status_fast_mode_save_name,X
+        DEX 
+        BPL -
 
-        LDA !FastMode_save_current_level+1
-        STA !status_FastMode_start_item
+        LDA !fast_mode_save_current_level+1
+        STA !status_fast_mode_start_item
 
-        LDA !FastMode_save_current_level+2
-        STA !status_FastMode_end_item
+        LDA !fast_mode_save_current_level+2
+        STA !status_fast_mode_end_item
 
-        LDA !FastMode_save_current_level+3
-        STA !status_FastMode_start_powerup
+        LDA !fast_mode_save_current_level+3
+        STA !status_fast_mode_start_powerup
 
-        lda !FastMode_save_current_level+4
-        STA !status_FastMode_end_powerup
+        LDA !fast_mode_save_current_level+4
+        STA !status_fast_mode_end_powerup
 
-        LDA !FastMode_save_current_level+5
-        STA !status_FastMode_start_yoshi
+        LDA !fast_mode_save_current_level+5
+        STA !status_fast_mode_start_yoshi
 
-        LDA !FastMode_save_current_level+6
-        sta !status_FastMode_end_yoshi
+        LDA !fast_mode_save_current_level+6
+        STA !status_fast_mode_end_yoshi
 
-        lda !FastMode_save_current_level+7
-        sta !status_FastMode_red
+        LDA !fast_mode_save_current_level+7
+        STA !status_fast_mode_red
 
-        lda !FastMode_save_current_level+8
-        sta !status_FastMode_blue
+        LDA !fast_mode_save_current_level+8
+        STA !status_fast_mode_blue
 
-        lda !FastMode_save_current_level+9
-        sta !status_FastMode_yellow
+        LDA !fast_mode_save_current_level+9
+        STA !status_fast_mode_yellow
 
-        lda !FastMode_save_current_level+10
-        sta !status_FastMode_green
+        LDA !fast_mode_save_current_level+10
+        STA !status_fast_mode_green
 
-        lda !FastMode_save_current_level+11
-        sta !status_FastMode_special
+        LDA !fast_mode_save_current_level+11
+        STA !status_fast_mode_special
 
-        lda !FastMode_save_current_level+12
-        sta !status_FastMode_midway
+        LDA !fast_mode_save_current_level+12
+        STA !status_fast_mode_midway
 
-        lda !FastMode_save_current_level+13
-        sta !status_FastMode_exit_type
+        LDA !fast_mode_save_current_level+13
+        STA !status_fast_mode_exit_type
 
         RTS
 pack_FastMode_level_settings:
         JSL retrieve_current_header
 
-        LDA !status_FastMode_difficulty
-        STA !FastMode_save_current_level+14
+        LDA !status_fast_mode_difficulty
+        STA !fast_mode_save_current_level+14
 
         LDX #$07
-        -
-        LDA !status_FastMode_save_name,X
-        STA !FastMode_save_current_header+2,X
-        dex 
-        bpl -
+      - LDA !status_fast_mode_save_name,X
+        STA !fast_mode_save_current_header+2,X
+        DEX 
+        BPL -
 
-        LDA !status_FastMode_start_item
-        STA !FastMode_save_current_level+1
+        LDA !status_fast_mode_start_item
+        STA !fast_mode_save_current_level+1
 
-        LDA !status_FastMode_end_item
-        STA !FastMode_save_current_level+2
+        LDA !status_fast_mode_end_item
+        STA !fast_mode_save_current_level+2
 
-        LDA !status_FastMode_start_powerup
-        STA !FastMode_save_current_level+3
+        LDA !status_fast_mode_start_powerup
+        STA !fast_mode_save_current_level+3
 
-        LDA !status_FastMode_end_powerup
-        STA !FastMode_save_current_level+4
+        LDA !status_fast_mode_end_powerup
+        STA !fast_mode_save_current_level+4
 
-        LDA !status_FastMode_start_yoshi
-        STA !FastMode_save_current_level+5
+        LDA !status_fast_mode_start_yoshi
+        STA !fast_mode_save_current_level+5
 
-        LDA !status_FastMode_end_yoshi
-        STA !FastMode_save_current_level+6
+        LDA !status_fast_mode_end_yoshi
+        STA !fast_mode_save_current_level+6
 
-        LDA !status_FastMode_red
-        STA !FastMode_save_current_level+7
+        LDA !status_fast_mode_red
+        STA !fast_mode_save_current_level+7
 
-        LDA !status_FastMode_blue
-        STA !FastMode_save_current_level+8
+        LDA !status_fast_mode_blue
+        STA !fast_mode_save_current_level+8
 
-        LDA !status_FastMode_yellow
-        STA !FastMode_save_current_level+9
+        LDA !status_fast_mode_yellow
+        STA !fast_mode_save_current_level+9
 
-        LDA !status_FastMode_green
-        STA !FastMode_save_current_level+10
+        LDA !status_fast_mode_green
+        STA !fast_mode_save_current_level+10
 
-        LDA !status_FastMode_special
-        STA !FastMode_save_current_level+11
+        LDA !status_fast_mode_special
+        STA !fast_mode_save_current_level+11
 
-        LDA !status_FastMode_midway
-        STA !FastMode_save_current_level+12
+        LDA !status_fast_mode_midway
+        STA !fast_mode_save_current_level+12
 
-        LDA !status_FastMode_exit_type
-        STA !FastMode_save_current_level+13
+        LDA !status_fast_mode_exit_type
+        STA !fast_mode_save_current_level+13
 
         JSL store_current_level
         RTS
 
 RedrawPg2:
         LDX #!number_of_options_pg1                         ; \
-        -                                                   ; |
-        JSL draw_menu_selection                             ; | Draw all page 2 options
+      - JSL draw_menu_selection                             ; | Draw all page 2 options
         INX                                                 ; |
         CPX #!number_of_options_pg1+!number_of_options_pg2  ; |
-        bne -                                               ; /
+        BNE -                                               ; /
         RTS
+
 FastMode_editor_mode:
         JSL retrieve_current_level
         JSR unpack_FastMode_level_settings
-        
 
-        lda !util_byetudlr_frame                            ; \
+        LDA !util_byetudlr_frame                            ; \
         AND #$10                                            ; |
         BEQ +                                               ; |
-            LDA #$00                                        ; |
-            STA !overworld_menu_mode                        ; |
-            sta !util_byetudlr_frame                        ; | Return to main menu on START
-            stz !text_timer                                 ; |
-            lda #$1f                                        ; |
-            STA !current_selection                          ; |
-            JMP .done                                       ; |
-        +                                                   ; /
+                                                            ; |
+        LDA #$00                                            ; |
+        STA !overworld_menu_mode                            ; |
+        STA !util_byetudlr_frame                            ; | Return to main menu on START
+        STZ !text_timer                                     ; |
+        LDA #$1F                                            ; |
+        STA !current_selection                              ; |
+        JMP .done                                           ; /
 
-        lda !util_byetudlr_hold                             ; \
+      + LDA !util_byetudlr_hold                             ; \
         AND #$40                                            ; |
         BEQ .no_y                                           ; |
-            lda !util_byetudlr_frame                        ; | 
-            BIT #$08                                        ; | if Y+UP, increment level counter
-            BEQ +                                           ; | 
-                jsr pack_FastMode_level_settings            ; | Pack away old values before increment
-                inc !FastMode_current_level                 ; |
-                LDA !FastMode_save_current_header+0
-                DEC A
-                CMP !FastMode_current_level
-                BCS .no_overflow
-                    lda #00
-                    sta !FastMode_current_level
-                .no_overflow:
-                stz !util_byetudlr_frame                    ; |
-                stz !text_timer                             ; |
-                jsr unpack_FastMode_level_settings          ; | unpack new values after increment
-                JSR RedrawPg2
-            +                                               ; |
-        lda !util_byetudlr_frame                            ; |
+                                                            ; |
+        LDA !util_byetudlr_frame                            ; | 
+        BIT #$08                                            ; | if Y+UP, increment level counter
+        BEQ .check_ydown                                    ; | 
+        
+        JSR pack_FastMode_level_settings                    ; | Pack away old values before increment
+        INC !fast_mode_current_level                        ; |
+        LDA !fast_mode_save_current_header+0
+        DEC A
+        CMP !fast_mode_current_level
+        BCS +
+        LDA #00
+        STA !fast_mode_current_level
+      + STZ !util_byetudlr_frame                            ; |
+        STZ !text_timer                                     ; |
+        JSR unpack_FastMode_level_settings                  ; | unpack new values after increment
+        JSR RedrawPg2
+
+    .check_ydown:
+        LDA !util_byetudlr_frame                            ; |
         BIT #$04                                            ; | if Y+Down, decrement level counter
-        BEQ +                                               ; |
-            jsr pack_FastMode_level_settings                ; |
-            dec !FastMode_current_level                     ; |
-            BPL .no_underflow
-                LDA !FastMode_save_current_header+0
-                DEC A
-                STA !FastMode_current_level
-            .no_underflow:
-            stz !util_byetudlr_frame                        ; |
-            stz !text_timer                                 ; |
-            jsr unpack_FastMode_level_settings              ; |
-            JSR RedrawPg2
-        +                                                   ; /
-        .no_y:
-            JSR option_selection_mode
-        .done
-            JSR pack_FastMode_level_settings
+        BEQ .no_y                                           ; |
+        JSR pack_FastMode_level_settings                    ; |
+        DEC !fast_mode_current_level                        ; |
+        BPL +
+        LDA !fast_mode_save_current_header+0
+        DEC A
+        STA !fast_mode_current_level
+      + STZ !util_byetudlr_frame                            ; |
+        STZ !text_timer                                     ; |
+        JSR unpack_FastMode_level_settings                  ; |
+        JSR RedrawPg2                                       ; /
+        
+    .no_y:
+        JSR option_selection_mode
+    .done
+        JSR pack_FastMode_level_settings
         RTS
+        
 ; run the default part of the menu
 option_selection_mode:
         LDA !current_selection
@@ -747,41 +748,40 @@ option_selection_mode:
         LDA .selection_table,X
         BNE +
         JMP .finish_no_change
-        +
-        JMP (.selection_table,X)
+      + JMP (.selection_table,X)
         
 	.selection_table:
-		dw $0000                           ;00
-		dw $0000                           ;01
-		dw $0000                           ;02
-		dw $0000                           ;03
-		dw $0000                           ;04
-		dw $0000                           ;05
-		dw $0000                           ;06
+		dw 0                               ;00
+		dw 0                               ;01
+		dw 0                               ;02
+		dw 0                               ;03
+		dw 0                               ;04
+		dw 0                               ;05
+		dw 0                               ;06
 		dw .select_yoshi                   ;07
 		dw .select_enemy                   ;08
 		dw .select_records                 ;09
-		dw $0000                           ;0A
-		dw $0000                           ;0B
-		dw $0000                           ;0C
-		dw $0000                           ;0D
-		dw $0000                           ;0E
-		dw $0000                           ;0F
-		dw $0000                           ;10
-		dw $0000                           ;11
-		dw $0000                           ;12
-		dw $0000                           ;13
+		dw 0                               ;0A
+		dw 0                               ;0B
+		dw 0                               ;0C
+		dw 0                               ;0D
+		dw 0                               ;0E
+		dw 0                               ;0F
+		dw 0                               ;10
+		dw 0                               ;11
+		dw 0                               ;12
+		dw 0                               ;13
 		dw .select_meters                  ;14
-		dw $0000                           ;15
-		dw $0000                           ;16
-		dw $0000                           ;17
+		dw 0                               ;15
+		dw 0                               ;16
+		dw 0                               ;17
 		dw .select_moviesave               ;18
 		dw .select_movieload               ;19
-		dw $0000                           ;1A
-		dw $0000                           ;1B
-		dw $0000                           ;1C
-		dw $0000                           ;1D
-		dw $0000                           ;1E
+		dw 0                               ;1A
+		dw 0                               ;1B
+		dw 0                               ;1C
+		dw 0                               ;1D
+		dw 0                               ;1E
 		dw .select_fast_mode_save          ;1F
 		dw .propogate_forward              ;20
 		dw .propogate_forward              ;21
@@ -798,14 +798,14 @@ option_selection_mode:
 		dw .propogate_forward              ;2C
 		dw .propogate_forward              ;2D
 		dw .select_fast_mode_delete_save   ;2E
-		dw $0000                           ;2F
-		dw $0000                           ;30
-		dw $0000                           ;31
-		dw $0000                           ;32
-		dw $0000                           ;33
-		dw $0000                           ;34
-		dw $0000                           ;35
-		dw $0000                           ;36
+		dw 0                               ;2F
+		dw 0                               ;30
+		dw 0                               ;31
+		dw 0                               ;32
+		dw 0                               ;33
+		dw 0                               ;34
+		dw 0                               ;35
+		dw 0                               ;36
 
 
     .propogate_forward:
@@ -816,32 +816,33 @@ option_selection_mode:
         JSR FastMode_propogate_forward
         LDA #$01 ; coin sound
         STA $1DFC ; apu i/o
-        +
-        jmp .finish_no_change
+      + JMP .finish_no_change
+      
     .select_fast_mode_save:
-        lda !status_FastMode
-        bne +
-            LDA #$2A ; wrong sound
-            STA $1DFC ; apu i/o
-            jmp .finish_no_change
-        +
-        lda #$02
-        sta !overworld_menu_mode
+        LDA !status_fast_mode
+        BNE +
+        LDA #$2A ; wrong sound
+        STA $1DFC ; apu i/o
+        JMP .finish_no_change
+      + LDA #$02
+        STA !overworld_menu_mode
         LDA #$20
         STA !current_selection
-        stz !text_timer
+        STZ !text_timer
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
         LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
-        jmp .finish_no_change
+        JMP .finish_no_change
+        
     .select_fast_mode_delete_save:
         JSL reset_header
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
         LDA #$0B ; itembox sound
         STA $1DFC ; apu i/o
-        jmp .finish_no_change
+        JMP .finish_no_change
+        
     .select_meters:
         LDA.L !status_layout
         CMP #$03
@@ -858,10 +859,12 @@ option_selection_mode:
         STA !overworld_menu_mode
         STZ !text_timer
         JMP .no_update_text
+        
     .select_yoshi:
         LDA #$1F ; yoshi sound
         STA $1DFC ; apu i/o
         JMP .finish_no_change
+        
     .select_records:
         LDA #$24 ; "press select to confirm"
         STA $12 ; stripe image loader
@@ -873,14 +876,17 @@ option_selection_mode:
         LDA #$80 ; fade out music
         STA $1DFB ; apu i/o
         JMP .finish_no_change
+        
     .select_enemy:
         LDA #$01 ; coin sound
         STA $1DFC ; apu i/o
         JSR reset_enemy_states
         JMP .finish_no_change
+        
     .select_moviesave:
         JSR export_movie_to_sram
         JMP .finish_no_change
+        
     .select_movieload:
         JSR load_movie
         JMP .finish_no_change    
@@ -918,40 +924,41 @@ option_selection_mode:
     .no_update_text:
         RTS
 
+; take the selection option and apply it to all later levels in the route
 FastMode_propogate_forward:
-    LDA !current_selection
-    TAX
-    LDA selection_to_uncompressed_table-$20,X
-    TAX
-    sta $04
-    lda !FastMode_current_level
-    sta $05
-    lda !FastMode_save_current_level,X
-    sta $06
+        LDA !current_selection
+        TAX
+        LDA selection_to_uncompressed_table-$20,X
+        TAX
+        STA $04
+        LDA !fast_mode_current_level
+        STA $05
+        LDA !fast_mode_save_current_level,X
+        STA $06
 
-    LDY !FastMode_save_current_header+0
+        LDY !fast_mode_save_current_header+0
 
-    -
-    INC !FastMode_current_level
-    JSL retrieve_current_level
-    BEQ .done
+      - INC !fast_mode_current_level
+        JSL retrieve_current_level
+        BEQ .done
 
-    lda $04
-    tax
-    lda $06
-    STA !FastMode_save_current_level,X
-    JSL store_current_level
-    BRA -
+        LDA $04
+        TAX
+        LDA $06
+        STA !fast_mode_save_current_level,X
+        JSL store_current_level
+        BRA -
 
     .done:
-    LDA $05
-    sta !FastMode_current_level
-    JSL retrieve_current_level
+        LDA $05
+        STA !fast_mode_current_level
+        JSL retrieve_current_level
 
-    RTS
+        RTS
 
+; mapping of overworld menu options to indices into route level data
 selection_to_uncompressed_table:
-    db $09, $0a, $07, $08, $0b, $03, $01, $05, $04, $02, $06, $0c, $0e, $0d  
+    db $09,$0A,$07,$08,$0B,$03,$01,$05,$04,$02,$06,$0C,$0E,$0D
         
 ; copy currently loaded movie to sram
 export_movie_to_sram:
@@ -1301,7 +1308,7 @@ delete_all_data:
         BPL -
 
         LDA #$0000
-        sta $70000a
+        STA !restore_status_from_backup
         SEP #$30
         JSL reset_header
         PLB
@@ -1568,29 +1575,31 @@ draw_option_text:
       + LDA !text_timer
         BNE +
         BRL .draw_title_and_clear
+        
       + SEP #$30
         LDA !current_selection
         CMP #!number_of_options_pg1
-        bcc +
-            JSL retrieve_current_level
-            LDA !FastMode_save_current_header+0
-            BNE .saveExists
-                LDA #$00
-                bra .noSave
-            .saveExists:
-            LDA !FastMode_save_current_level+0
-            .noSave
-            REP #$30
-            AND #$00FF
-            ASL #5
-            ADC #level_names
-            sta $00
-            LDA.W #bank(level_names) ; bank of text
-            STA $02
-            lda #$0000
-            bra .cont
-      + 
+        BCC +
+        
+        JSL retrieve_current_level
+        LDA !fast_mode_save_current_header+0
+        BNE .saveExists
+        LDA #$00
+        BRA .noSave
+    .saveExists:
+        LDA !fast_mode_save_current_level+0
+    .noSave
         REP #$30
+        AND #$00FF
+        ASL #5
+        ADC #level_names
+        STA $00
+        LDA.W #bank(level_names) ; bank of text
+        STA $02
+        LDA #$0000
+        BRA .cont
+        
+      + REP #$30
         AND #$00FF
         ASL #6
         STA $00
@@ -1615,7 +1624,8 @@ draw_option_text:
         SEC
         SBC #$0008
         ASL #2
-        .cont
+        
+    .cont:
         CLC
         ADC #$52A0
         XBA
@@ -1671,28 +1681,31 @@ draw_option_value:
         ASL A
         TAX
         LDA option_value_lists,X
-        BEQ .exit
+        BEQ .exit_default
         BMI .continue
         CMP #$0001
         BNE .yoshi_powerup_hybrid
-            PHP
-            SEP #$30
-            JSL retrieve_current_header
-            BNE +
-            PLP
-                BRA .exit
-            +
-            LDA.B #(!FastMode_save_current_header+2)
-            sta $00
-            LDA.B #(!FastMode_save_current_header+2)>>8
-            sta $01
-            LDA.B #bank(!FastMode_save_current_header+2)
-            sta $02
-            PLP
-            LDX #$0008
-            LDY #$6652
-            BRA .exit+6
-        .yoshi_powerup_hybrid
+        
+        ; special case for route saves
+        PHP
+        SEP #$30
+        JSL retrieve_current_header
+        BNE +
+        PLP
+        BRA .exit_default
+        
+      + LDA.B #(!fast_mode_save_current_header+2)
+        STA $00
+        LDA.B #(!fast_mode_save_current_header+2)>>8
+        STA $01
+        LDA.B #bank(!fast_mode_save_current_header+2)
+        STA $02
+        PLP
+        LDX #$0008
+        LDY #$6652
+        BRA .exit
+        
+    .yoshi_powerup_hybrid:
         ORA #$8000
         PHA ; special case for yoshi color/powerup which is a hybrid
         LDA !current_selection
@@ -1702,7 +1715,7 @@ draw_option_value:
         AND #$00FF
         CMP #$0005
         PLA
-        BCS .exit
+        BCS .exit_default
         STA $00
         BRA .finish
         
@@ -1717,9 +1730,10 @@ draw_option_value:
         ASL #5
         ADC $00
         STA $00
-    .exit:
+    .exit_default:
         LDX #$0020
         LDY #$6052
+    .exit:
         LDA #$3030
         JSL draw_text_string
         

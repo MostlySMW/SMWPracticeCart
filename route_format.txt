@@ -1,0 +1,46 @@
+route format:
+
+header + list of levels
+
+header:
+    $00     : number of levels
+    $01     : x
+    $02-$09 : save name
+    $0A-$0F : x
+    
+level:
+    $00 : translevel
+    $01 : item box start
+    $02 : item box end
+    $03 : pppPPPms
+            ppp = ending powerup
+            PPP = starting powerup
+            m = midway start
+            s = special enabled
+    $04 : yyyYYYdd
+            yyy = ending yoshi
+            YYY = starting yoshi
+            dd = strictness
+    $05 : -eeegybr
+            eee = exit type
+            gybr = green, yellow, blue, red ! switch
+            
+===
+
+when not compressed, level:
+
+    $00 : translevel
+    $01 : item box start
+    $02 : item box end
+    $03 : start powerup
+    $04 : end powerup
+    $05 : start yoshi
+    $06 : end yoshi
+    $07 : red ! switch
+    $08 : blue ! switch
+    $09 : yellow ! switch
+    $0A : green ! switch
+    $0B : special enable
+    $0C : midway enable
+    $0D : exit type
+    $0E : strict mode

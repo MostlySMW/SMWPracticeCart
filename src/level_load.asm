@@ -50,15 +50,15 @@ l_r_functions:
         dw setup_level_reset
         dw setup_room_advance
         
-; if lag is disabled, disable saving a time
+; if entered via midway, disable saving a time
 check_midway:
         LDA.L !midway_enable_flag
         BEQ +
-        lda #$01
+        LDA #$01
         STA.L !spliced_run
-        +
-        RTS
+      + RTS
 
+; if lag is disabled, disable saving a time
 check_lagless:
         LDA.L !status_scorelag
         BNE +
@@ -723,7 +723,7 @@ init_statusbar_properties:
         PHB
         SEP #$30
 
-        LDA !FastMode_start_play
+        LDA !fast_mode_start_play
         BEQ +
           JSL init_original_statusbar_properties
           bra .continue
@@ -760,7 +760,7 @@ init_statusbar_properties:
         BPL -
         
 
-        .continue
+    .continue:
         PHK
         PLB
         

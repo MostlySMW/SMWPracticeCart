@@ -121,7 +121,7 @@ display_meters_wrapper:
 
 ; display all the selected statusbar meters
 display_meters:
-        LDA !FastMode_start_play
+        LDA !fast_mode_start_play
         BEQ +
         JSL draw_original_statusbar
         RTS

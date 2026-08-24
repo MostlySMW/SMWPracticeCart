@@ -130,13 +130,12 @@ ORG !_F+$008449
 ORG !_F+$00CC68
         JMP $CCBB
 nmi_draw_hijack:
-        lda !in_overworld_menu
-        beq +
+        LDA !in_overworld_menu
+        BEQ +
         JSL menu_nmi_draw_tiles
-        rts
-        +
-        JSR $a4e3
-        JSR $a300
+        RTS
+      + JSR $A4E3
+        JSR $A300
         RTS
 
 ORG !_F+$008237
@@ -592,7 +591,7 @@ ORG !_F+$05BF42
 ORG !_F+$05C5ED
         JSL pal_l2_4
 
-org !_F+$00A093
+ORG !_F+$00A093
         JSR fade_to_overworld_hijack
-org !_F+$00968e
+ORG !_F+$00968E
         JSR pre_level_load_hijack

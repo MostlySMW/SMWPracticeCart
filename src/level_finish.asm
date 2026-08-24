@@ -6,14 +6,14 @@ reset bytes
 ; X = 1 if the secret exit was activated, 0 otherwise
 level_finish:
         PHP
-        stx !most_recent_exit
-        lda !FastMode_start_play
+        STX !most_recent_exit
+        LDA !fast_mode_start_play
         BEQ +
-            LDA #$0B    ; End level quicker
-            STA $0100
-            
-        +
-        LDA #$01
+        
+        LDA #$0B ; End level quicker in fast mode
+        STA $0100
+           
+      + LDA #$01
         STA !freeze_timer_flag
         STA !level_finished
         JSL set_time_save_address
