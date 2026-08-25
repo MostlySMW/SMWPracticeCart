@@ -117,6 +117,9 @@ overworld_load:
 ; this code is run once on overworld load, but after everything else has loaded already
 late_overworld_load:
         PHP
+        SEP #$30
+        JSL reload_layer3_graphics
+        
         SEP #$20
         REP #$10
         
@@ -200,6 +203,37 @@ late_overworld_load:
         LDX #sprite_slots_graphics
         LDY #$02A0
         JSL load_vram
+        
+        PLP
+        RTL
+        
+; reload the layer 3 graphics on overworld load
+; basically taken from vanilla game
+reload_layer3_graphics:
+        PHP
+        REP #$30
+        LDA #$4800
+        STA $2116 ; vram address
+        LDA #$012A ; upload 2 files, $2A and $2B
+        STA $0E
+        SEP #$30
+        
+     -- LDA $0E
+        TAY
+        JSL !_F+$00BA28 ; prepare graphics file
+        REP #$30
+        LDX #$03FF
+        LDY #$0000
+      - LDA [$00],Y
+        STA $2118 ; vram data
+        INY #2
+        DEX
+        BPL -
+        
+        SEP #$30
+        INC $0E
+        DEC $0F
+        BPL --
         
         PLP
         RTL

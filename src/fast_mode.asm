@@ -580,6 +580,7 @@ attempt_level_advance:
         BRA .next_level_hop
         
       + CMP #$02
+        BNE +
         LDA $0DD5
         CMP #$81
         BNE .no_advance_hop
@@ -587,7 +588,8 @@ attempt_level_advance:
     .next_level_hop:
         BRA .next_level
         
-        CMP #$03
+      + CMP #$03
+        BNE .next_level ; shouldn't happen
         LDA $0DD5
         CMP #$82
         BEQ .next_level

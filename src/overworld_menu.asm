@@ -140,72 +140,79 @@ upload_overworld_menu_graphics:
         
         LDX #$2000
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer1_tilemap
+        LDA.B #bank(menu_layer1_tilemap)
         LDX #menu_layer1_tilemap
         LDY #$0800
         JSL load_vram
         
         LDX #$0000
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer2_tiles
+        LDA.B #bank(menu_layer2_tiles)
         LDX #menu_layer2_tiles
         LDY #$4000
         JSL load_vram
         
         LDX #$3000
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer2_tilemap
+        LDA.B #bank(menu_layer2_tilemap)
         LDX #menu_layer2_tilemap
         LDY #$0800
         JSL load_vram
         
         LDX #$3400
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer2_tilemap
+        LDA.B #bank(menu_layer2_tilemap)
         LDX #menu_layer2_tilemap
         LDY #$0800
         JSL load_vram
         
         LDX #$3800
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer2_tilemap
+        LDA.B #bank(menu_layer2_tilemap)
         LDX #menu_layer2_tilemap
         LDY #$0800
         JSL load_vram
         
         LDX #$3C00
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer2_tilemap
+        LDA.B #bank(menu_layer2_tilemap)
         LDX #menu_layer2_tilemap
         LDY #$0800
         JSL load_vram
         
         LDX #$6000
         STX $2116 ; vram address
-        LDA #$18 ; #bank of menu_object_tiles
+        LDA.B #bank(menu_object_tiles)
         LDX #menu_object_tiles
         LDY #$1000
         JSL load_vram
         
         LDA #$00
         STA $2121 ; cgram address
-        LDA #$19 ; #bank of menu_palette
+        LDA.B #bank(menu_palette)
         LDX #menu_palette
         LDY #$0100
         JSL load_cgram
         
         LDA #$80
         STA $2121 ; cgram address
-        LDA #$19 ; #bank of menu_palette
+        LDA.B #bank(menu_palette)
         LDX #menu_palette
         LDY #$0100
         JSL load_cgram
         
         LDX #$5000
         STX $2116 ; vram address
-        LDA #$19 ; #bank of menu_layer3_tilemap
+        LDA.B #bank(menu_layer3_tilemap)
         LDX #menu_layer3_tilemap
         LDY #$0800
+        JSL load_vram
+        
+        LDX #$4800
+        STX $2116 ; vram address
+        LDA.B #bank(menu_layer3_tiles)
+        LDX #menu_layer3_tiles
+        LDY #$1000
         JSL load_vram
         
         PLP
@@ -315,6 +322,8 @@ menu_option_tiles:
         incbin "bin/menu_option_tiles.bin"
 menu_object_tiles:
         incbin "bin/menu_object_tiles.bin"
+menu_layer3_tiles:
+        incbin "bin/menu_layer3_tiles.bin"
         
 ; See level_mario_appear.asm for option_text
 
@@ -1663,12 +1672,14 @@ draw_option_text:
     .noSave
         REP #$30
         AND #$00FF
-        ASL #5
+        ASL #4
         ADC #level_names
         STA $00
         LDA.W #bank(level_names) ; bank of text
         STA $02
-        LDA #$0000
+        LDY #$A052
+        LDX #$0010
+        LDA #$2D2D
         BRA .cont
         
       + REP #$30
@@ -1696,14 +1707,14 @@ draw_option_text:
         SEC
         SBC #$0008
         ASL #2
-        
-    .cont:
         CLC
         ADC #$52A0
         XBA
         TAY
         LDX #$0020
         LDA #$3838
+        
+    .cont:
         JSL draw_text_string
         BRL .done
     .draw_title_and_clear:
