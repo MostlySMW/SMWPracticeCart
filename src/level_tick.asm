@@ -2193,6 +2193,8 @@ mode7_xy:
         LDA #$07
         RTL
 
+    ; This is called after syncing with hblank, so all code 
+    ; paths should return in the same amount of time
 layer_1_y:
         LDA $13FC   ; ActiveBoss
         CMP #$03    ; Bowser
@@ -2207,6 +2209,7 @@ layer_1_y:
         STA $210E   ; HW_BG1VOFS
         LDA $1D     ; Layer1YPos+1
         STA $210E   ; HW_BG1VOFS
+        NOP #11     ; Delay to match longest code path
         RTL
         
     ; To prevent layer1 and OAM from appearing misaligned,
@@ -2227,13 +2230,14 @@ layer_1_y:
         ADC $1888   ; ScreenShakeYOffset
         STA !bowser_layer1_y_pos
         SEP #$20
-        RTL
+        RTL         ; Longest code path
         
     .bowser_irq
         LDA !bowser_layer1_y_pos
         STA $210E
         LDA !bowser_layer1_y_pos+1
         STA $210E
+        NOP #12     ; Delay to match longest code path
         RTL
         
     .offset:
