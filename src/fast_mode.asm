@@ -13,23 +13,6 @@ FastMode_save_locations:
 ALL_CASTLES_SAVE:
         incbin "bin/routes/AllCastles.smwroute"
 
-; Retrieves current header from either save 1,2,3 based on status_fastmode
-; stores to FastMode_save_current_header
-; on exit: A=0, if invalid, a=1 if valid
-;          x = 0 if save 1 -- 4 if save 2 -- 8 if save 3
-default_header_1:
-        db $00,$00
-        db $1C,$0A,$1F,$0E,$26,$01,$26,$26
-        db $00,$00,$00,$00,$00,$00
-default_header_2:
-        db $00,$00
-        db $1C,$0A,$1F,$0E,$26,$02,$26,$26
-        db $00,$00,$00,$00,$00,$00
-default_header_3:
-        db $00,$00
-        db $1C,$0A,$1F,$0E,$26,$03,$26,$26
-        db $00,$00,$00,$00,$00,$00
-
 reset_header:
         PHB
         PHK
@@ -39,7 +22,7 @@ reset_header:
         CMP #$01
         BNE +
         
-      - LDA default_header_1,X
+      - LDA #$00
         STA !fast_mode_save_1_header,X
         STA !fast_mode_save_current_header,X
         DEX
@@ -49,7 +32,7 @@ reset_header:
       + CMP #$02
         BNE +
         
-      - LDA default_header_2,X
+      - LDA #$00
         STA !fast_mode_save_2_header,X
         STA !fast_mode_save_current_header,X
         DEX
@@ -59,7 +42,7 @@ reset_header:
       + CMP #$03
         BNE +
         
-      - LDA default_header_3,X
+      - LDA #$00
         STA !fast_mode_save_3_header,X
         STA !fast_mode_save_current_header,X
         DEX
@@ -67,11 +50,9 @@ reset_header:
         JMP .done
         
       + 
-      - LDA default_header_1,X
+      - LDA #$0
         STA !fast_mode_save_1_header,X
-        LDA default_header_2,X
         STA !fast_mode_save_2_header,X
-        LDA default_header_3,X
         STA !fast_mode_save_3_header,X
         DEX
         BPL -
@@ -80,6 +61,11 @@ reset_header:
         PLB
         RTL
 
+
+; Retrieves current header from either save 1,2,3 based on status_fastmode
+; stores to FastMode_save_current_header
+; on exit: A=0, if invalid, a=1 if valid
+;          x = 0 if save 1 -- 4 if save 2 -- 8 if save 3
 retrieve_current_header:
         PHB
         PHK

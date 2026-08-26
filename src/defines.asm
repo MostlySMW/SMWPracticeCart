@@ -87,7 +87,7 @@
 
 ; the number of options in the overworld menu
 !number_of_options_pg1       = 32
-!number_of_options_pg2       = 23
+!number_of_options_pg2       = 15
 !number_of_options           = !number_of_options_pg1+!number_of_options_pg2
 ; status flags for each of the overworld menu options
 !status_table                = $705000 ; $37 bytes
@@ -136,7 +136,6 @@
 !status_fast_mode_difficulty     = !status_table+$2c
 !status_fast_mode_exit_type      = !status_table+$2d ;normal | secret | Ss | Death | 
 !status_fast_mode_delete         = !status_table+$2e
-!status_fast_mode_save_name      = !status_table+$2f ; 8 bytes
 
 !backup_status_table         = $705100 ; $20 bytes
 
@@ -219,13 +218,13 @@
 !translevel_swap_exit_B      = $41 ; fgh
 
 ; the number of intentional exit types completed upon system boot
-!exit_type_count             = $0E35
+!exit_type_count             = $0DF5
 ; sum of all intentional exit type times (only valid if all exit types completed)
 ; also used to keep track of a fast mode run time
-!total_frames                = $0E3C
-!total_seconds               = $0E3D
-!total_minutes               = $0E3E
-!total_hours                 = $0E3F
+!total_frames                = $0DF6
+!total_seconds               = $0DF7
+!total_minutes               = $0DF8
+!total_hours                 = $0DF9
 
 ; the translevels of the current movies, 00 = no movie
 !level_movie_slots           = $0695 ; 3 bytes
@@ -275,11 +274,12 @@
 !fast_mode_start_play          = $06A2   ; Used to determine if play should start on next overworld load
 !fast_mode_current_level       = $06A0   ; 
 
+!fast_mode_header_length       = $10
 !fast_mode_save_1_header       = $705200 ; #Levels
-!fast_mode_save_1              = $705210 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!fast_mode_save_1              = !fast_mode_save_1_header+!fast_mode_header_length
 
 !fast_mode_save_2_header       = $705600 ; #Levels
-!fast_mode_save_2              = $705610 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!fast_mode_save_2              = !fast_mode_save_2_header+!fast_mode_header_length
 
 !fast_mode_save_3_header       = $705A00 ; #Levels
-!fast_mode_save_3              = $705A10 ; Translevel  | Level Start Item | Level end Item | Level end Power + Level Start Power
+!fast_mode_save_3              = !fast_mode_save_3_header+!fast_mode_header_length

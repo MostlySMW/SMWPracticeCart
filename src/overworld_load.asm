@@ -235,6 +235,10 @@ reload_layer3_graphics:
         DEC $0F
         BPL --
         
+        LDA #$14 ; file $14 for animated tiles
+        TAY
+        JSL !_F+$00BA28 ; prepare graphics file
+        
         PLP
         RTL
 
@@ -670,8 +674,12 @@ shadow_palette_hdma:
         dw $0D0D,$573B
         db $01
         dw $0E0E,$551E
-        db $28
+        db $01
         dw $0F0F,$0000
+        db $01
+        dw $1D1D,$573B
+        db $26
+        dw $1F1F,$0000
         db $01
         dw $0D0D,$3E75
         db $01

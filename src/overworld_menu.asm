@@ -288,36 +288,30 @@ draw_menu_selection:
 option_x_position:
         db $06,$06,$06,$06,$06,$09,$09,$09,$09,$18,$0C,$15,$12,$12,$15,$0C
         db $0F,$0F,$0C,$0F,$18,$0F,$12,$15,$12,$15,$0E,$10,$12,$14,$0C,$18
-        db $23,$23,$23,$23,$2C,$26,$26,$26,$29,$29,$29,$29,$2F,$26,$2F,$23
-        db $25,$27,$29,$2B,$2D,$2F,$31
+        db $26,$26,$26,$26,$26,$29,$29,$29,$2C,$2C,$2C,$2C,$29,$29,$2C
 option_y_position:
         db $03,$06,$09,$0C,$0F,$06,$09,$0C,$03,$0F,$09,$06,$0C,$09,$09,$0F
         db $06,$09,$06,$0C,$03,$0F,$06,$0C,$0F,$0F,$02,$02,$02,$02,$0C,$0C
-        db $03,$06,$09,$0C,$03,$06,$09,$0C,$06,$09,$0C,$03,$03,$03,$06,$0F
-        db $0F,$0F,$0F,$0F,$0F,$0F,$0F
+        db $03,$06,$09,$0C,$0F,$06,$09,$0C,$06,$09,$0C,$03,$0F,$03,$0F
 option_width:
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$08,$08,$08,$08,$10,$10
-        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$08
-        db $08,$08,$08,$08,$08,$08,$08
+        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
 option_height:
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
-        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
-        db $10,$10,$10,$10,$10,$10,$10
+        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
 option_type:
         db $01,$01,$01,$01,$01,$01,$01,$01,$02,$03,$01,$01,$01,$01,$01,$01
         db $01,$01,$01,$01,$03,$01,$01,$01,$03,$03,$01,$01,$01,$01,$01,$01
-        db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$03,$01
-        db $01,$01,$01,$01,$01,$01,$01
+        db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$03
 option_index:
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
         dw $030B,$030C,$0319,$031E,$0321,$0323,$0325,$0327
         dw $0329,$032C,$0337,$033F,$0341,$0347,$0349,$03AE
         dw $03B0,$03B2,$03BA,$03BA,$03BA,$03BA,$03B6,$03E3
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
-        dw $000B,$010B,$020B,$03EC,$03EE,$03E8,$030C,$03BA
-        dw $03BA,$03BA,$03BA,$03BA,$03BA,$03BA,$03BA
+        dw $000B,$010B,$020B,$03EC,$03EE,$03E8,$030C
 menu_option_tiles:
         incbin "bin/menu_option_tiles.bin"
 menu_object_tiles:
@@ -357,37 +351,31 @@ menu_palette:
 selection_press_up:
         db $04,$00,$01,$02,$03,$08,$05,$06,$07,$1F,$12,$1D,$0D,$16,$0B,$1E
         db $1B,$10,$1A,$11,$09,$13,$1C,$0E,$0C,$17,$0F,$15,$18,$19,$0A,$14
-        db $2F,$20,$21,$22,$34,$2D,$25,$26,$2B,$28,$29,$32,$35,$31,$2C,$23
-        db $23,$27,$2A,$2A,$24,$2E,$2E
+        db $24,$20,$21,$22,$23,$2D,$25,$26,$2B,$28,$29,$2E,$27,$2C,$2A
 selection_press_down:
         db $01,$02,$03,$04,$00,$06,$07,$08,$05,$14,$1E,$0E,$18,$0C,$17,$1A
         db $11,$13,$0A,$15,$1F,$1B,$0D,$19,$1C,$1D,$12,$10,$16,$0B,$0F,$09
-        db $21,$22,$23,$2F,$34,$26,$27,$31,$29,$2A,$32,$28,$2E,$25,$35,$20
-        db $20,$2D,$2B,$2B,$24,$2C,$2C
+        db $21,$22,$23,$24,$20,$26,$27,$2C,$29,$2A,$2E,$28,$2D,$25,$2B
 selection_press_left:
         db $14,$0B,$0E,$1F,$09,$01,$02,$03,$00,$19,$06,$16,$13,$11,$0D,$04
         db $12,$0A,$05,$1E,$1D,$0F,$10,$0C,$15,$18,$08,$1A,$1B,$1C,$07,$17
-        db $2C,$2E,$29,$2A,$2B,$21,$22,$23,$25,$26,$27,$2D,$24,$20,$28,$36
-        db $2F,$30,$31,$32,$33,$34,$35
+        db $2C,$2E,$29,$2A,$2E,$21,$22,$23,$25,$26,$27,$2D,$24,$20,$2C
 selection_press_right:
         db $08,$05,$06,$07,$0F,$12,$0A,$1E,$1A,$04,$11,$01,$17,$0E,$02,$15
         db $16,$0D,$10,$0C,$00,$18,$0B,$1F,$19,$09,$1B,$1C,$1D,$14,$13,$03
-        db $2D,$25,$26,$27,$2C,$28,$29,$2A,$2E,$22,$23,$24,$20,$2B,$21,$30
-        db $31,$32,$33,$34,$35,$36,$2F
+        db $2D,$25,$26,$27,$2C,$28,$29,$2A,$2E,$22,$23,$24,$2E,$2B,$24
 
 ; the number of options to allow when holding x or y
 minimum_selection_extended:
         db $01,$01,$01,$01,$01,$FF,$FF,$FF,$00,$0C,$04,$02,$01,$01,$01,$01
         db $02,$0A,$07,$01,$05,$01,$64,$01,$01,$03,$28,$28,$28,$28,$03,$04
-        db $01,$01,$01,$01,$01,$07,$FF,$07,$07,$FF,$07,$01,$02,$03,$00,$28
-        db $28,$28,$28,$28,$28,$28,$28
+        db $01,$01,$01,$01,$01,$07,$FF,$07,$07,$FF,$07,$01,$02,$03,$00
 
 ; the number of options to allow when not holding x or y
 minimum_selection_normal:
         db $01,$01,$01,$01,$01,$03,$04,$04,$00,$0C,$04,$02,$01,$01,$01,$01
         db $02,$0A,$07,$01,$05,$01,$37,$01,$01,$03,$28,$28,$28,$28,$03,$03
-        db $01,$01,$01,$01,$01,$03,$04,$04,$03,$04,$04,$01,$02,$01,$00,$28
-        db $28,$28,$28,$28,$28,$28,$28
+        db $01,$01,$01,$01,$01,$03,$04,$04,$03,$04,$04,$01,$02,$01,$00
 
 ; this code is run on every frame during the overworld menu game mode (after fade in completes)
 ; GAME MODE #$1F
@@ -515,12 +503,6 @@ unpack_FastMode_level_settings:
         LDA !fast_mode_save_current_level+14
         STA !status_fast_mode_difficulty
 
-        LDX #$07
-      - LDA !fast_mode_save_current_header+2,X
-        STA !status_fast_mode_save_name,X
-        DEX 
-        BPL -
-
         LDA !fast_mode_save_current_level+1
         STA !status_fast_mode_start_item
 
@@ -567,12 +549,6 @@ pack_FastMode_level_settings:
 
         LDA !status_fast_mode_difficulty
         STA !fast_mode_save_current_level+14
-
-        LDX #$07
-      - LDA !status_fast_mode_save_name,X
-        STA !fast_mode_save_current_header+2,X
-        DEX 
-        BPL -
 
         LDA !status_fast_mode_start_item
         STA !fast_mode_save_current_level+1
@@ -862,14 +838,6 @@ option_selection_mode:
 		dw .propogate_forward              ;2C
 		dw .propogate_forward              ;2D
 		dw .select_fast_mode_delete_save   ;2E
-		dw 0                               ;2F
-		dw 0                               ;30
-		dw 0                               ;31
-		dw 0                               ;32
-		dw 0                               ;33
-		dw 0                               ;34
-		dw 0                               ;35
-		dw 0                               ;36
 
 
     .propogate_forward:
@@ -1659,30 +1627,7 @@ draw_option_text:
         
       + SEP #$30
         LDA !current_selection
-        CMP #!number_of_options_pg1
-        BCC +
-        
-        JSL retrieve_current_level
-        LDA !fast_mode_save_current_header+0
-        BNE .saveExists
-        LDA #$00
-        BRA .noSave
-    .saveExists:
-        LDA !fast_mode_save_current_level+0
-    .noSave
         REP #$30
-        AND #$00FF
-        ASL #4
-        ADC #level_names
-        STA $00
-        LDA.W #bank(level_names) ; bank of text
-        STA $02
-        LDY #$A052
-        LDX #$0010
-        LDA #$2D2D
-        BRA .cont
-        
-      + REP #$30
         AND #$00FF
         ASL #6
         STA $00
@@ -1713,10 +1658,9 @@ draw_option_text:
         TAY
         LDX #$0020
         LDA #$3838
-        
-    .cont:
         JSL draw_text_string
         BRL .done
+        
     .draw_title_and_clear:
         REP #$30
         LDA !current_selection
@@ -1766,27 +1710,6 @@ draw_option_value:
         LDA option_value_lists,X
         BEQ .exit_default
         BMI .continue
-        CMP #$0001
-        BNE .yoshi_powerup_hybrid
-        
-        ; special case for route saves
-        PHP
-        SEP #$30
-        JSL retrieve_current_header
-        BNE +
-        PLP
-        BRA .exit_default
-        
-      + LDA.B #(!fast_mode_save_current_header+2)
-        STA $00
-        LDA.B #(!fast_mode_save_current_header+2)>>8
-        STA $01
-        LDA.B #bank(!fast_mode_save_current_header+2)
-        STA $02
-        PLP
-        LDX #$0008
-        LDY #$6652
-        BRA .exit
         
     .yoshi_powerup_hybrid:
         ORA #$8000
