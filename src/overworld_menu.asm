@@ -646,7 +646,7 @@ FastMode_editor_mode:
         BEQ .no_y                                           ; |
                                                             ; |
         LDA !util_byetudlr_frame                            ; | 
-        BIT #$08                                            ; | if Y+UP, increment level counter
+        BIT #$04                                            ; | if Y+Down, increment level counter
         BEQ .check_ydown                                    ; | 
         
         JSR pack_FastMode_level_settings                    ; | Pack away old values before increment
@@ -661,10 +661,12 @@ FastMode_editor_mode:
         STZ !text_timer                                     ; |
         JSR unpack_FastMode_level_settings                  ; | unpack new values after increment
         JSR RedrawPg2
+        JSL draw_route_level_list
+        BRA .no_y
 
     .check_ydown:
         LDA !util_byetudlr_frame                            ; |
-        BIT #$04                                            ; | if Y+Down, decrement level counter
+        BIT #$08                                            ; | if Y+Up, decrement level counter
         BEQ .no_y                                           ; |
         JSR pack_FastMode_level_settings                    ; |
         DEC !fast_mode_current_level                        ; |
@@ -676,6 +678,7 @@ FastMode_editor_mode:
         STZ !text_timer                                     ; |
         JSR unpack_FastMode_level_settings                  ; |
         JSR RedrawPg2                                       ; /
+        JSL draw_route_level_list
         
     .no_y:
         JSR option_selection_mode
@@ -886,6 +889,7 @@ option_selection_mode:
         LDA #$20
         STA !current_selection
         STZ !text_timer
+        JSL draw_route_level_list
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
         LDA #$0B ; on/off sound
@@ -893,7 +897,6 @@ option_selection_mode:
         JMP .finish_no_change
         
     .select_fast_mode_delete_save:
-        JSL draw_route_level_list ; debug
         JSL reset_header
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
@@ -1861,6 +1864,10 @@ draw_text_string:
         TYA
         STA.L $7F837D,X
         LDA $0C
+        PHA
+        AND #$3FFF
+        STA $0C
+        PLA
         ASL A
         DEC A
         XBA
@@ -1892,6 +1899,28 @@ draw_text_string:
         LDA #$FFFF
         STA.L $7F837D,X
         PLA
+        RTL
+
+; draw a single tile
+; and A holds the property and tile
+; X (16-bit) holds the vram address
+draw_single_tile:
+        STA $0C
+        PHX
+        LDA.L $7F837B
+        TAX
+        PLA
+        STA.L $7F837D,X
+        LDA #$0100
+        STA.L $7F837F,X
+        LDA $0C
+        STA.L $7F8381,X
+        LDA #$FFFF
+        STA.L $7F8383,X
+        TXA
+        CLC
+        ADC #$0006
+        STA.L $7F837B
         RTL
 
 ; draw a cursor
@@ -2093,12 +2122,14 @@ draw_cursor_bit:
         RTS        
         
 ; draw the list of levels in the current fast mode route
+; list maxes at 12 long
+; uses $00-$08
 draw_route_level_list:
         PHP
         SEP #$30
         LDA !status_fast_mode
         BNE +
-        JMP .exit
+        BRL .exit
         
       + DEC A
         ASL #2
@@ -2110,6 +2141,7 @@ draw_route_level_list:
         LDA.L FastMode_header_locations+2,X
         STA $02
         LDA [$00] ; number of levels
+        STA $03 ; number of levels in route
         BNE .not_empty
         
         LDA.B #level_names
@@ -2119,60 +2151,166 @@ draw_route_level_list:
         LDA.B #bank(level_names)
         STA $02
         REP #$30
+        LDA #$28FC ; blank tile
+        LDX #$F554 ; address
+        JSL draw_single_tile
+        LDA #$28FC ; blank tile
+        LDX #$9556 ; address
+        JSL draw_single_tile
         LDX #$0010
-        LDY #$0E55
+        LDA #$5511 ; address
+        STA $04
+        XBA
+        TAY
         LDA #$2D2D
         JSL draw_text_string
-        JMP .exit
+        
+        LDA.W #level_names_empty
+        STA $00
+      - LDA $04
+        CLC
+        ADC #$0020
+        CMP #$5511+($20*12)
+        BEQ +
+        STA $04
+        XBA
+        TAY
+        LDX #$0010
+        LDA #$2D2D
+        JSL draw_text_string
+        BRA -
+        
+      + LDX #$400C ; hack for vertical string
+        LDY #$1055
+        LDA #$2929
+        JSL draw_text_string
+        BRL .exit
         
     .not_empty:
-        CMP #12+1 ; max number of levels to show
+        PHX
+        
+        LDA !fast_mode_current_level
+        PHA
+      - CMP #12
         BCC +
-        LDA #12
-      + STA $03
+        SEC
+        SBC #12
+        BRA -
+        
+      + STA $08
+        PLA
+        SEC
+        SBC $08
+        
+        STA $08
+        CMP #$01
+        REP #$30
+        LDA #$28FC ; blank tile
+        BCC + ; if more levels exit, draw arrow
+        LDA #$2841 ; arrow tile
+      + LDX #$F554 ; address
+        JSL draw_single_tile
+        
+        LDA.W #level_names_empty
+        STA $00
+        LDA.W #level_names_empty>>8
+        STA $01
+        LDX #$400C ; hack for vertical string
+        LDY #$1055
+        LDA #$2929
+        JSL draw_text_string
+        
+        SEP #$30
+        PLX
+        STZ $07 ; number of levels to show
         LDA.L FastMode_save_locations,X
         STA $04
         LDA.L FastMode_save_locations+1,X
         STA $05
         LDA.L FastMode_save_locations+2,X
         STA $06
-        LDA.B #bank(level_names)
-        STA $02
         
-      - DEC $03
-        BMI .exit
-        LDA $03
+      - LDA $07
+        CMP #12 ; max levels to show
+        BNE .not_finished
+        LDA $08
+        CMP $03
+        REP #$30
+        LDA #$28FC ; blank tile
+        BCS + ; if more levels exit, draw arrow
+        LDA #$2842 ; arrow tile
+      + LDX #$9556 ; address
+        JSL draw_single_tile
+        BRL .exit
+        
+    .not_finished:
+        LDA $08
+        CMP $03
+        BCC .level
+        REP #$30
+        LDA.W #level_names_empty
+        STA $00
+        JMP .merge
+        
+    .level:
+        REP #$30
+        AND #$00FF
         ASL #3
         TAY
         LDA [$04],Y
-        REP #$30
         AND #$00FF
         ASL #4
         CLC
         ADC.W #level_names
         STA $00
-        LDX #$0010
-        LDA $03
+    .merge:
+        LDX.W #10
+        LDA $08
+        EOR !fast_mode_current_level
+        AND #$00FF
+        BEQ .highlight_me
+        INY #5
+        LDA [$04],Y
+        AND #$00F0
+        BEQ .normal_exit
+        LDA #$3D3D
+        BRA +
+    .normal_exit:
+        LDA #$2D2D
+        BRA +
+    .highlight_me:
+        PHX
+        LDA $07
+        AND #$00FF
         ASL #5
         CLC
-        ADC #$550E
+        ADC #$5510 ; address
+        XBA
+        TAX
+        LDA #$2C40 ; arrow tile
+        JSL draw_single_tile
+        PLX
+        LDA #$2929
+        
+      + PHA
+        LDA $07
+        AND #$00FF
+        ASL #5
+        CLC
+        ADC #$5511
         XBA
         TAY
-        LDA #$2D2D
+        PLA
         JSL draw_text_string
         SEP #$30
-        BRA -
+        INC $07
+        INC $08
+        BRL -
         
         
     .exit:
         PLP
         RTL
-    
-; draw a text string
-; where $00|01|02 holds the pointer to the string
-; and A holds the property byte for the text
-; X (16-bit) holds the length of the string
-; and Y (16-bit) holds the 16-bit header for the stripe image
 
 ; check the saved options, and if any are out of bounds, set them to zero as a failsafe
 failsafe_check_option_bounds:
