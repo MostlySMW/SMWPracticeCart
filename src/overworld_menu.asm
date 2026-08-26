@@ -292,30 +292,30 @@ draw_menu_selection:
 option_x_position:
         db $06,$06,$06,$06,$06,$09,$09,$09,$09,$18,$0C,$15,$12,$12,$15,$0C
         db $0F,$0F,$0C,$0F,$18,$0F,$12,$15,$12,$15,$0E,$10,$12,$14,$0C,$18
-        db $26,$26,$26,$26,$26,$29,$29,$29,$2C,$2C,$2C,$29,$2C,$2C,$29
+        db $26,$26,$26,$26,$26,$29,$29,$29,$2C,$2C,$2C,$29,$2C,$23,$23,$23
 option_y_position:
         db $03,$06,$09,$0C,$0F,$06,$09,$0C,$03,$0F,$09,$06,$0C,$09,$09,$0F
         db $06,$09,$06,$0C,$03,$0F,$06,$0C,$0F,$0F,$02,$02,$02,$02,$0C,$0C
-        db $03,$06,$09,$0C,$0F,$06,$09,$0C,$06,$09,$0C,$03,$0F,$03,$0F
+        db $03,$06,$09,$0C,$0F,$06,$09,$0C,$06,$09,$0C,$03,$03,$03,$06,$0F
 option_width:
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$08,$08,$08,$08,$10,$10
-        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
+        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
 option_height:
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
-        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
+        db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
 option_type:
         db $01,$01,$01,$01,$01,$01,$01,$01,$02,$03,$01,$01,$01,$01,$01,$01
         db $01,$01,$01,$01,$03,$01,$01,$01,$03,$03,$01,$01,$01,$01,$01,$01
-        db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$03
+        db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$03
 option_index:
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
         dw $030B,$030C,$0319,$031E,$0321,$0323,$0325,$0327
         dw $0329,$032C,$0337,$033F,$0341,$0347,$0349,$03AE
         dw $03B0,$03B2,$03BA,$03BA,$03BA,$03BA,$03B6,$03E3
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
-        dw $000B,$010B,$020B,$03EC,$03EE,$03E8,$030C
+        dw $000B,$010B,$020B,$03EC,$03E8,$03F1,$03F4,$03F7
 menu_option_tiles:
         incbin "bin/menu_option_tiles.bin"
 menu_object_tiles:
@@ -355,31 +355,31 @@ menu_palette:
 selection_press_up:
         db $04,$00,$01,$02,$03,$08,$05,$06,$07,$1F,$12,$1D,$0D,$16,$0B,$1E
         db $1B,$10,$1A,$11,$09,$13,$1C,$0E,$0C,$17,$0F,$15,$18,$19,$0A,$14
-        db $24,$20,$21,$22,$23,$2B,$25,$26,$2D,$28,$29,$2E,$2A,$2C,$27
+        db $24,$20,$21,$22,$23,$2B,$25,$26,$2C,$28,$29,$27,$2A,$2F,$2D,$2E
 selection_press_down:
         db $01,$02,$03,$04,$00,$06,$07,$08,$05,$14,$1E,$0E,$18,$0C,$17,$1A
         db $11,$13,$0A,$15,$1F,$1B,$0D,$19,$1C,$1D,$12,$10,$16,$0B,$0F,$09
-        db $21,$22,$23,$24,$20,$26,$27,$2E,$29,$2A,$2C,$25,$2D,$28,$2B
+        db $21,$22,$23,$24,$20,$26,$27,$2B,$29,$2A,$2C,$25,$28,$2E,$2F,$2D
 selection_press_left:
         db $14,$0B,$0E,$1F,$09,$01,$02,$03,$00,$19,$06,$16,$13,$11,$0D,$04
         db $12,$0A,$05,$1E,$1D,$0F,$10,$0C,$15,$18,$08,$1A,$1B,$1C,$07,$17
-        db $2D,$2E,$29,$2A,$2C,$21,$22,$23,$25,$26,$27,$20,$2E,$2B,$24
+        db $2D,$2E,$29,$2A,$2F,$21,$22,$23,$25,$26,$27,$20,$2B,$2C,$28,$24
 selection_press_right:
         db $08,$05,$06,$07,$0F,$12,$0A,$1E,$1A,$04,$11,$01,$17,$0E,$02,$15
         db $16,$0D,$10,$0C,$00,$18,$0B,$1F,$19,$09,$1B,$1C,$1D,$14,$13,$03
-        db $2B,$25,$26,$27,$2E,$28,$29,$2A,$2E,$22,$23,$2D,$24,$20,$2C
+        db $2B,$25,$26,$27,$2F,$28,$29,$2A,$2E,$22,$23,$2C,$2D,$20,$21,$24
 
 ; the number of options to allow when holding x or y
 minimum_selection_extended:
         db $01,$01,$01,$01,$01,$FF,$FF,$FF,$00,$0C,$04,$02,$01,$01,$01,$01
         db $02,$0A,$07,$01,$05,$01,$64,$01,$01,$03,$28,$28,$28,$28,$03,$04
-        db $01,$01,$01,$01,$01,$07,$FF,$07,$07,$FF,$07,$01,$02,$03,$00
+        db $01,$01,$01,$01,$01,$07,$FF,$07,$07,$FF,$07,$01,$03,$02,$02,$01
 
 ; the number of options to allow when not holding x or y
 minimum_selection_normal:
         db $01,$01,$01,$01,$01,$03,$04,$04,$00,$0C,$04,$02,$01,$01,$01,$01
         db $02,$0A,$07,$01,$05,$01,$37,$01,$01,$03,$28,$28,$28,$28,$03,$03
-        db $01,$01,$01,$01,$01,$03,$04,$04,$03,$04,$04,$01,$02,$01,$00
+        db $01,$01,$01,$01,$01,$03,$04,$04,$03,$04,$04,$01,$01,$02,$02,$01
 
 ; this code is run on every frame during the overworld menu game mode (after fade in completes)
 ; GAME MODE #$1F
@@ -524,9 +524,16 @@ scroll_screens:
         
 unpack_FastMode_level_settings:
         JSL retrieve_current_level
-
-        LDA !fast_mode_save_current_level+14
-        STA !status_fast_mode_difficulty
+        
+;        LDA !fast_mode_save_current_header+1
+;        CMP #$01 ; version
+;        BEQ +
+        
+      + LDA !fast_mode_save_current_header+2
+        STA !status_fast_mode_timer
+        
+        LDA !fast_mode_save_current_header+3
+        STA !status_fast_mode_heads_up
 
         LDA !fast_mode_save_current_level+1
         STA !status_fast_mode_start_item
@@ -571,9 +578,15 @@ unpack_FastMode_level_settings:
         
 pack_FastMode_level_settings:
         JSL retrieve_current_header
-
-        LDA !status_fast_mode_difficulty
-        STA !fast_mode_save_current_level+14
+        
+        LDA #$01 ; version of route data
+        STA !fast_mode_save_current_header+1
+        
+        LDA !status_fast_mode_timer
+        STA !fast_mode_save_current_header+2
+        
+        LDA !status_fast_mode_heads_up
+        STA !fast_mode_save_current_header+3
 
         LDA !status_fast_mode_start_item
         STA !fast_mode_save_current_level+1
@@ -639,6 +652,8 @@ FastMode_editor_mode:
         STZ !text_timer                                     ; |
         LDA #$1F                                            ; |
         STA !current_selection                              ; |
+        LDA #$0B ; on/off sound
+        STA $1DF9 ; apu i/o
         JMP .done                                           ; /
 
       + LDA !util_byetudlr_hold                             ; \
@@ -659,6 +674,8 @@ FastMode_editor_mode:
         STA !fast_mode_current_level
       + STZ !util_byetudlr_frame                            ; |
         STZ !text_timer                                     ; |
+        LDA #$06 ; fireball sound
+        STA $1DFC ; apu i/o
         JSR unpack_FastMode_level_settings                  ; | unpack new values after increment
         JSR RedrawPg2
         JSL draw_route_level_list
@@ -676,6 +693,8 @@ FastMode_editor_mode:
         STA !fast_mode_current_level
       + STZ !util_byetudlr_frame                            ; |
         STZ !text_timer                                     ; |
+        LDA #$06 ; fireball sound
+        STA $1DFC ; apu i/o
         JSR unpack_FastMode_level_settings                  ; |
         JSR RedrawPg2                                       ; /
         JSL draw_route_level_list
@@ -864,8 +883,9 @@ option_selection_mode:
 		dw .propogate_forward              ;2A
 		dw .propogate_forward              ;2B
 		dw .propogate_forward              ;2C
-		dw .propogate_forward              ;2D
-		dw .select_fast_mode_delete_save   ;2E
+		dw 0                               ;2D
+		dw 0                               ;2E
+		dw .select_fast_mode_delete_save   ;2F
 
 
     .propogate_forward:
@@ -889,6 +909,7 @@ option_selection_mode:
         LDA #$20
         STA !current_selection
         STZ !text_timer
+        STZ !fast_mode_current_level
         JSL draw_route_level_list
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
@@ -897,20 +918,25 @@ option_selection_mode:
         JMP .finish_no_change
         
     .select_fast_mode_delete_save:
-        JSL reset_header
-        JSR unpack_FastMode_level_settings
-        JSR RedrawPg2
-        LDA #$0B ; itembox sound
-        STA $1DFC ; apu i/o
+        LDA !status_fast_mode_delete
+        BNE ++
+        LDA !fast_mode_save_current_header
+        BNE +
+        JMP .finish_error_sound
+      + JSL route_remove_level
+        JMP .finish_no_change
+     ++ LDA !fast_mode_save_current_header
+        BEQ +
+        JSL route_duplicate_level
+        JMP .finish_no_change
+      + JSL route_add_new_level
         JMP .finish_no_change
         
     .select_meters:
         LDA.L !status_layout
         CMP #$03
         BCS +
-        LDA #$2A ; wrong sound
-        STA $1DFC ; apu i/o
-        JMP .finish_no_change
+        JMP .finish_error_sound
       + LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
         JSL update_meterset_pointer
@@ -959,6 +985,11 @@ option_selection_mode:
         
         JSL restore_basic_settings
         BRA .finish_no_change
+        
+    .finish_error_sound:
+        LDA #$2A ; wrong sound
+        STA $1DFC ; apu i/o
+        BRA .finish_no_sound
     
     .finish_sound:
         LDA #$06 ; fireball sound
@@ -984,6 +1015,133 @@ option_selection_mode:
         STZ !text_timer
     .no_update_text:
         RTS
+
+; remove the current level from the route
+; shouldn't happen if route is empty
+route_remove_level: ; use mvn, (Y) <- (X), C = len-1
+        PHP
+        LDA #$06 ; gulp sound
+        STA $1DF9 ; apu i/o
+        
+        LDA.L !status_fast_mode
+        DEC A
+        REP #$30
+        AND #$00FF
+        ASL #2
+        TAX
+        LDA.L FastMode_header_locations,X
+        STA $00
+        LDA.L FastMode_header_locations+1,X
+        STA $01
+        LDA [$00]
+        DEC A
+        STA [$00] ; shorten route by one
+        STA $03
+        LDA.L FastMode_save_locations,X
+        STA $00
+        LDA.L FastMode_save_locations+1,X
+        STA $01
+        LDA !fast_mode_current_level
+        AND #$00FF
+        ASL #3
+        CLC
+        ADC $00
+        TAY
+        CLC
+        ADC #$0008
+        TAX
+        LDA $03
+        AND #$00FF
+        SEC
+        SBC !fast_mode_current_level
+        ASL #3
+        PHB
+        MVN $70,$70
+        PLB
+        
+        SEP #$30
+        LDA $03
+        CMP !fast_mode_current_level
+        BNE +
+        DEC !fast_mode_current_level
+      + JSL draw_route_level_list
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2
+        PLP
+        RTL
+
+; add a fresh new level to a route that was previously empty
+route_add_new_level:
+        LDA #$2A ; yi2
+        STA !potential_translevel
+        LDX #$00
+        JSL FastMode_add_level
+        JSL draw_route_level_list
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2
+        RTL
+
+; duplicate the current level in the route
+route_duplicate_level: ; use mvp
+        PHP
+        
+        LDA.L !status_fast_mode
+        DEC A
+        REP #$30
+        AND #$00FF
+        ASL #2
+        TAX
+        LDA.L FastMode_header_locations,X
+        STA $00
+        LDA.L FastMode_header_locations+1,X
+        STA $01
+        LDA [$00]
+        AND #$00FF
+        CMP #$007E ; full
+        BCC +
+        SEP #$20
+        LDA #$2A ; wrong sound
+        STA $1DFC ; apu i/o
+        PLP
+        RTL
+        
+      + STA $03
+        INC A
+        STA [$00] ; lengthen route by one
+        LDA.L FastMode_save_locations,X
+        STA $00
+        LDA.L FastMode_save_locations+1,X
+        STA $01
+        LDA $03
+        AND #$00FF
+        ASL #3
+        DEC A
+        CLC
+        ADC $00
+        TAX
+        CLC
+        ADC #$0008
+        TAY
+        LDA $03
+        AND #$00FF
+        SEC
+        SBC !fast_mode_current_level
+        ASL #3
+        DEC A
+        PHB
+        MVP $70,$70
+        PLB
+        
+        SEP #$30
+        JSL draw_route_level_list
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2     
+
+        LDA #$02 ; bop sound
+        STA $1DF9 ; apu i/o
+        
+        PLP
+        RTL
 
 ; take the selection option and apply it to all later levels in the route
 FastMode_propogate_forward:

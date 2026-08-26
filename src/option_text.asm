@@ -45,9 +45,10 @@ option_title:
 	db "     END ITEMBOX                "
 	db "     END YOSHI COLOR            "
 	db "     MIDWAY ENABLE              "
-	db "     END MATCH MODE             "
 	db "     EXIT TYPE                  "
-	db "     DELETE SAVE DATA           "
+	db "     DISPLAY TIMER              "
+	db "     SHOW RESTRICTIONS          "
+	db "     MODIFY ROUTE               "
 option_description:
 	db "  TURN THE YELLOW               "
 	db "  SWITCH PALACE BLOCKS          "
@@ -313,19 +314,25 @@ option_description:
 	db "                                "
 	db "                                "
 	db "                                "
-	db "  PICK HOW STRICT THE ENDING    "
-	db "  CONDITIONS SHOULD BE TO       "
-	db "  DETERMINE IF YOU SHOULD       "
-	db "  MOVE ON TO THE NEXT LEVEL     "
-	db "  IN THE RUN OR TRY IT AGAIN    "
-	db "                                "
 	db "  PICK WHICH EXIT MARIO         "
 	db "  SHOULD TAKE FOR THIS LEVEL    "
 	db "                                "
 	db "                                "
 	db "                                "
 	db "                                "
-	db "  DELETE THIS ROUTE DATA        "
+	db "  PICK WHETHER A RUN TIMER      "
+	db "  SHOULD BE DISPLAYED           "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  PICK WHETHER THE LEVEL        "
+	db "  RESTRICTIONS SHOULD BE        "
+	db "  DISPLAYED IF THERE ARE ANY    "
+	db "                                "
+	db "                                "
+	db "                                "
+	db "  REMOVE OR ADD LEVELS          "
 	db "                                "
 	db "                                "
 	db "                                "
@@ -376,9 +383,10 @@ option_value_lists:
 	dw option_sprites                  ;29
 	dw option_yoshi_color&$7FFF        ;2A
 	dw option_off_on                   ;2B
-	dw option_difficulty               ;2C
-	dw option_exit_type                ;2D
-	dw $0000                           ;2E
+	dw option_exit_type                ;2C
+	dw option_fast_timer               ;2D
+	dw option_fast_heads_up            ;2E
+	dw option_route_delete             ;2F
     
 option_exit_type:
         db "      NORMAL                    "
@@ -386,10 +394,20 @@ option_exit_type:
         db "      START SELECT              "
         db "      DEATH                     "
 
-option_difficulty:
-        db "      NO RESTRICTIONS           "
-        db "      LEVEL EXIT TYPE ONLY      "
-        db "      EVERYTHING MUST MATCH     "
+option_fast_timer:
+        db "      DISABLED                  "
+        db "      ONLY AT LEVEL END         "
+        db "      ALWAYS ON                 "
+
+option_fast_heads_up:
+        db "      DISABLED                  "
+        db "      EXIT TYPE ONLY            "
+        db "      ALL RESTRICTIONS          "
+
+option_route_delete:
+        db "      REMOVE LEVEL              "
+        db "      ADD LEVEL                 "
+        
 option_on_off:
         db "      ON                        "
 option_off_on:
@@ -834,7 +852,7 @@ level_names:
         db $00,$00,$00,$96,$97,$98,$00,$00,$00,$00,0,0,0,0,0,0 ; sp1
         db $00,$00,$00,$99,$9A,$9B,$9C,$00,$00,$00,0,0,0,0,0,0 ; sp2
         db $00,$00,$00,$A0,$A1,$A2,$A3,$00,$00,$00,0,0,0,0,0,0 ; sp3
-        db $00,$00,$00,$90,$91,$92,$93,$00,$00,$00,0,0,0,0,0,0 ; sp4
+        db $00,$00,$00,$A4,$A5,$A6,$A7,$00,$00,$00,0,0,0,0,0,0 ; sp4
         db $00,$00,$00,$B4,$B5,$B6,$00,$00,$00,$00,0,0,0,0,0,0
         db $00,$00,$00,$B4,$B5,$B6,$00,$00,$00,$00,0,0,0,0,0,0
         db $00,$00,$57,$58,$59,$5A,$5B,$02,$00,$00,0,0,0,0,0,0 ; sw2

@@ -356,9 +356,16 @@ FastMode_add_level:
         PHX
         JSL retrieve_current_header
         PLX
+        
         LDA !fast_mode_save_current_header+0
-        STA !fast_mode_current_level
-        INC !fast_mode_save_current_header+0       ; |
+        CMP #$7E ; full
+        BCC +
+        LDA #$2A ; wrong sound
+        STA $1DFC ; apu i/o
+        BRA .done
+        
+      + STA !fast_mode_current_level
+        INC !fast_mode_save_current_header+0
         
         LDA !potential_translevel
         STA !fast_mode_save_current_level+0
@@ -406,8 +413,8 @@ FastMode_add_level:
         
         JSL store_current_level
 
-        LDA #$02
-        STA $1DF9
+        LDA #$02 ; bop sound
+        STA $1DF9 ; apu i/o
         
     .done:
         SEP #$30
@@ -423,9 +430,6 @@ submap_table:
 
 ResetLevel:
         JSL retrieve_current_level
-
-        LDA !fast_mode_save_current_level+14
-        STA !status_fast_mode_difficulty
 
         LDA !fast_mode_save_current_level+1
         STA $0DC2 ;Item
@@ -515,7 +519,7 @@ attempt_level_advance:
         LDA !fast_mode_start_play
         BEQ .no_advance_hop
         
-        LDA !status_fast_mode_difficulty
+        LDA #$00; !status_fast_mode_difficulty
         CMP #$00
         BEQ .check_advance_mode_0
         CMP #$01

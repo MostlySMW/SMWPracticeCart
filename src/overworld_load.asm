@@ -449,7 +449,6 @@ set_defaults:
         STA.L !status_region
         STA.L !status_lagometer
         STA.L !status_fast_mode
-        STA.L !status_fast_mode_delete
         LDA #$01
         STA.L !status_scorelag
         STA.L !status_states

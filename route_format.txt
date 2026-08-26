@@ -5,14 +5,15 @@ header + list of levels
 header:
     $00     : number of levels
     $01     : format version
-            : show timer?
+    $02     : show timer
                 0 = only on overworld at end
                 1 = briefly at each level exit
                 2 = always
-            : show end requirements?
+    $03     : show end requirements
                 0 = no
-                1 = yes
-    $02-$0F : x
+                2 = only exit type
+                1 = all restrictions
+    $04-$0F : x
     
 level:
     $00 : translevel
@@ -30,6 +31,33 @@ level:
     $05 : -eeegybr
             eee = exit type
             gybr = green, yellow, blue, red ! switch
+            
+proposed level:
+    $00 : translevel
+    $01 : item box start
+    $02 : item box end
+    $03 : powerup start
+    $04 : powerup end
+    $05 : yoshi start
+    $06 : yoshi end
+    $07 : --msgybr
+            m = midway start
+            s = special enabled
+            gybr = green, yellow, blue, red ! switch
+    $08 : -eeeepyi
+            i = 1 if item box end required
+            y = 1 if yoshi end required
+            p = 1 if powerup end required
+            eeee = exit type
+                0000 = normal
+                0001 = secret
+                0010 = 2nd secret
+                0011 = 3rd secret
+                0100 = start+select
+                0101 = death
+                0110 = side exit
+    $09 : reserved
+    
             
 ===
 

@@ -87,7 +87,7 @@
 
 ; the number of options in the overworld menu
 !number_of_options_pg1       = 32
-!number_of_options_pg2       = 15
+!number_of_options_pg2       = 16
 !number_of_options           = !number_of_options_pg1+!number_of_options_pg2
 ; status flags for each of the overworld menu options
 !status_table                = $705000 ; $37 bytes
@@ -121,21 +121,22 @@
 !status_region               = !status_table+$1e ; J | U | E1.0 | E1.1
 !status_fast_mode            = !status_table+$1f
 
-!status_fast_mode_yellow         = !status_table+$20
-!status_fast_mode_green          = !status_table+$21
-!status_fast_mode_red            = !status_table+$22
-!status_fast_mode_blue           = !status_table+$23
-!status_fast_mode_special        = !status_table+$24
-!status_fast_mode_start_powerup  = !status_table+$25
-!status_fast_mode_start_item     = !status_table+$26
-!status_fast_mode_start_yoshi    = !status_table+$27
-!status_fast_mode_end_powerup    = !status_table+$28
-!status_fast_mode_end_item       = !status_table+$29
-!status_fast_mode_end_yoshi      = !status_table+$2a
-!status_fast_mode_midway         = !status_table+$2b
-!status_fast_mode_difficulty     = !status_table+$2c
-!status_fast_mode_exit_type      = !status_table+$2d ;normal | secret | Ss | Death | 
-!status_fast_mode_delete         = !status_table+$2e
+!status_fast_mode_yellow         = !status_table+$20 ; off | on
+!status_fast_mode_green          = !status_table+$21 ; off | on
+!status_fast_mode_red            = !status_table+$22 ; off | on
+!status_fast_mode_blue           = !status_table+$23 ; off | on
+!status_fast_mode_special        = !status_table+$24 ; disable | enable
+!status_fast_mode_start_powerup  = !status_table+$25 ; small | big | cape | fire | ...
+!status_fast_mode_start_item     = !status_table+$26 ; empty | mush | fire | star | cape | ...
+!status_fast_mode_start_yoshi    = !status_table+$27 ; none | yellow | blue | red | green | ...
+!status_fast_mode_end_powerup    = !status_table+$28 ; small | big | cape | fire | ...
+!status_fast_mode_end_item       = !status_table+$29 ; empty | mush | fire | star | cape | ...
+!status_fast_mode_end_yoshi      = !status_table+$2A ; none | yellow | blue | red | green | ...
+!status_fast_mode_midway         = !status_table+$2B ; start | midway
+!status_fast_mode_exit_type      = !status_table+$2C ; normal | secret | Ss | Death | 
+!status_fast_mode_timer          = !status_table+$2D ; none | brief | always
+!status_fast_mode_heads_up       = !status_table+$2E ; none | exit | all
+!status_fast_mode_delete         = !status_table+$2F ; delete | add
 
 !backup_status_table         = $705100 ; $20 bytes
 
