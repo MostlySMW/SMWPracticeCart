@@ -2435,7 +2435,11 @@ layer_3_y:
         STZ $2112
         RTL
         
-      + LDA $24
+      + LDA $22 ; update the x position while we're at it
+        STA $2111
+        LDA $23
+        STA $2111
+        LDA $24
         STA $2112
         LDA $25
         STA $2112

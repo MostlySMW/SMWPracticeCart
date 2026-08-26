@@ -4,9 +4,15 @@ header + list of levels
 
 header:
     $00     : number of levels
-    $01     : x
-    $02-$09 : save name
-    $0A-$0F : x
+    $01     : format version
+            : show timer?
+                0 = only on overworld at end
+                1 = briefly at each level exit
+                2 = always
+            : show end requirements?
+                0 = no
+                1 = yes
+    $02-$0F : x
     
 level:
     $00 : translevel
