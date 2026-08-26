@@ -2209,8 +2209,9 @@ layer_1_y:
         STA $210E   ; HW_BG1VOFS
         LDA $1D     ; Layer1YPos+1
         STA $210E   ; HW_BG1VOFS
-        NOP #11     ; Delay to match longest code path
-        RTL
+        NOP         ; Delay to match longest code path
+        LDY #$03    ;
+        BRA .delay_exit
         
     ; To prevent layer1 and OAM from appearing misaligned,
     ; we save the offset when called from NMI and set that value when called from IRQ.
@@ -2237,9 +2238,13 @@ layer_1_y:
         STA $210E
         LDA !bowser_layer1_y_pos+1
         STA $210E
-        NOP #12     ; Delay to match longest code path
+        LDY #$04     ; Delay to match longest code path
+        BRA .delay_exit
+    
+    .delay_exit:
+        dey
+        bne .delay_exit
         RTL
-        
     .offset:
         db $07,$07,$07,$F7
 
