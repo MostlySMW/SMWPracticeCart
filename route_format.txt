@@ -44,18 +44,20 @@ proposed level:
             m = midway start
             s = special enabled
             gybr = green, yellow, blue, red ! switch
-    $08 : -eeeepyi
+    $08 : eeeexpyi
             i = 1 if item box end required
             y = 1 if yoshi end required
             p = 1 if powerup end required
+            x = 1 if exit type required (if not required, still need to be normal or secret exit)
             eeee = exit type
-                0000 = normal
-                0001 = secret
-                0010 = 2nd secret
-                0011 = 3rd secret
-                0100 = start+select
-                0101 = death
-                0110 = side exit
+                000 = normal
+                001 = secret
+                010 = 2nd secret
+                011 = 3rd secret
+                100 = start+select
+                101 = death
+                110 = side exit
+                others reserved
     $09 : reserved
     
             
@@ -77,4 +79,7 @@ when not compressed, level:
     $0B : special enable
     $0C : midway enable
     $0D : exit type
-    $0E : strict mode
+    $0E : item box required 
+    $0F : yoshi required
+    $10 : powerup required
+    $11 : exit type required

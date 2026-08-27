@@ -122,65 +122,73 @@ retrieve_current_level:
         
       + REP #$30
         AND #$00FF
-        ASL #3
+        STA $03
+        ASL #2
+        CLC
+        ADC $03
+        ASL A ; x10
         TAY
         SEP #$20
 
-        LDA [$00],Y
+        LDA [$00],Y ; translevel
         STA !fast_mode_save_current_level+0
         
         INY
-        LDA [$00],Y
+        LDA [$00],Y ; item box start
         STA !fast_mode_save_current_level+1
 
         INY
-        LDA [$00],Y
+        LDA [$00],Y ; item box end
         STA !fast_mode_save_current_level+2
-        
+
         INY
-        LDA [$00],Y
-        TAX
-        AND #$01
-        STA !fast_mode_save_current_level+11
-        TXA : LSR : TAX
-        AND #$01
-        STA !fast_mode_save_current_level+12
-        TXA : LSR : TAX
-        AND #$07
+        LDA [$00],Y ; powerup start
         STA !fast_mode_save_current_level+3
-        TXA
-        LSR #3
+
+        INY
+        LDA [$00],Y ; powerup end
         STA !fast_mode_save_current_level+4
 
         INY
-        LDA [$00],Y
-        TAX
-        AND #$03
-        STA !fast_mode_save_current_level+14
-        TXA : LSR #2 : TAX
-        AND #$07
+        LDA [$00],Y ; yoshi start
         STA !fast_mode_save_current_level+5
-        TXA
-        LSR #3
+
+        INY
+        LDA [$00],Y ; yoshi end
         STA !fast_mode_save_current_level+6
 
         INY 
-        LDA [$00],Y
+        LDA [$00],Y ; --msgybr
         TAX
         AND #$01
         STA !fast_mode_save_current_level+7
-
         TXA : LSR : TAX : AND #$01
         STA !fast_mode_save_current_level+8
-
         TXA : LSR : TAX : AND #$01
         STA !fast_mode_save_current_level+9
-
         TXA : LSR : TAX : AND #$01
         STA !fast_mode_save_current_level+10
-
-        TXA : LSR : TAX : AND #$07
+        TXA : LSR : TAX : AND #$01
+        STA !fast_mode_save_current_level+11
+        TXA : LSR : TAX : AND #$01
+        STA !fast_mode_save_current_level+12
+        
+        INY
+        LDA [$00],Y ; eeeexpyi
+        TAX
+        AND #$01
+        STA !fast_mode_save_current_level+14
+        TXA : LSR : TAX : AND #$01
+        STA !fast_mode_save_current_level+15
+        TXA : LSR : TAX : AND #$01
+        STA !fast_mode_save_current_level+16
+        TXA : LSR : TAX : AND #$01
+        STA !fast_mode_save_current_level+17
+        TXA : LSR
         STA !fast_mode_save_current_level+13
+
+;        INY
+;        LDA [$00],Y ; reserved
         
     .done_success:
         SEP #$30
@@ -247,70 +255,66 @@ store_current_level:
         LDA !fast_mode_current_level
         REP #$30
         AND #$00FF
-        ASL #3
+        STA $03
+        ASL #2
+        CLC
+        ADC $03
+        ASL A ; x10
         TAY
         SEP #$20
 
-        LDA !fast_mode_save_current_level+0    
+        LDA !fast_mode_save_current_level+0 ; translevel
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+1    
+        LDA !fast_mode_save_current_level+1 ; item box start
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+2
+        LDA !fast_mode_save_current_level+2 ; item box end
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+4
-        ASL #3
-        STA $03
-        LDA !fast_mode_save_current_level+3
-        AND #$07
-        ORA $03
-        ASL #1
-        STA $03
-        LDA !fast_mode_save_current_level+12
-        AND #$01
-        ORA $03
-        ASL #1
-        STA $03
-        LDA !fast_mode_save_current_level+11
-        AND #$01
-        ORA $03
+        LDA !fast_mode_save_current_level+3 ; powerup start
         STA [$00],Y
-        
+
         INY
-        LDA !fast_mode_save_current_level+6
-        ASL #3
-        STA $03
-        LDA !fast_mode_save_current_level+5
-        AND #$07
-        ORA $03
-        ASL #2
-        STA $03
-        LDA !fast_mode_save_current_level+14
-        AND #$03
-        ORA $03
+        LDA !fast_mode_save_current_level+4 ; powerup end
         STA [$00],Y
 
-        
-        LDA !fast_mode_save_current_level+13
-        AND #$07 : ASL : STA $03
+        INY
+        LDA !fast_mode_save_current_level+5 ; yoshi start
+        STA [$00],Y
 
-        LDA !fast_mode_save_current_level+10
+        INY
+        LDA !fast_mode_save_current_level+6 ; yoshi end
+        STA [$00],Y
+
+        LDA !fast_mode_save_current_level+12 ; midway
+        AND #$01 : ASL : STA $03
+        LDA !fast_mode_save_current_level+11 ; special
         AND #$01 : ORA $03 : ASL : STA $03
-
-        LDA !fast_mode_save_current_level+09
+        LDA !fast_mode_save_current_level+10 ; green
         AND #$01 : ORA $03 : ASL : STA $03
-
-        LDA !fast_mode_save_current_level+08
+        LDA !fast_mode_save_current_level+09 ; yellow
         AND #$01 : ORA $03 : ASL : STA $03
-
-        LDA !fast_mode_save_current_level+07
+        LDA !fast_mode_save_current_level+08 ; blue
+        AND #$01 : ORA $03 : ASL : STA $03
+        LDA !fast_mode_save_current_level+07 ; red
         AND #$01 : ORA $03 : STA $03
+        INY
+        STA [$00],Y
 
+        LDA !fast_mode_save_current_level+13 ; exit type
+        ASL : STA $03
+        LDA !fast_mode_save_current_level+17 ; exit type required
+        AND #$01 : ORA $03 : ASL : STA $03
+        LDA !fast_mode_save_current_level+16 ; powerup required
+        AND #$01 : ORA $03 : ASL : STA $03
+        LDA !fast_mode_save_current_level+15 ; yoshi required
+        AND #$01 : ORA $03 : ASL : STA $03
+        LDA !fast_mode_save_current_level+14 ; item box required
+        AND #$01 : ORA $03 : STA $03
         INY
         STA [$00],Y
 
@@ -351,18 +355,19 @@ menu_nmi_draw_tiles:
 
 FastMode_add_level:
         LDA !potential_translevel
-        BEQ .done
+        BNE +
+        BRL .done
         
-        PHX
+      + PHX
         JSL retrieve_current_header
         PLX
         
         LDA !fast_mode_save_current_header+0
-        CMP #$7E ; full
+        CMP.B #!fast_mode_max_route_length ; full
         BCC +
         LDA #$2A ; wrong sound
         STA $1DFC ; apu i/o
-        BRA .done
+        BRL .done
         
       + STA !fast_mode_current_level
         INC !fast_mode_save_current_header+0
@@ -373,25 +378,25 @@ FastMode_add_level:
         LDA !status_itembox
         STA !fast_mode_save_current_level+1
 
-        LDA #$00
+        LDA #$00 ; end itembox
         STA !fast_mode_save_current_level+2
         
         LDA !status_powerup
         STA !fast_mode_save_current_level+3
         
-        LDA #$00
+        LDA #$00 ; end powerup
         STA !fast_mode_save_current_level+4
 
         LDA !status_yoshi
         STA !fast_mode_save_current_level+5
 
-        LDA #$00
+        LDA #$00 ; end yoshi
         STA !fast_mode_save_current_level+6
 
         LDA $1F2A
         STA !fast_mode_save_current_level+7
 
-        LDA $1F2A
+        LDA $1F29
         STA !fast_mode_save_current_level+8
 
         LDA $1F28
@@ -404,12 +409,16 @@ FastMode_add_level:
         STA !fast_mode_save_current_level+11
 
         LDA #$00
-        STA !fast_mode_save_current_level+12
+        STA !fast_mode_save_current_level+12 ; midway
+        STA !fast_mode_save_current_level+14 ; item box required
+        STA !fast_mode_save_current_level+15 ; yoshi required
+        STA !fast_mode_save_current_level+16 ; powerup required
+        
+        LDA #$01
+        STA !fast_mode_save_current_level+17 ; exit type required
 
+        ; exit type
         STX !fast_mode_save_current_level+13
-
-        LDA #$00
-        STA !fast_mode_save_current_level+14
         
         JSL store_current_level
 

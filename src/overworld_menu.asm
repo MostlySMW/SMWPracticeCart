@@ -524,8 +524,28 @@ scroll_screens:
         
 unpack_FastMode_level_settings:
         JSL retrieve_current_level
+        BNE +
         
-;        LDA !fast_mode_save_current_header+1
+        ; empty route
+        LDA #$00
+        STA !status_fast_mode_timer
+        STA !status_fast_mode_heads_up
+        STA !status_fast_mode_start_item
+        STA !status_fast_mode_end_item
+        STA !status_fast_mode_start_powerup
+        STA !status_fast_mode_end_powerup
+        STA !status_fast_mode_start_yoshi
+        STA !status_fast_mode_end_yoshi
+        STA !status_fast_mode_red
+        STA !status_fast_mode_blue
+        STA !status_fast_mode_yellow
+        STA !status_fast_mode_green
+        STA !status_fast_mode_special
+        STA !status_fast_mode_midway
+        STA !status_fast_mode_exit_type
+        BRA .done
+        
+;      + LDA !fast_mode_save_current_header+1
 ;        CMP #$01 ; version
 ;        BEQ +
         
@@ -573,7 +593,10 @@ unpack_FastMode_level_settings:
 
         LDA !fast_mode_save_current_level+13
         STA !status_fast_mode_exit_type
+        
+        ;; TODO special case for required flags
 
+    .done:
         RTS
         
 pack_FastMode_level_settings:
@@ -626,6 +649,8 @@ pack_FastMode_level_settings:
 
         LDA !status_fast_mode_exit_type
         STA !fast_mode_save_current_level+13
+        
+        ;; TODO special case for required flags
 
         JSL store_current_level
         RTS
@@ -1043,18 +1068,26 @@ route_remove_level: ; use mvn, (Y) <- (X), C = len-1
         STA $01
         LDA !fast_mode_current_level
         AND #$00FF
-        ASL #3
+        STA $05
+        ASL #2
+        CLC
+        ADC $05
+        ASL A ; x10
         CLC
         ADC $00
         TAY
         CLC
-        ADC #$0008
+        ADC #$000A ; level entry length
         TAX
         LDA $03
         AND #$00FF
         SEC
         SBC !fast_mode_current_level
-        ASL #3
+        STA $05
+        ASL #2
+        CLC
+        ADC $05
+        ASL A ; x10
         PHB
         MVN $70,$70
         PLB
@@ -1097,7 +1130,7 @@ route_duplicate_level: ; use mvp
         STA $01
         LDA [$00]
         AND #$00FF
-        CMP #$007E ; full
+        CMP.W #!fast_mode_max_route_length ; full
         BCC +
         SEP #$20
         LDA #$2A ; wrong sound
@@ -1114,19 +1147,27 @@ route_duplicate_level: ; use mvp
         STA $01
         LDA $03
         AND #$00FF
-        ASL #3
+        STA $05
+        ASL #2
+        CLC
+        ADC $05
+        ASL A ; x10
         DEC A
         CLC
         ADC $00
         TAX
         CLC
-        ADC #$0008
+        ADC #$000A ; level entry length
         TAY
         LDA $03
         AND #$00FF
         SEC
         SBC !fast_mode_current_level
-        ASL #3
+        STA $05
+        ASL #2
+        CLC
+        ADC $05
+        ASL A ; x10
         DEC A
         PHB
         MVP $70,$70
@@ -1173,11 +1214,12 @@ FastMode_propogate_forward:
         STA !fast_mode_current_level
         JSL retrieve_current_level
 
+        ;; TODO special case for required flags
         RTS
 
 ; mapping of overworld menu options to indices into route level data
 selection_to_uncompressed_table:
-    db $09,$0A,$07,$08,$0B,$03,$01,$05,$04,$02,$06,$0C,$0E,$0D
+    db $09,$0A,$07,$08,$0B,$03,$01,$05,$04,$02,$06,$0C,$10
         
 ; copy currently loaded movie to sram
 export_movie_to_sram:
@@ -2413,7 +2455,11 @@ draw_route_level_list:
     .level:
         REP #$30
         AND #$00FF
-        ASL #3
+        STA $09
+        ASL #2
+        CLC
+        ADC $09
+        ASL A ; x10
         TAY
         LDA [$04],Y
         AND #$00FF
@@ -2427,7 +2473,7 @@ draw_route_level_list:
         EOR !fast_mode_current_level
         AND #$00FF
         BEQ .highlight_me
-        INY #5
+        INY #8
         LDA [$04],Y
         AND #$00F0
         BEQ .normal_exit

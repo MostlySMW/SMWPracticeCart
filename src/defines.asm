@@ -275,6 +275,7 @@
 !fast_mode_start_play          = $06A2   ; Used to determine if play should start on next overworld load
 !fast_mode_current_level       = $06A0   ; 
 
+!fast_mode_max_route_length    = (!fast_mode_save_2_header-!fast_mode_save_1)/10
 !fast_mode_header_length       = $10
 !fast_mode_save_1_header       = $705200 ; #Levels
 !fast_mode_save_1              = !fast_mode_save_1_header+!fast_mode_header_length
