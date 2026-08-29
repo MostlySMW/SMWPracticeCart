@@ -304,3 +304,10 @@ ORG !_F+$00A267
 ; remove old death marker
 ORG !_F+$00D0CB
         NOP #5
+; change side exit marker to $83
+ORG !_F+$05B164
+        db $83
+
+; disable 3rd exit from setting map to yoshi's island
+ORG !_F+$00C9DB
+        NOP #3

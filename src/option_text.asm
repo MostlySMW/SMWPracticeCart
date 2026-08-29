@@ -391,8 +391,11 @@ option_value_lists:
 option_exit_type:
         db "      NORMAL                    "
         db "      SECRET                    "
+        db "      SECOND SECRET             "
+        db "      THIRD SECRET              "
         db "      START SELECT              "
         db "      DEATH                     "
+        db "      SIDE EXIT                 "
 
 option_fast_timer:
         db "      DISABLED                  "

@@ -1,0 +1,36 @@
+list of status bar meters
+
+
+always 24 meters long, each meter 4 bytes long:
+
+$00 = meter type
+    $00 = nothing
+    $01 = item box (fixed position)
+    $02 = mario speed
+    $03 = mario takeoff meter
+    $04 = mario pspeed meter
+    $05 = yoshi's subpixel
+    $06 = held item subpixel
+    $07 = number of lag frames
+    $08 = level timer
+    $09 = room timer
+    $0A = stopwatch
+    $0B = coin count
+    $0C = in game timer
+    $0D = slowdown factor
+    $0E = input display
+    $0F = name
+    $10 = movie recording memory
+    $11 = memory viewer $7E
+    $12 = memory viewer $7F
+    $13 = rng
+    $14 = score
+    $15 = vanilla hud + fast mode timer/restrictions
+
+$01 = subtype A
+
+$02 = subtype B
+
+$03 = position yyyxxxxx
+    xxxxx = x pos 0-31
+    yyy = y pos 0-4

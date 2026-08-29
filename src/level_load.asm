@@ -403,43 +403,105 @@ save_room_properties:
         
         RTS
         
-; add the frame count stored in A to the timer
+; add the frame count stored in A to the level timer
 add_many_to_timer:
+        PHA
+        LDA.L !status_region
+        TAX
+        LDA !fast_mode_start_play
+        BEQ +
+        LDA $01,S
+        JSL add_many_to_full_run_timer
+
+      + PLA
         CLC
         ADC !level_timer_frames
     .check_frames:
-        CMP #$3C
+        CMP.L frames_in_a_second,X
         BCS .carry_frame
         STA !level_timer_frames
         LDA !level_timer_seconds
         BRA .check_seconds
     .carry_frame:
         SEC
-        SBC #$3C
+        SBC.L frames_in_a_second,X
         INC !level_timer_seconds
         BRA .check_frames
     .check_seconds:
-        CMP #$3C
+        CMP #60
         BCS .carry_seconds
         STA !level_timer_seconds
         LDA !level_timer_minutes
         BRA .check_minutes
     .carry_seconds:
         SEC
-        SBC #$3C
+        SBC #60
         INC !level_timer_minutes
         BRA .check_seconds
     .check_minutes:
-        CMP #$0A
+        CMP #10
         BCS .timer_overflow
         STA !level_timer_minutes
         RTL
     .timer_overflow:
-        LDA #$09
+        LDA #9
         STA !level_timer_minutes
-        LDA #$3B
+        LDA #59
         STA !level_timer_seconds
+        LDA.L frames_in_a_second,X
         STA !level_timer_frames
+        RTL
+        
+; add the frame count stored in A to the fast mode run timer
+add_many_to_full_run_timer:
+        CLC
+        ADC !total_frames
+    .check_frames:
+        CMP.L frames_in_a_second,X
+        BCS .carry_frame
+        STA !total_frames
+        LDA !total_seconds
+        BRA .check_seconds
+    .carry_frame:
+        SEC
+        SBC.L frames_in_a_second,X
+        INC !total_seconds
+        BRA .check_frames
+    .check_seconds:
+        CMP #60
+        BCS .carry_seconds
+        STA !total_seconds
+        LDA !total_minutes
+        BRA .check_minutes
+    .carry_seconds:
+        SEC
+        SBC #60
+        INC !total_minutes
+        BRA .check_seconds
+    .check_minutes:
+        CMP #60
+        BCS .carry_minutes
+        STA !total_minutes
+        LDA !total_hours
+        BRA .check_hours
+    .carry_minutes:
+        SEC
+        SBC #60
+        INC !total_hours
+        BRA .check_minutes
+    .check_hours:
+        CMP #10
+        BCS .timer_overflow
+        STA !total_hours
+        RTL
+    .timer_overflow:
+        LDA #9
+        STA !total_hours
+        LDA #59
+        STA !total_minutes
+        STA !total_seconds
+        LDA.L frames_in_a_second,X
+        STA !total_frames
         RTL
         
 ; save everything after entering a new level

@@ -393,16 +393,16 @@ FastMode_add_level:
         LDA #$00 ; end yoshi
         STA !fast_mode_save_current_level+6
 
-        LDA $1F2A
+        LDA !status_red
         STA !fast_mode_save_current_level+7
 
-        LDA $1F29
+        LDA !status_blue
         STA !fast_mode_save_current_level+8
 
-        LDA $1F28
+        LDA !status_yellow
         STA !fast_mode_save_current_level+9
         
-        LDA $1F27
+        LDA !status_green
         STA !fast_mode_save_current_level+10
 
         LDA !status_special
@@ -476,15 +476,19 @@ ResetLevel:
         STA !status_fast_mode_end_yoshi
 
         LDA !fast_mode_save_current_level+7
+        STA !status_red
         STA $1F2A
 
         LDA !fast_mode_save_current_level+8
+        STA !status_blue
         STA $1F29
 
         LDA !fast_mode_save_current_level+9
+        STA !status_yellow
         STA $1F28
 
         LDA !fast_mode_save_current_level+10
+        STA !status_green
         STA $1F27
 
         LDA !fast_mode_save_current_level+11
@@ -526,8 +530,25 @@ ResetLevel:
 
 attempt_level_advance:
         LDA !fast_mode_start_play
-        BEQ .no_advance_hop
+        BEQ .no_advance
         
+        JSL can_advance_to_next_level
+        BEQ .no_advance
+
+        INC !fast_mode_current_level   ; Next level
+        LDA !fast_mode_current_level   
+        CMP !fast_mode_save_current_header+0
+        BCC .finished
+        LDA #00
+        RTL
+        
+    .finished:
+    .no_advance:
+        LDA #$01
+        RTL
+
+; A = 1 if all requirements are met and player can move onto the next level, 0 if not
+can_advance_to_next_level:
         LDA #$00; !status_fast_mode_difficulty
         CMP #$00
         BEQ .check_advance_mode_0
@@ -646,18 +667,12 @@ attempt_level_advance:
         CMP #$82
         BNE .no_advance
         BRA .next_level
-
-    .next_level:
-        INC !fast_mode_current_level   ; Next level
-        LDA !fast_mode_current_level   
-        CMP !fast_mode_save_current_header+0
-        BCC .finished
-        LDA #00
-        RTL
         
-    .finished:
-    .no_advance:
+    .next_level:
         LDA #$01
+        RTL
+    .no_advance:
+        LDA #$00
         RTL
 
 
@@ -827,85 +842,43 @@ translevel_locations_2:
         dw $1933,$1C33,$1736,$1238,$1538,$1738,$1938,$1C38
         dw $143A,$1A3A,$173B,$123D,$1C3D
 
-; add the time of the current level to the run timer
-; no matter how the level was exited
-accumulate_fastmode_time:
-        LDA.L !status_region
-        CMP #$02
-        BCS .pal_frames
-    .ntsc_frames:
-        LDA !level_timer_frames
-        CLC
-        ADC !total_frames
-        CMP #60
-        BCC .seconds
-        SBC #60
-        BRA .seconds
-        
-    .pal_frames:
-        LDA !level_timer_frames
-        CLC
-        ADC !total_frames
-        CMP #50
-        BCC .seconds
-        SBC #50
-        BRA .seconds
-    
-    .seconds:
-        STA !total_frames
-        
-        LDA !level_timer_seconds
-        ADC !total_seconds
-        CMP #60
-        BCC .minutes
-        SBC #60
-        
-    .minutes:
-        STA !total_seconds
-        
-        LDA !level_timer_minutes
-        ADC !total_minutes
-        CMP #60
-        BCC .hours
-        SBC #60
-        
-    .hours:
-        STA !total_minutes
-        
-        LDA #$00
-        ADC !total_hours
-        STA !total_hours
-        
-        RTL
-
-; display the run time front and center
+; display the run time on the status bar
+; this draws only on level exit
 display_fastmode_run_time:
-        LDA !total_hours
-        JSL !_F+$00974C ; hex2dec
-        STX !status_bar+$22
-        STA !status_bar+$23
+        LDA !fast_mode_save_current_header+2
+        BNE + ; if the timer is set to show at level end, draw it
+        LDA !fast_mode_current_level
+        INC A
+        CMP !fast_mode_save_current_header+0
+        BNE ++ ; otherwise, if this is not the last level in the run, skip it
+        JSL can_advance_to_next_level
+        BNE + ; if it is, draw the timer anyway if the run is completed
+     ++ RTL
+        
+      + LDA !total_hours
+        STA !status_bar+$93
         
         LDA !total_minutes
         JSL !_F+$00974C ; hex2dec
-        STX !status_bar+$25
-        STA !status_bar+$26
+        STX !status_bar+$95
+        STA !status_bar+$96
         
         LDA !total_seconds
         JSL !_F+$00974C ; hex2dec
-        STX !status_bar+$28
-        STA !status_bar+$29
+        STX !status_bar+$98
+        STA !status_bar+$99
         
         LDA !total_frames
         JSL convert_frames_to_centiseconds
         JSL !_F+$00974C ; hex2dec
-        STX !status_bar+$2B
-        STA !status_bar+$2C
+        STX !status_bar+$9B
+        STA !status_bar+$9C
         
         LDA #$78
-        STA !status_bar+$24
-        STA !status_bar+$27
+        STA !status_bar+$94
+        STA !status_bar+$97
         LDA #$24
-        STA !status_bar+$2A
+        STA !status_bar+$9A
         
         RTL
 
@@ -924,20 +897,20 @@ display_fast_mode_finish_time:
         LDA #$E350
         STA.L $7F837D,X ; stripe
         INX #2
-        LDA.W #$1500
+        LDA.W #$1300
         STA.L $7F837D,X ; stripe
         INX #2
         
         SEP #$20
         LDY #$0000
-      - LDA !status_bar+$22,Y
+      - LDA !status_bar+$93,Y
         STA.L $7F837D,X ; stripe
         INX
         LDA #$3C
         STA.L $7F837D,X ; stripe
         INX
         INY
-        CPY.W #$0B
+        CPY.W #10
         BNE -
         
         LDA #$FF

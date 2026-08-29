@@ -133,7 +133,7 @@
 !status_fast_mode_end_item       = !status_table+$29 ; empty | mush | fire | star | cape | ...
 !status_fast_mode_end_yoshi      = !status_table+$2A ; none | yellow | blue | red | green | ...
 !status_fast_mode_midway         = !status_table+$2B ; start | midway
-!status_fast_mode_exit_type      = !status_table+$2C ; normal | secret | Ss | Death | 
+!status_fast_mode_exit_type      = !status_table+$2C ; normal | secret | secret2 | secret 3 | Ss | Death | side exit
 !status_fast_mode_timer          = !status_table+$2D ; none | brief | always
 !status_fast_mode_heads_up       = !status_table+$2E ; none | exit | all
 !status_fast_mode_delete         = !status_table+$2F ; delete | add
@@ -222,9 +222,9 @@
 !exit_type_count             = $0DF5
 ; sum of all intentional exit type times (only valid if all exit types completed)
 ; also used to keep track of a fast mode run time
-!total_frames                = $0DF6
+!total_minutes               = $0DF6
 !total_seconds               = $0DF7
-!total_minutes               = $0DF8
+!total_frames                = $0DF8
 !total_hours                 = $0DF9
 
 ; the translevels of the current movies, 00 = no movie

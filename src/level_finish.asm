@@ -3,7 +3,7 @@ ORG !_F+$138000
 reset bytes
 
 ; this code is run once on the frame that the level is completed
-; X = 1 if the secret exit was activated, 0 otherwise
+; X = 1 if the secret exit was activated, 0 for normal (2, 3 for extra exits)
 level_finish:
         PHP
         STX !most_recent_exit
@@ -17,7 +17,6 @@ level_finish:
         LDA !fast_mode_start_play
         BEQ +
         
-        JSL accumulate_fastmode_time
         JSL display_fastmode_run_time
         LDA #$0B ; End level quicker in fast mode
         STA $0100
@@ -25,7 +24,7 @@ level_finish:
       + PLP
         RTL
 ; test if level completed this frame
-; X = 0 for normal exit, 1 for secret exit
+; X = 0 for normal exit, 1 for secret exit (2, 3, for extra exits)
 ; return 1 in A for finished, 0 for not finished
 test_last_frame:
         LDA !level_finished

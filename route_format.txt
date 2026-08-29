@@ -11,28 +11,11 @@ header:
                 2 = always
     $03     : show end requirements
                 0 = no
-                2 = only exit type
-                1 = all restrictions
+                1 = only exit type
+                2 = all restrictions
     $04-$0F : x
     
 level:
-    $00 : translevel
-    $01 : item box start
-    $02 : item box end
-    $03 : pppPPPms
-            ppp = ending powerup
-            PPP = starting powerup
-            m = midway start
-            s = special enabled
-    $04 : yyyYYYdd
-            yyy = ending yoshi
-            YYY = starting yoshi
-            dd = strictness
-    $05 : -eeegybr
-            eee = exit type
-            gybr = green, yellow, blue, red ! switch
-            
-proposed level:
     $00 : translevel
     $01 : item box start
     $02 : item box end
@@ -54,9 +37,9 @@ proposed level:
                 001 = secret
                 010 = 2nd secret
                 011 = 3rd secret
-                100 = start+select
-                101 = death
-                110 = side exit
+                100 = start+select ($81)
+                101 = death ($82)
+                110 = side exit ($83)
                 others reserved
     $09 : reserved
     

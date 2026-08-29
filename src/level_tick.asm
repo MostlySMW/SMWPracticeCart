@@ -45,12 +45,20 @@ level_tick:
         LDA $13D4 ; pause flag
         BNE +
         PEA !pause_timer_minutes
+        CLC
         JSR tick_timer
       + PEA !level_timer_minutes
+        CLC
         JSR tick_timer
         PEA !room_timer_minutes
+        CLC
         JSR tick_timer
-        JSR test_ci2
+        LDA.L !fast_mode_start_play
+        BEQ +
+        PEA !total_minutes
+        SEC
+        JSR tick_timer
+      + JSR test_ci2
         JSR test_reset
         JSR test_run_type
         JSR test_translevel_0_failsafe
@@ -141,7 +149,7 @@ display_meters:
         
       + LDA #$7E
         STA $02
-        LDA #$1F
+        LDA.B #!status_bar>>8
         STA $01
         
         LDY #$5C
@@ -517,9 +525,9 @@ meter_timer_level:
         
         LDA #$7E
         STA $05
-        LDA #$0F
+        LDA.B #!level_timer_frames>>8
         STA $04
-        LDA #$3C ; !level_timer_frames
+        LDA.B #!level_timer_frames
         STA $03
         JSR meter_timer_all
         RTS
@@ -528,9 +536,9 @@ meter_timer_level:
 meter_timer_room:
         LDA #$7E
         STA $05
-        LDA #$0F
+        LDA.B #!room_timer_frames>>8
         STA $04
-        LDA #$44 ; !room_timer_frames
+        LDA.B #!room_timer_frames
         STA $03
         JSR meter_timer_all
         RTS
@@ -539,9 +547,9 @@ meter_timer_room:
 meter_timer_stopwatch:
         LDA #$7E
         STA $05
-        LDA #$0F
+        LDA.B #!pause_timer_frames>>8
         STA $04
-        LDA #$47 ; !pause_timer_frames
+        LDA.B #!pause_timer_frames
         STA $03
         JSR meter_timer_all
         RTS
@@ -549,6 +557,7 @@ meter_timer_stopwatch:
 ; draw a generic timer, where timer frame address is in $03
 meter_timer_all:
         LDA [!statusbar_layout_ptr],Y
+        PHA
         ASL A
         TAX
         JMP (.timer_type,X)
@@ -557,13 +566,20 @@ meter_timer_all:
         dw .sec_decimal
         dw .sec_frame
         dw .framecount
-        
+        dw .sec_decimal_and_hours
+    
+    .sec_decimal_and_hours:
+        LDA $00
+        CLC
+        ADC #$09
+        STA $00
+        BRA +
     .sec_decimal:
         LDA $00
         CLC
         ADC #$06
         STA $00
-        LDA [$03]
+      + LDA [$03]
         DEC $03
         JSL convert_frames_to_centiseconds
         JSL !_F+$00974C ; hex2dec
@@ -594,6 +610,29 @@ meter_timer_all:
         
         LDA [$03]
         DEC $03
+        JSL !_F+$00974C ; hex2dec
+        STA [$00]
+        DEC $00
+        TXA
+        STA [$00]
+        DEC $00
+        LDA #$29
+        STA [$00]
+        DEC $00
+        
+        LDA [$03]
+        STA [$00]
+        
+        PLA
+        CMP #$03
+        BEQ +
+        RTS
+        
+        ; for hours
+      + LDA [$03]
+        INC $03
+        INC $03
+        INC $03
         JSL !_F+$00974C ; hex2dec
         STA [$00]
         DEC $00
@@ -666,6 +705,7 @@ meter_timer_all:
         STA [$00]
         PLY
         
+        PLA
         RTS
 
 ; input in A
@@ -1262,6 +1302,7 @@ score_places:
         dw $0000,$0001
         
 meter_vanilla_hud:
+        PHY
         LDA #$30
         STA !status_bar+$42
         INC A
@@ -1294,7 +1335,169 @@ meter_vanilla_hud:
         STA !status_bar+$63
         STA !status_bar+$6A
         STA !status_bar+$5A
+        
+        LDA $00
+        PHA
+        LDA.L !fast_mode_save_current_header+2
+        CMP #$02 ; only when drawn every frame
+        BNE +
+        
+        LDA $00
+        CLC
+        ADC #$51
+        STA $00
+        PHA
+        LDA #$7E
+        STA $05
+        LDA.B #!total_frames>>8
+        STA $04
+        LDA.B #!total_frames
+        STA $03
+        JSR meter_timer_all
+        PLA
+        INC A
+        STA $00
+        LDA #$78
+        STA [$00]
+        INC $00
+        INC $00
+        INC $00
+        STA [$00]
+        PLA
+        STA $00
+        
+      + LDA.L !fast_mode_save_current_header+3
+        BNE +
+        BRL .done
+      + DEC A
+        BNE .draw_required_item_box
+        BRL .draw_required_exit
+        
+    .draw_required_item_box:
+        LDA !fast_mode_save_current_level+$0E
+        BEQ .draw_required_yoshi
+        LDA !fast_mode_save_current_level+$02
+        INC A
+        ASL #2
+        DEC A
+        TAX
+        LDA $00
+        PHA
+        SEC
+        SBC #$31
+        STA $00
+        
+        LDY #$04
+      - LDA required_item_box_names,X
+        STA [$00]
+        DEC $00
+        DEX
+        DEY
+        BNE -
+        PLA
+        STA $00
+        
+    .draw_required_yoshi:
+        LDA !fast_mode_save_current_level+$0F
+        BEQ .draw_required_powerup
+        LDA !fast_mode_save_current_level+$06
+        INC A
+        ASL #3
+        DEC A
+        TAX
+        LDA $00
+        PHA
+        SEC
+        SBC #$04
+        STA $00
+        
+        LDY #$08
+      - LDA required_yoshi_names,X
+        STA [$00]
+        DEC $00
+        DEX
+        DEY
+        BNE -
+        PLA
+        STA $00
+        
+    .draw_required_powerup:
+        LDA !fast_mode_save_current_level+$10
+        BEQ .draw_required_exit
+        LDA !fast_mode_save_current_level+$04
+        INC A
+        ASL #3
+        DEC A
+        TAX
+        LDA $00
+        PHA
+        SEC
+        SBC #$19
+        STA $00
+        
+        LDY #$08
+      - LDA required_powerup_names,X
+        STA [$00]
+        DEC $00
+        DEX
+        DEY
+        BNE -
+        PLA
+        STA $00
+        
+    .draw_required_exit:
+        LDA !fast_mode_save_current_level+$11
+        BEQ .done
+        LDA !fast_mode_save_current_level+$0D
+        INC A
+        ASL #3
+        DEC A
+        TAX
+        LDA $00
+        CLC
+        ADC #$4B
+        STA $00
+        
+        LDY #$08
+      - LDA required_exit_type_names,X
+        STA [$00]
+        DEC $00
+        DEX
+        DEY
+        BNE -
+        
+    .done:
+        PLY
         RTS
+
+required_item_box_names:
+        db "NONE"
+        db "MUSH"
+        db "FIRE"
+        db "STAR"
+        db "CAPE"
+        
+required_powerup_names:
+        db "SMALL@@@"
+        db "BIG@@@@@"
+        db "CAPE@@@@"
+        db "FIRE@@@@"
+        
+required_yoshi_names:
+        db "NO@YOSHI"
+        db "@@YELLOW"
+        db "@@@@BLUE"
+        db "@@@@@RED"
+        db "@@@GREEN"
+
+required_exit_type_names:
+        db "@@NORMAL"
+        db "@@SECRET"
+        db "SECRET@2"
+        db "SECRET@3"
+        db "STARTSEL"
+        db "@@@DEATH"
+        db "SIDEEXIT"
         
 ; slow down the game depending on how large the slowdown number is
 wait_slowdown:
@@ -1729,6 +1932,7 @@ sprite_numbers:
         db $78,$79,$7A,$7B
         
 ; increment the timer located at address at top of stack by the number of frames elapsed this execution frame
+; if carry = 0, no hour; if carry = 1, account for hours
 tick_timer:
         PLX ; grab timer address off of the stack and restore return address
         PLY
@@ -1736,7 +1940,10 @@ tick_timer:
         STA $00
         PLA
         STA $01
-        PHY
+        STZ $02
+        BCC +
+        INC $02
+      + PHY
         PHX
         
         LDA !freeze_timer_flag
@@ -1750,38 +1957,55 @@ tick_timer:
         CLC
         ADC !real_frames
         CMP.L frames_in_a_second,X
-        BCC .frames_less
+        BCC .less
         SEC
         SBC.L frames_in_a_second,X
         STA ($00),Y
         DEY
         LDA ($00),Y
         INC A
-        CMP.L frames_in_a_second,X
-        BCC .seconds_less
+        CMP #$60 ; seconds in a minute
+        BCC .less
         SEC
-        SBC.L frames_in_a_second,X
+        SBC #$60 ; seconds in a minute
         STA ($00),Y
         DEY
+        LDA $02
+        BEQ .max_at_9_59
+    .account_for_hours:
         LDA ($00),Y
         INC A
-        CMP #$0A
-        BCS .minutes_max
+        CMP #60 ; minutes in an hour
+        BCC .less
+        SEC
+        SBC #60 ; minutes in an hour
+        STA ($00),Y
+        LDY #$03 ; yeah the hours are after frames
+        LDA ($00),Y
+        INC A
+        CMP #10 ; max hours
+        BCC .less
+        BRA .maxed_out_9_59_59
+    .max_at_9_59:
+        LDA ($00),Y
+        INC A
+        CMP #10 ; max minutes
+        BCS .maxed_out_9_59
+    .less:
         STA ($00),Y
     .done:
         RTS
-    .frames_less:
+    .maxed_out_9_59_59:
+        LDY #$00
+        LDA #59 ; minutes in an hour
         STA ($00),Y
-        BRA .done
-    .seconds_less:
+    .maxed_out_9_59:
+        INY
+        LDA #59 ; seconds in a minute
         STA ($00),Y
-        BRA .done
-    .minutes_max:
+        INY
         LDA.L frames_in_a_second,X
         DEC A
-        INY
-        STA ($00),Y
-        INY
         STA ($00),Y
         BRA .done
 
@@ -2236,7 +2460,6 @@ on_start_select:
         BEQ +
         
         JSL add_additional_exit_time
-        JSL accumulate_fastmode_time
         JSL display_fastmode_run_time
         
       + RTL
@@ -2253,7 +2476,6 @@ on_mario_death:
         
         STZ $1496 ; instant fade out
         JSL add_additional_exit_time
-        JSL accumulate_fastmode_time
         JSL display_fastmode_run_time
         RTL
         
