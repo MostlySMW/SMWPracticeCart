@@ -29,7 +29,15 @@ temp_fade_hijack:
         JSL temp_fade_tick
         RTS
 m7_boss_hijack:
-        JSR $995B
+        PHB
+        PHK
+        PLB
+        LDA $96         ; Save Y position
+        PHA
+        JSR $995B       ; routine hardcodes Mario's Y position as if just entered the room.
+        PLA
+        STA $96         ; Restore Y position
+        PLB
         RTL
 
 
