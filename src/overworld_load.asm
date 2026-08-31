@@ -343,11 +343,14 @@ prepare_file:
         BNE .done ; pressed start or select
         
         JSL retrieve_current_header
-        LDA !fast_mode_save_current_header+0
+        LDA !fast_mode_save_level_count
         BEQ .done ; header of route exists
         
         LDA #$01
         STA !fast_mode_start_play ; start fast mode!
+        STA !fast_mode_save_current_exit_required
+        LDA #$FF
+        STA !most_recent_exit
         
         STZ !total_frames
         STZ !total_seconds

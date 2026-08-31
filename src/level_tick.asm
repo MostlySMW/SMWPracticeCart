@@ -196,7 +196,7 @@ display_meters:
     
     .meter_level:
         dw .nothing
-        dw meter_item_box
+        dw .nothing
         dw meter_mario_speed
         dw meter_mario_takeoff
         dw meter_mario_pmeter
@@ -216,11 +216,11 @@ display_meters:
         dw meter_memory_7f
         dw meter_rng
         dw meter_score
-        dw meter_vanilla_hud
+        dw meter_vanilla_hud_dynamic
     
     .meter_fade:
         dw .nothing
-        dw .nothing
+        dw meter_item_box
         dw .nothing
         dw .nothing
         dw .nothing
@@ -240,7 +240,7 @@ display_meters:
         dw meter_memory_7f
         dw meter_rng
         dw .nothing
-        dw .nothing
+        dw meter_vanilla_hud_static
 
 ; draw the item box meter (fixed position)
 meter_item_box:
@@ -1301,8 +1301,9 @@ score_places:
         dw $0000,$000A
         dw $0000,$0001
         
-meter_vanilla_hud:
+meter_vanilla_hud_static:
         PHY
+        
         LDA #$30
         STA !status_bar+$42
         INC A
@@ -1336,37 +1337,7 @@ meter_vanilla_hud:
         STA !status_bar+$6A
         STA !status_bar+$5A
         
-        LDA $00
-        PHA
-        LDA.L !fast_mode_save_current_header+2
-        CMP #$02 ; only when drawn every frame
-        BNE +
-        
-        LDA $00
-        CLC
-        ADC #$51
-        STA $00
-        PHA
-        LDA #$7E
-        STA $05
-        LDA.B #!total_frames>>8
-        STA $04
-        LDA.B #!total_frames
-        STA $03
-        JSR meter_timer_all
-        PLA
-        INC A
-        STA $00
-        LDA #$78
-        STA [$00]
-        INC $00
-        INC $00
-        INC $00
-        STA [$00]
-        PLA
-        STA $00
-        
-      + LDA.L !fast_mode_save_current_header+3
+        LDA.L !fast_mode_save_show_requirements
         BNE +
         BRL .done
       + DEC A
@@ -1374,9 +1345,9 @@ meter_vanilla_hud:
         BRL .draw_required_exit
         
     .draw_required_item_box:
-        LDA !fast_mode_save_current_level+$0E
+        LDA !fast_mode_save_current_item_box_required
         BEQ .draw_required_yoshi
-        LDA !fast_mode_save_current_level+$02
+        LDA !fast_mode_save_current_item_box_end
         INC A
         ASL #2
         DEC A
@@ -1398,9 +1369,9 @@ meter_vanilla_hud:
         STA $00
         
     .draw_required_yoshi:
-        LDA !fast_mode_save_current_level+$0F
+        LDA !fast_mode_save_current_yoshi_required
         BEQ .draw_required_powerup
-        LDA !fast_mode_save_current_level+$06
+        LDA !fast_mode_save_current_yoshi_end
         INC A
         ASL #3
         DEC A
@@ -1408,7 +1379,7 @@ meter_vanilla_hud:
         LDA $00
         PHA
         SEC
-        SBC #$04
+        SBC #$05
         STA $00
         
         LDY #$08
@@ -1422,9 +1393,9 @@ meter_vanilla_hud:
         STA $00
         
     .draw_required_powerup:
-        LDA !fast_mode_save_current_level+$10
+        LDA !fast_mode_save_current_powerup_required
         BEQ .draw_required_exit
-        LDA !fast_mode_save_current_level+$04
+        LDA !fast_mode_save_current_powerup_end
         INC A
         ASL #3
         DEC A
@@ -1446,9 +1417,9 @@ meter_vanilla_hud:
         STA $00
         
     .draw_required_exit:
-        LDA !fast_mode_save_current_level+$11
+        LDA !fast_mode_save_current_exit_required
         BEQ .done
-        LDA !fast_mode_save_current_level+$0D
+        LDA !fast_mode_save_current_exit_type
         INC A
         ASL #3
         DEC A
@@ -1468,6 +1439,34 @@ meter_vanilla_hud:
         
     .done:
         PLY
+        RTS
+        
+meter_vanilla_hud_dynamic:
+        LDA.L !fast_mode_save_show_timer
+        CMP #$02 ; only when drawn every frame
+        BNE +
+        
+        LDA $00
+        CLC
+        ADC #$51
+        STA $00
+        PHA
+        LDA #$7E
+        STA $05
+        LDA.B #!total_frames>>8
+        STA $04
+        LDA.B #!total_frames
+        STA $03
+        JSR meter_timer_all
+        PLA
+        INC A
+        STA $00
+        LDA #$78
+        STA !status_bar+$94
+        STA !status_bar+$97
+        
+      + LDA #$FC
+        STA !status_bar+$5B
         RTS
 
 required_item_box_names:
@@ -1964,10 +1963,10 @@ tick_timer:
         DEY
         LDA ($00),Y
         INC A
-        CMP #$60 ; seconds in a minute
+        CMP #60 ; seconds in a minute
         BCC .less
         SEC
-        SBC #$60 ; seconds in a minute
+        SBC #60 ; seconds in a minute
         STA ($00),Y
         DEY
         LDA $02

@@ -545,53 +545,53 @@ unpack_FastMode_level_settings:
         STA !status_fast_mode_exit_type
         BRA .done
         
-;      + LDA !fast_mode_save_current_header+1
+;      + LDA !fast_mode_save_version
 ;        CMP #$01 ; version
 ;        BEQ +
         
-      + LDA !fast_mode_save_current_header+2
+      + LDA !fast_mode_save_show_timer
         STA !status_fast_mode_timer
         
-        LDA !fast_mode_save_current_header+3
+        LDA !fast_mode_save_show_requirements
         STA !status_fast_mode_heads_up
 
-        LDA !fast_mode_save_current_level+1
+        LDA !fast_mode_save_current_item_box_start
         STA !status_fast_mode_start_item
 
-        LDA !fast_mode_save_current_level+2
+        LDA !fast_mode_save_current_item_box_end
         STA !status_fast_mode_end_item
 
-        LDA !fast_mode_save_current_level+3
+        LDA !fast_mode_save_current_powerup_start
         STA !status_fast_mode_start_powerup
 
-        LDA !fast_mode_save_current_level+4
+        LDA !fast_mode_save_current_powerup_end
         STA !status_fast_mode_end_powerup
 
-        LDA !fast_mode_save_current_level+5
+        LDA !fast_mode_save_current_yoshi_start
         STA !status_fast_mode_start_yoshi
 
-        LDA !fast_mode_save_current_level+6
+        LDA !fast_mode_save_current_yoshi_end
         STA !status_fast_mode_end_yoshi
 
-        LDA !fast_mode_save_current_level+7
+        LDA !fast_mode_save_current_red_switch
         STA !status_fast_mode_red
 
-        LDA !fast_mode_save_current_level+8
+        LDA !fast_mode_save_current_blue_switch
         STA !status_fast_mode_blue
 
-        LDA !fast_mode_save_current_level+9
+        LDA !fast_mode_save_current_yellow_switch
         STA !status_fast_mode_yellow
 
-        LDA !fast_mode_save_current_level+10
+        LDA !fast_mode_save_current_green_switch
         STA !status_fast_mode_green
 
-        LDA !fast_mode_save_current_level+11
+        LDA !fast_mode_save_current_special_clear
         STA !status_fast_mode_special
 
-        LDA !fast_mode_save_current_level+12
+        LDA !fast_mode_save_current_midway_enable
         STA !status_fast_mode_midway
 
-        LDA !fast_mode_save_current_level+13
+        LDA !fast_mode_save_current_exit_type
         STA !status_fast_mode_exit_type
         
         ;; TODO special case for required flags
@@ -603,54 +603,59 @@ pack_FastMode_level_settings:
         JSL retrieve_current_header
         
         LDA #$01 ; version of route data
-        STA !fast_mode_save_current_header+1
+        STA !fast_mode_save_version
         
         LDA !status_fast_mode_timer
-        STA !fast_mode_save_current_header+2
+        STA !fast_mode_save_show_timer
         
         LDA !status_fast_mode_heads_up
-        STA !fast_mode_save_current_header+3
+        STA !fast_mode_save_show_requirements
 
         LDA !status_fast_mode_start_item
-        STA !fast_mode_save_current_level+1
+        STA !fast_mode_save_current_item_box_start
 
         LDA !status_fast_mode_end_item
-        STA !fast_mode_save_current_level+2
+        STA !fast_mode_save_current_item_box_end
 
         LDA !status_fast_mode_start_powerup
-        STA !fast_mode_save_current_level+3
+        STA !fast_mode_save_current_powerup_start
 
         LDA !status_fast_mode_end_powerup
-        STA !fast_mode_save_current_level+4
+        STA !fast_mode_save_current_powerup_end
 
         LDA !status_fast_mode_start_yoshi
-        STA !fast_mode_save_current_level+5
+        STA !fast_mode_save_current_yoshi_start
 
         LDA !status_fast_mode_end_yoshi
-        STA !fast_mode_save_current_level+6
+        STA !fast_mode_save_current_yoshi_end
 
         LDA !status_fast_mode_red
-        STA !fast_mode_save_current_level+7
+        STA !fast_mode_save_current_red_switch
 
         LDA !status_fast_mode_blue
-        STA !fast_mode_save_current_level+8
+        STA !fast_mode_save_current_blue_switch
 
         LDA !status_fast_mode_yellow
-        STA !fast_mode_save_current_level+9
+        STA !fast_mode_save_current_yellow_switch
 
         LDA !status_fast_mode_green
-        STA !fast_mode_save_current_level+10
+        STA !fast_mode_save_current_green_switch
 
         LDA !status_fast_mode_special
-        STA !fast_mode_save_current_level+11
+        STA !fast_mode_save_current_special_clear
 
         LDA !status_fast_mode_midway
-        STA !fast_mode_save_current_level+12
+        STA !fast_mode_save_current_midway_enable
 
         LDA !status_fast_mode_exit_type
-        STA !fast_mode_save_current_level+13
+        STA !fast_mode_save_current_exit_type
         
         ;; TODO special case for required flags
+        LDA #$01
+        STA !fast_mode_save_current_item_box_required
+        STA !fast_mode_save_current_yoshi_required
+        STA !fast_mode_save_current_powerup_required
+        STA !fast_mode_save_current_exit_required
 
         JSL store_current_level
         RTS
@@ -691,7 +696,7 @@ FastMode_editor_mode:
         
         JSR pack_FastMode_level_settings                    ; | Pack away old values before increment
         INC !fast_mode_current_level                        ; |
-        LDA !fast_mode_save_current_header+0
+        LDA !fast_mode_save_level_count
         DEC A
         CMP !fast_mode_current_level
         BCS +
@@ -713,7 +718,7 @@ FastMode_editor_mode:
         JSR pack_FastMode_level_settings                    ; |
         DEC !fast_mode_current_level                        ; |
         BPL +
-        LDA !fast_mode_save_current_header+0
+        LDA !fast_mode_save_level_count
         DEC A
         STA !fast_mode_current_level
       + STZ !util_byetudlr_frame                            ; |
@@ -945,12 +950,12 @@ option_selection_mode:
     .select_fast_mode_delete_save:
         LDA !status_fast_mode_delete
         BNE ++
-        LDA !fast_mode_save_current_header
+        LDA !fast_mode_save_level_count
         BNE +
         JMP .finish_error_sound
       + JSL route_remove_level
         JMP .finish_no_change
-     ++ LDA !fast_mode_save_current_header
+     ++ LDA !fast_mode_save_level_count
         BEQ +
         JSL route_duplicate_level
         JMP .finish_no_change
@@ -1196,7 +1201,7 @@ FastMode_propogate_forward:
         LDA !fast_mode_save_current_level,X
         STA $06
 
-        LDY !fast_mode_save_current_header+0
+        LDY !fast_mode_save_level_count
 
       - INC !fast_mode_current_level
         JSL retrieve_current_level
@@ -1422,15 +1427,20 @@ draw_option_cursor:
         PLB
         PLP
         RTL
-        
-; load yoshi color from yoshi space to simple space
-load_yoshi_color:
+
+; get yoshi color from yoshi space to simple space
+get_yoshi_color:
         LDA $0DBA ; ow yoshi color
         CMP #$0B
         BCS +
         TAX
         LDA.L yoshi_color_mapping_input,X
-      + STA.L !status_yoshi
+      + RTL
+        
+; load yoshi color from yoshi space to simple space
+load_yoshi_color:
+        JSL get_yoshi_color
+        STA.L !status_yoshi
         RTL
         
 ; save yoshi color from simple space to yoshi space

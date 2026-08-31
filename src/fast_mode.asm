@@ -17,7 +17,7 @@ reset_header:
         PHB
         PHK
         PLB
-        LDX #$0F
+        LDX #!fast_mode_header_length-1
         LDA !status_fast_mode
         CMP #$01
         BNE +
@@ -84,7 +84,7 @@ retrieve_current_header:
         LDA FastMode_header_locations+2,X
         STA $02
 
-        LDY #$0F
+        LDY #!fast_mode_header_length-1
       - LDA [$00],Y
         STA !fast_mode_save_current_header,Y
         DEY
@@ -116,7 +116,7 @@ retrieve_current_level:
         STA $02
 
         LDA !fast_mode_current_level
-        CMP !fast_mode_save_current_header+0
+        CMP !fast_mode_save_level_count
         BCC +
         JMP .done_fail
         
@@ -131,61 +131,61 @@ retrieve_current_level:
         SEP #$20
 
         LDA [$00],Y ; translevel
-        STA !fast_mode_save_current_level+0
+        STA !fast_mode_save_current_level
         
         INY
         LDA [$00],Y ; item box start
-        STA !fast_mode_save_current_level+1
+        STA !fast_mode_save_current_item_box_start
 
         INY
         LDA [$00],Y ; item box end
-        STA !fast_mode_save_current_level+2
+        STA !fast_mode_save_current_item_box_end
 
         INY
         LDA [$00],Y ; powerup start
-        STA !fast_mode_save_current_level+3
+        STA !fast_mode_save_current_powerup_start
 
         INY
         LDA [$00],Y ; powerup end
-        STA !fast_mode_save_current_level+4
+        STA !fast_mode_save_current_powerup_end
 
         INY
         LDA [$00],Y ; yoshi start
-        STA !fast_mode_save_current_level+5
+        STA !fast_mode_save_current_yoshi_start
 
         INY
         LDA [$00],Y ; yoshi end
-        STA !fast_mode_save_current_level+6
+        STA !fast_mode_save_current_yoshi_end
 
         INY 
         LDA [$00],Y ; --msgybr
         TAX
         AND #$01
-        STA !fast_mode_save_current_level+7
+        STA !fast_mode_save_current_red_switch
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+8
+        STA !fast_mode_save_current_blue_switch
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+9
+        STA !fast_mode_save_current_yellow_switch
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+10
+        STA !fast_mode_save_current_green_switch
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+11
+        STA !fast_mode_save_current_special_clear
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+12
+        STA !fast_mode_save_current_midway_enable
         
         INY
         LDA [$00],Y ; eeeexpyi
         TAX
         AND #$01
-        STA !fast_mode_save_current_level+14
+        STA !fast_mode_save_current_item_box_required
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+15
+        STA !fast_mode_save_current_yoshi_required
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+16
+        STA !fast_mode_save_current_powerup_required
         TXA : LSR : TAX : AND #$01
-        STA !fast_mode_save_current_level+17
+        STA !fast_mode_save_current_exit_required
         TXA : LSR
-        STA !fast_mode_save_current_level+13
+        STA !fast_mode_save_current_exit_type
 
 ;        INY
 ;        LDA [$00],Y ; reserved
@@ -220,7 +220,7 @@ store_current_header:
         LDA FastMode_header_locations+2,X
         STA $02
 
-        LDY #$0F
+        LDY #!fast_mode_header_length-1
       - LDA !fast_mode_save_current_header,Y
         STA [$00],Y
         DEY
@@ -263,57 +263,57 @@ store_current_level:
         TAY
         SEP #$20
 
-        LDA !fast_mode_save_current_level+0 ; translevel
+        LDA !fast_mode_save_current_level
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+1 ; item box start
+        LDA !fast_mode_save_current_item_box_start
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+2 ; item box end
+        LDA !fast_mode_save_current_item_box_end
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+3 ; powerup start
+        LDA !fast_mode_save_current_powerup_start
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+4 ; powerup end
+        LDA !fast_mode_save_current_powerup_end
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+5 ; yoshi start
+        LDA !fast_mode_save_current_yoshi_start
         STA [$00],Y
 
         INY
-        LDA !fast_mode_save_current_level+6 ; yoshi end
+        LDA !fast_mode_save_current_yoshi_end
         STA [$00],Y
 
-        LDA !fast_mode_save_current_level+12 ; midway
+        LDA !fast_mode_save_current_midway_enable
         AND #$01 : ASL : STA $03
-        LDA !fast_mode_save_current_level+11 ; special
+        LDA !fast_mode_save_current_special_clear
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+10 ; green
+        LDA !fast_mode_save_current_green_switch
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+09 ; yellow
+        LDA !fast_mode_save_current_yellow_switch
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+08 ; blue
+        LDA !fast_mode_save_current_blue_switch
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+07 ; red
+        LDA !fast_mode_save_current_red_switch
         AND #$01 : ORA $03 : STA $03
         INY
         STA [$00],Y
 
-        LDA !fast_mode_save_current_level+13 ; exit type
+        LDA !fast_mode_save_current_exit_type
         ASL : STA $03
-        LDA !fast_mode_save_current_level+17 ; exit type required
+        LDA !fast_mode_save_current_exit_required
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+16 ; powerup required
+        LDA !fast_mode_save_current_powerup_required
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+15 ; yoshi required
+        LDA !fast_mode_save_current_yoshi_required
         AND #$01 : ORA $03 : ASL : STA $03
-        LDA !fast_mode_save_current_level+14 ; item box required
+        LDA !fast_mode_save_current_item_box_required
         AND #$01 : ORA $03 : STA $03
         INY
         STA [$00],Y
@@ -362,7 +362,7 @@ FastMode_add_level:
         JSL retrieve_current_header
         PLX
         
-        LDA !fast_mode_save_current_header+0
+        LDA !fast_mode_save_level_count
         CMP.B #!fast_mode_max_route_length ; full
         BCC +
         LDA #$2A ; wrong sound
@@ -370,55 +370,58 @@ FastMode_add_level:
         BRL .done
         
       + STA !fast_mode_current_level
-        INC !fast_mode_save_current_header+0
+        INC !fast_mode_save_level_count
         
         LDA !potential_translevel
-        STA !fast_mode_save_current_level+0
+        STA !fast_mode_save_current_level
 
         LDA !status_itembox
-        STA !fast_mode_save_current_level+1
+        STA !fast_mode_save_current_item_box_start
 
         LDA #$00 ; end itembox
-        STA !fast_mode_save_current_level+2
+        STA !fast_mode_save_current_item_box_end
         
         LDA !status_powerup
-        STA !fast_mode_save_current_level+3
+        STA !fast_mode_save_current_powerup_start
         
         LDA #$00 ; end powerup
-        STA !fast_mode_save_current_level+4
+        STA !fast_mode_save_current_powerup_end
 
         LDA !status_yoshi
-        STA !fast_mode_save_current_level+5
+        STA !fast_mode_save_current_yoshi_start
 
         LDA #$00 ; end yoshi
-        STA !fast_mode_save_current_level+6
+        STA !fast_mode_save_current_yoshi_end
 
         LDA !status_red
-        STA !fast_mode_save_current_level+7
+        STA !fast_mode_save_current_red_switch
 
         LDA !status_blue
-        STA !fast_mode_save_current_level+8
+        STA !fast_mode_save_current_blue_switch
 
         LDA !status_yellow
-        STA !fast_mode_save_current_level+9
+        STA !fast_mode_save_current_yellow_switch
         
         LDA !status_green
-        STA !fast_mode_save_current_level+10
+        STA !fast_mode_save_current_green_switch
 
         LDA !status_special
-        STA !fast_mode_save_current_level+11
+        STA !fast_mode_save_current_special_clear
 
         LDA #$00
-        STA !fast_mode_save_current_level+12 ; midway
-        STA !fast_mode_save_current_level+14 ; item box required
-        STA !fast_mode_save_current_level+15 ; yoshi required
-        STA !fast_mode_save_current_level+16 ; powerup required
+        STA !fast_mode_save_current_midway_enable
         
         LDA #$01
-        STA !fast_mode_save_current_level+17 ; exit type required
+        STA !fast_mode_save_current_item_box_required
+        STA !fast_mode_save_current_yoshi_required
+        STA !fast_mode_save_current_powerup_required
+        ;; TODO set these up properly
+        
+        LDA #$01
+        STA !fast_mode_save_current_exit_required
 
         ; exit type
-        STX !fast_mode_save_current_level+13
+        STX !fast_mode_save_current_exit_type
         
         JSL store_current_level
 
@@ -440,26 +443,26 @@ submap_table:
 ResetLevel:
         JSL retrieve_current_level
 
-        LDA !fast_mode_save_current_level+1
+        LDA !fast_mode_save_current_item_box_start
         STA $0DC2 ;Item
 
-        LDA !fast_mode_save_current_level+2
+        LDA !fast_mode_save_current_item_box_end
         STA !status_fast_mode_end_item
 
-        LDA !fast_mode_save_current_level+3
+        LDA !fast_mode_save_current_powerup_start
         STA $19 ;Powerup
 
-        LDA !fast_mode_save_current_level+4
+        LDA !fast_mode_save_current_powerup_end
         STA !status_fast_mode_end_powerup
 
-        LDA !fast_mode_save_current_level+5
+        LDA !fast_mode_save_current_yoshi_start
         STA !status_yoshi
         STA $0DC1 ; Yoshi
         STZ !level_is_no_yoshi
         LDX #$12
         
       - LDA.L no_yoshi_translevels,X
-        CMP !fast_mode_save_current_level+0
+        CMP !fast_mode_save_current_level
         BEQ .remove_yoshi
         DEX
         BPL -
@@ -472,32 +475,32 @@ ResetLevel:
         
       + JSL save_yoshi_color
 
-        LDA !fast_mode_save_current_level+6
+        LDA !fast_mode_save_current_yoshi_end
         STA !status_fast_mode_end_yoshi
 
-        LDA !fast_mode_save_current_level+7
+        LDA !fast_mode_save_current_red_switch
         STA !status_red
         STA $1F2A
 
-        LDA !fast_mode_save_current_level+8
+        LDA !fast_mode_save_current_blue_switch
         STA !status_blue
         STA $1F29
 
-        LDA !fast_mode_save_current_level+9
+        LDA !fast_mode_save_current_yellow_switch
         STA !status_yellow
         STA $1F28
 
-        LDA !fast_mode_save_current_level+10
+        LDA !fast_mode_save_current_green_switch
         STA !status_green
         STA $1F27
 
-        LDA !fast_mode_save_current_level+11
+        LDA !fast_mode_save_current_special_clear
         STA !status_special
 
-        LDA !fast_mode_save_current_level+12
+        LDA !fast_mode_save_current_midway_enable
         STA !midway_enable_flag
 
-        LDA !fast_mode_save_current_level+13
+        LDA !fast_mode_save_current_exit_type
         STA !status_fast_mode_exit_type
 
         LDA #$07    ;\
@@ -505,7 +508,7 @@ ResetLevel:
         LDA #$06    ; |  
         STA $1F1F   ;/
 
-        LDA.L !fast_mode_save_current_level+0   ;translevel
+        LDA.L !fast_mode_save_current_level
         STA $13BF
         STA $7ED076    ; Overworld tile used in level loading routine. Main map/submap
         STA $7ED476    ; Address calculated from Mario's overworld position
@@ -537,7 +540,7 @@ attempt_level_advance:
 
         INC !fast_mode_current_level   ; Next level
         LDA !fast_mode_current_level   
-        CMP !fast_mode_save_current_header+0
+        CMP !fast_mode_save_level_count
         BCC .finished
         LDA #00
         RTL
@@ -549,132 +552,65 @@ attempt_level_advance:
 
 ; A = 1 if all requirements are met and player can move onto the next level, 0 if not
 can_advance_to_next_level:
-        LDA #$00; !status_fast_mode_difficulty
-        CMP #$00
-        BEQ .check_advance_mode_0
-        CMP #$01
-        BEQ .check_advance_mode_1
-        CMP #$02
-        BEQ .check_advance_mode_2
-        BRA .next_level_hop
-
-    .check_advance_mode_0:
-        LDA !level_finished
-        BNE .next_level_hop
-        LDA !status_fast_mode_exit_type
-        CMP #$02
-        BEQ .start_select
-        CMP #$03
-        BEQ .death
-        BRA .no_advance_hop
-        
-    .start_select:
-        LDA $0DD5
-        CMP #$81
-        BEQ .next_level_hop
-        BRA .no_advance_hop
-    .death:
-        LDA $0DD5
-        CMP #$82
-        BEQ .next_level_hop
-        BRA .no_advance_hop
-        
-    .check_advance_mode_1:
-        LDA !status_fast_mode_exit_type
-        CMP #$00
-        BNE +
-        LDA !level_finished
-        BEQ .no_advance_hop
-        LDA !most_recent_exit
-        CMP #$00
-        BNE .no_advance_hop
-        BRA .next_level_hop
-        
-      + CMP #$01
-        BNE +
-        LDA !level_finished
-        BEQ .no_advance_hop
-        LDA !most_recent_exit
-        CMP #$01
-        BNE .no_advance_hop
-        BRA .next_level_hop
-        
-      + CMP #$02
-        BNE +
-        LDA $0DD5
-        CMP #$81
-        BNE .no_advance_hop
-        
-    .next_level_hop:
-        BRA .next_level
-        
-      + CMP #$03
-        BNE .next_level ; shouldn't happen
-        LDA $0DD5
-        CMP #$82
-        BEQ .next_level
-        
-    .no_advance_hop:
-        BRA .no_advance
-
-    .check_advance_mode_2:
-        LDA !status_fast_mode_end_item
+    .check_exit_type:
+        LDA !fast_mode_save_current_exit_required
+        BEQ .exit_not_required
+    
+    .exit_required:
+        LDA !most_recent_exit ; (0, 1, 2, 3 = exit number)
+        STA $00
+        LDA $0DD5 ; level exit type
         BEQ +
-        CMP $0dc2
-        BNE .no_advance
+        SEC
+        SBC #$7D ; convert ($81, $82, $83 to 4, 5, 6)
+        STA $00
+      + LDA $00
+        CMP !fast_mode_save_current_exit_type
+        BEQ .check_item_box
+        BRA .do_not_advance
+    
+    ; "exit not required" actually means "level finished only"
+    .exit_not_required:
+        LDA $0DD5 ; level exit type
+        BEQ .check_item_box
+        BRA .do_not_advance
         
-      + LDA !status_fast_mode_end_powerup
+    .check_item_box:
+        LDA !fast_mode_save_current_item_box_required
+        BEQ .check_yoshi
+        
+        LDA $0DC2 ; item box
+        CMP !fast_mode_save_current_item_box_end
+        BEQ .check_yoshi
+        BRA .do_not_advance
+        
+    .check_yoshi:
+        LDA !fast_mode_save_current_yoshi_required
+        BEQ .check_powerup
+        
+        LDA $187A ; riding yoshi flag
         BEQ +
-        CMP $19
-        BNE .no_advance
+        JSL get_yoshi_color
+      + CMP !fast_mode_save_current_yoshi_end
+        BEQ .check_powerup
+        BRA .do_not_advance
         
-      + LDA !status_fast_mode_end_yoshi
-        BEQ +
-        LDA !level_is_no_yoshi
-        BNE +
-        LDA $187a
-        BEQ .no_advance
+    .check_powerup:
+        LDA !fast_mode_save_current_powerup_required
+        BEQ .advance_next_level
         
-      + LDA !status_fast_mode_exit_type 
-        CMP #$00
-        BNE +
-        LDA !level_finished
-        BEQ .no_advance
-        LDA !most_recent_exit
-        CMP #$00
-        BNE .no_advance
-        BRA .next_level
+        LDA $19 ; powerup
+        CMP !fast_mode_save_current_powerup_end
+        BEQ .advance_next_level
+        BRA .do_not_advance
         
-      + CMP #$01
-        BNE +
-        LDA !level_finished
-        BEQ .no_advance
-        LDA !most_recent_exit
-        CMP #$01
-        BNE .no_advance
-        BRA .next_level
-            
-      + CMP #$02
-        BNE +
-        LDA $0dd5
-        CMP #$81
-        BNE .no_advance
-        BRA .next_level
-        
-      + CMP #$03
-        BNE .next_level
-        LDA $0dd5
-        CMP #$82
-        BNE .no_advance
-        BRA .next_level
-        
-    .next_level:
+    .advance_next_level:
         LDA #$01
         RTL
-    .no_advance:
+    .do_not_advance:
         LDA #$00
         RTL
-
+        
 
 fade_to_overworld:
         LDA !status_fast_mode
@@ -845,11 +781,11 @@ translevel_locations_2:
 ; display the run time on the status bar
 ; this draws only on level exit
 display_fastmode_run_time:
-        LDA !fast_mode_save_current_header+2
+        LDA !fast_mode_save_show_timer
         BNE + ; if the timer is set to show at level end, draw it
         LDA !fast_mode_current_level
         INC A
-        CMP !fast_mode_save_current_header+0
+        CMP !fast_mode_save_level_count
         BNE ++ ; otherwise, if this is not the last level in the run, skip it
         JSL can_advance_to_next_level
         BNE + ; if it is, draw the timer anyway if the run is completed
