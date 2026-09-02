@@ -431,6 +431,11 @@ option_yoshi_color:
         db "      BLUE                      "
         db "      RED                       "
         db "      GREEN                     "
+option_any_yoshi_color:
+        db "      ANY COLORED YOSHI         "
+        
+option_dont_care:
+        db "      DOES NOT MATTER           "
         
 option_delete_saves:
         db "      ALL DATA                  "

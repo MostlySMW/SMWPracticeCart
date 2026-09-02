@@ -27,12 +27,12 @@ level:
             m = midway start
             s = special enabled
             gybr = green, yellow, blue, red ! switch
-    $08 : eeeexpyi
+    $08 : eeexpyyi
             i = 1 if item box end required
-            y = 1 if yoshi end required
+            yy = 01 if yoshi required, 00 if don't care, 11 if any color okay
             p = 1 if powerup end required
             x = 1 if exit type required (if not required, still need to be normal or secret exit)
-            eeee = exit type
+            eee = exit type
                 000 = normal
                 001 = secret
                 010 = 2nd secret
@@ -40,7 +40,7 @@ level:
                 100 = start+select ($81)
                 101 = death ($82)
                 110 = side exit ($83)
-                others reserved
+                111 reserved
     $09 : reserved
     
             

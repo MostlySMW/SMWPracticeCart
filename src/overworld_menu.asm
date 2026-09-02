@@ -251,13 +251,65 @@ draw_menu_selection:
         STA !menu_tile_upload_location,Y
         CLC
         INC A
-        STA !menu_tile_upload_location+4,y
+        STA !menu_tile_upload_location+4,Y
         CLC
         ADC #$001F
-        STA !menu_tile_upload_location+8,y
+        STA !menu_tile_upload_location+8,Y
         INC A
-        STA !menu_tile_upload_location+12,y
+        STA !menu_tile_upload_location+12,Y
+        
+        SEP #$20
+        CPX #$0028
+        BNE +
+        LDA !fast_mode_save_current_powerup_required
+        BEQ .dont_care
+        BRA .normal
+        
+      + CPX #$0029
+        BNE +
+        LDA !fast_mode_save_current_item_box_required
+        BEQ .dont_care
+        BRA .normal
+        
+      + CPX #$002C
+        BNE +
+        LDA !fast_mode_save_current_exit_required
+        BEQ .dont_care
+        BRA .normal
+        
+      + CPX #$002A
+        BNE .normal
+        LDA !fast_mode_save_current_yoshi_required
+        BEQ .dont_care
+        CMP #$01
+        BEQ .normal
+    
+    .any_yoshi:
+        REP #$20
+        LDA menu_option_tiles+$1FC8
+        STA !menu_tile_upload_location+2,Y
+        LDA menu_option_tiles+$1FC8+2
+        STA !menu_tile_upload_location+6,Y
+        LDA menu_option_tiles+$1FC8+4
+        STA !menu_tile_upload_location+10,Y
+        LDA menu_option_tiles+$1FC8+6
+        STA !menu_tile_upload_location+14,Y
+        BRA .finish
+    
+    .dont_care:
+        REP #$20
+        LDA menu_option_tiles+$19B8
+        STA !menu_tile_upload_location+2,Y
+        LDA menu_option_tiles+$19B8+2
+        STA !menu_tile_upload_location+6,Y
+        LDA menu_option_tiles+$19B8+4
+        STA !menu_tile_upload_location+10,Y
+        LDA menu_option_tiles+$19B8+6
+        STA !menu_tile_upload_location+14,Y
+        BRA .finish
 
+    .normal:
+        REP #$20
         LDA.L !status_table,X
         AND #$00FF
         STA $0E
@@ -271,15 +323,17 @@ draw_menu_selection:
         TAX
 
         LDA menu_option_tiles,X
-        STA !menu_tile_upload_location+2,y
+        STA !menu_tile_upload_location+2,Y
         LDA menu_option_tiles+2,X
-        STA !menu_tile_upload_location+6,y
+        STA !menu_tile_upload_location+6,Y
         LDA menu_option_tiles+4,X
-        STA !menu_tile_upload_location+10,y
+        STA !menu_tile_upload_location+10,Y
         LDA menu_option_tiles+6,X
-        STA !menu_tile_upload_location+14,y
+        STA !menu_tile_upload_location+14,Y
 
+    .finish:
         TYA
+        CLC
         ADC #$0010
         STA !menu_tile_upload_bytes
 
@@ -322,8 +376,6 @@ menu_object_tiles:
         incbin "bin/menu_object_tiles.bin"
 menu_layer3_tiles:
         incbin "bin/menu_layer3_tiles.bin"
-        
-; See level_mario_appear.asm for option_text
 
 print "inserted ", bytes, "/32768 bytes into bank $18"
 
@@ -373,7 +425,7 @@ selection_press_right:
 minimum_selection_extended:
         db $01,$01,$01,$01,$01,$FF,$FF,$FF,$00,$0C,$04,$02,$01,$01,$01,$01
         db $02,$0A,$07,$01,$05,$01,$64,$01,$01,$03,$28,$28,$28,$28,$03,$04
-        db $01,$01,$01,$01,$01,$07,$FF,$07,$07,$FF,$07,$01,$06,$02,$02,$01
+        db $01,$01,$01,$01,$01,$FF,$FF,$FF,$FF,$FF,$FF,$01,$06,$02,$02,$01
 
 ; the number of options to allow when not holding x or y
 minimum_selection_normal:
@@ -593,8 +645,6 @@ unpack_FastMode_level_settings:
 
         LDA !fast_mode_save_current_exit_type
         STA !status_fast_mode_exit_type
-        
-        ;; TODO special case for required flags
 
     .done:
         RTS
@@ -649,13 +699,6 @@ pack_FastMode_level_settings:
 
         LDA !status_fast_mode_exit_type
         STA !fast_mode_save_current_exit_type
-        
-        ;; TODO special case for required flags
-        LDA #$01
-        STA !fast_mode_save_current_item_box_required
-        STA !fast_mode_save_current_yoshi_required
-        STA !fast_mode_save_current_powerup_required
-        STA !fast_mode_save_current_exit_required
 
         JSL store_current_level
         RTS
@@ -758,14 +801,14 @@ fast_mode_level_select:
         LDX.B #translevel_list_game_order_end-translevel_list_game_order-1
       + LDA translevel_list_game_order,X
         PHA
-        JSR pack_FastMode_level_settings
+        JSR unpack_FastMode_level_settings
         PLA
         STA !fast_mode_save_current_level
         JSR pack_FastMode_level_settings
         BRL .complete_level_adjustment
         
     .cant_find_it:
-        JSR pack_FastMode_level_settings
+        JSR unpack_FastMode_level_settings
         LDA #$2A ; yi2
         STA !fast_mode_save_current_level
         JSR pack_FastMode_level_settings
@@ -945,11 +988,11 @@ fast_mode_level_edit:
         STA $1DFC ; apu i/o
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
-        JSL draw_route_level_list
         
     .no_y:
         JSR option_selection_mode
         JSR draw_level_route_cursor
+        JSL draw_route_level_list
     .done
         RTS
         
@@ -1037,7 +1080,11 @@ option_selection_mode:
         CMP #!fast_scroll_delay
         BNE .test_right
     .go_left:
-        LDX !current_selection
+        JSL handle_special_cases_left
+        BEQ +
+        JSR pack_FastMode_level_settings
+        JMP .finish_sound
+      + LDX !current_selection
         LDA.L !status_table,X
         DEC A
         STA.L !status_table,X
@@ -1059,7 +1106,11 @@ option_selection_mode:
         CMP #!fast_scroll_delay
         BNE .test_selection
     .go_right:
-        LDX !current_selection
+        JSL handle_special_cases_right
+        BEQ +
+        JSR pack_FastMode_level_settings
+        JMP .finish_sound
+      + LDX !current_selection
         LDA.L !status_table,X
         INC A
         STA.L !status_table,X
@@ -1303,6 +1354,231 @@ option_selection_mode:
     .no_update_text:
         RTS
 
+; L was pressed on an option
+; return with A = 0 to just do the default action
+handle_special_cases_left:
+        LDA !current_selection
+        CMP #$28
+        BEQ .handle_powerup_end
+        CMP #$29
+        BEQ .handle_itembox_end
+        CMP #$2A
+        BEQ .handle_yoshi_end
+        CMP #$2C
+        BNE .do_default_action
+        BRL .handle_exit_end
+        
+    .handle_powerup_end:
+        LDA !fast_mode_save_current_powerup_required
+        BEQ .powerup_not_required
+    .powerup_required: ; if powerup required, and we hit min value, set to don't care
+        LDA.L !status_fast_mode_end_powerup
+        BNE .do_default_action
+        STZ !fast_mode_save_current_powerup_required
+        LDA #$01
+        RTL
+    .powerup_not_required: ; if powerup not required, set to required and max value
+        INC !fast_mode_save_current_powerup_required
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$FF ; max powerup if x/y held
+        BRA ++
+      + LDA #$03 ; max powerup if no x/y
+     ++ STA.L !status_fast_mode_end_powerup
+        RTL
+        
+    .handle_itembox_end:
+        LDA !fast_mode_save_current_item_box_required
+        BEQ .itembox_not_required
+    .itembox_required: ; if itembox required, and we hit min value, set to don't care
+        LDA.L !status_fast_mode_end_item
+        BNE .do_default_action
+        STZ !fast_mode_save_current_item_box_required
+        LDA #$01
+        RTL
+    .itembox_not_required: ; if itembox not required, set to required and max value
+        INC !fast_mode_save_current_item_box_required
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$FF ; max itembox if x/y held
+        BRA ++
+      + LDA #$04 ; max itembox if no x/y
+     ++ STA.L !status_fast_mode_end_item
+        RTL
+        
+    .do_default_action:
+        LDA #$00
+        RTL
+        
+        
+    .handle_yoshi_end:
+        LDA !fast_mode_save_current_yoshi_required
+        BEQ .yoshi_not_required
+        CMP #$01
+        BEQ .yoshi_required
+    .yoshi_any_color: ; if yoshi any color, set to required and max value
+        LDA #$01
+        STA !fast_mode_save_current_yoshi_required
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$FF ; max yoshi if x/y held
+        BRA ++
+      + LDA #$04 ; max yoshi if no x/y
+     ++ STA.L !status_fast_mode_end_yoshi
+        RTL
+    .yoshi_required: ; if yoshi required, and we hit min value, set to don't care
+        LDA.L !status_fast_mode_end_yoshi
+        BNE .do_default_action
+        STZ !fast_mode_save_current_yoshi_required
+        LDA #$01
+        RTL
+    .yoshi_not_required: ; if yoshi not required, set to any color
+        LDA #$03
+        STA !fast_mode_save_current_yoshi_required
+        RTL
+        
+    .handle_exit_end:
+        LDA !fast_mode_save_current_exit_required
+        BEQ .exit_not_required
+    .exit_required: ; if exit required, and we hit min value, set to don't care
+        LDA.L !status_fast_mode_exit_type
+        BNE .do_default_action
+        STZ !fast_mode_save_current_exit_required
+        LDA #$01
+        RTL
+    .exit_not_required: ; if exit not required, set to required and max value
+        INC !fast_mode_save_current_exit_required
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$06 ; max exit if x/y held
+        BRA ++
+      + LDA #$01 ; max exit if no x/y
+     ++ STA.L !status_fast_mode_exit_type
+        RTL
+        
+; R was pressed on an option
+; return with A = 0 to just do the default action
+handle_special_cases_right:
+        LDA !current_selection
+        CMP #$28
+        BEQ .handle_powerup_end
+        CMP #$29
+        BEQ .handle_itembox_end
+        CMP #$2A
+        BEQ .handle_yoshi_end
+        CMP #$2C
+        BNE .do_default_action
+        BRL .handle_exit_end
+        
+    .handle_powerup_end:
+        LDA !fast_mode_save_current_powerup_required
+        BEQ .powerup_not_required
+    .powerup_required: ; if powerup required, and we hit max value, set to don't care
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$FF ; max powerup if x/y held
+        BRA ++
+      + LDA #$03 ; max powerup if no x/y
+     ++ CMP.L !status_fast_mode_end_powerup
+        BNE .do_default_action
+        STZ !fast_mode_save_current_powerup_required
+        LDA #$01
+        RTL
+    .powerup_not_required: ; if powerup not required, set to required and min value
+        INC !fast_mode_save_current_powerup_required
+        LDA #$00
+        STA.L !status_fast_mode_end_powerup
+        INC A
+        RTL
+        
+    .handle_itembox_end:
+        LDA !fast_mode_save_current_item_box_required
+        BEQ .itembox_not_required
+    .itembox_required: ; if itembox required, and we hit max value, set to don't care
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$FF ; max itembox if x/y held
+        BRA ++
+      + LDA #$04 ; max itembox if no x/y
+     ++ CMP.L !status_fast_mode_end_item
+        BNE .do_default_action
+        STZ !fast_mode_save_current_item_box_required
+        LDA #$01
+        RTL
+    .itembox_not_required: ; if itembox not required, set to required and min value
+        INC !fast_mode_save_current_item_box_required
+        LDA #$00
+        STA.L !status_fast_mode_end_item
+        INC A
+        RTL
+        
+    .do_default_action:
+        LDA #$00
+        RTL
+        
+    .handle_yoshi_end:
+        LDA !fast_mode_save_current_yoshi_required
+        BEQ .yoshi_not_required
+        CMP #$01
+        BEQ .yoshi_required
+    .yoshi_any_color: ; if yoshi any color, set to don't care
+        STZ !fast_mode_save_current_yoshi_required
+        RTL
+    .yoshi_required: ; if yoshi required, and we hit max value, set to any color
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$FF ; max yoshi if x/y held
+        BRA ++
+      + LDA #$04 ; max yoshi if no x/y
+     ++ CMP.L !status_fast_mode_end_yoshi
+        BNE .do_default_action
+        LDA #$03
+        STA !fast_mode_save_current_yoshi_required
+        RTL
+    .yoshi_not_required: ; if yoshi not required, set to required and min value
+        LDA #$00
+        STA.L !status_fast_mode_end_yoshi
+        LDA #$01
+        STA !fast_mode_save_current_yoshi_required
+        RTL
+        
+    .handle_exit_end:
+        LDA !fast_mode_save_current_exit_required
+        BEQ .exit_not_required
+    .exit_required: ; if exit required, and we hit max value, set to don't care
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        LDA #$06 ; max exit if x/y held
+        BRA ++
+      + LDA #$01 ; max exit if no x/y
+     ++ CMP.L !status_fast_mode_exit_type
+        BNE .do_default_action
+        STZ !fast_mode_save_current_exit_required
+        LDA #$01
+        RTL
+    .exit_not_required: ; if exit not required, set to required and min value
+        INC !fast_mode_save_current_exit_required
+        LDA #$00
+        STA.L !status_fast_mode_exit_type
+        INC A
+        RTL
+
 ; remove the current level from the route
 ; shouldn't happen if route is empty
 route_remove_level: ; use mvn, (Y) <- (X), C = len-1
@@ -1448,6 +1724,11 @@ route_duplicate_level: ; use mvp
 
 ; take the selection option and apply it to all later levels in the route
 FastMode_propogate_forward:
+        JSR fast_mode_propogate_1
+        JSR fast_mode_propogate_2
+        RTS
+        
+fast_mode_propogate_1:
         LDA !current_selection
         TAX
         LDA selection_to_uncompressed_table-$20,X
@@ -1475,12 +1756,43 @@ FastMode_propogate_forward:
         STA !fast_mode_current_level
         JSL retrieve_current_level
 
-        ;; TODO special case for required flags
+        RTS
+        
+fast_mode_propogate_2:
+        LDA !current_selection
+        TAX
+        LDA selection_to_uncompressed_table2-$20,X
+        TAX
+        STA $04
+        LDA !fast_mode_current_level
+        STA $05
+        LDA !fast_mode_current_lvl_decomp,X
+        STA $06
+
+        LDY !fast_mode_save_level_count
+
+      - INC !fast_mode_current_level
+        JSL retrieve_current_level
+        BEQ .done
+
+        LDX $04
+        LDA $06
+        STA !fast_mode_current_lvl_decomp,X
+        JSL store_current_level
+        BRA -
+
+    .done:
+        LDA $05
+        STA !fast_mode_current_level
+        JSL retrieve_current_level
+
         RTS
 
 ; mapping of overworld menu options to indices into route level data
 selection_to_uncompressed_table:
         db $09,$0A,$07,$08,$0B,$03,$01,$05,$04,$02,$06,$0C,$0D
+selection_to_uncompressed_table2:
+        db $FF,$FF,$FF,$FF,$FF,$FF,$FF,$FF,$10,$0E,$0F,$FF,$11
         
 ; copy currently loaded movie to sram
 export_movie_to_sram:
@@ -2218,7 +2530,47 @@ draw_option_value:
         STA $00
         LDA.W #bank(option_empty) ; bank of text
         STA $02
+        
+        SEP #$30
         LDA !current_selection
+        AND #$FF
+        CMP #$28
+        BNE +
+        LDA !fast_mode_save_current_powerup_required
+        BNE .not_special
+        BRA .dont_care
+      + CMP #$29
+        BNE +
+        LDA !fast_mode_save_current_item_box_required
+        BNE .not_special
+        BRA .dont_care
+      + CMP #$2A
+        BNE +
+        LDA !fast_mode_save_current_yoshi_required
+        BEQ .dont_care
+        CMP #$01
+        BEQ .not_special
+        BRA .any_yoshi
+      + CMP #$2C
+        BNE .not_special
+        LDA !fast_mode_save_current_exit_required
+        BNE .not_special
+        
+    .dont_care:
+        REP #$30
+        LDA #option_dont_care
+        STA $00
+        BRA .exit_default
+        
+    .any_yoshi:
+        REP #$30
+        LDA #option_any_yoshi_color
+        STA $00
+        BRA .exit_default
+        
+    .not_special:
+        LDA !current_selection
+        REP #$30
         AND #$00FF
         ASL A
         TAX
@@ -2722,7 +3074,9 @@ draw_route_level_list:
         LDX.W #10
         INY #8
         LDA [$04],Y
-        AND #$00F0
+        BIT #$00E0
+        BEQ .normal_exit
+        BIT #$0010
         BEQ .normal_exit
         LDA #$3D3D
         BRA +

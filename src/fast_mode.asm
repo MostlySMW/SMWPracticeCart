@@ -180,13 +180,13 @@ retrieve_current_level:
         STA !fast_mode_save_current_midway_enable
         
         INY
-        LDA [$00],Y ; eeeexpyi
+        LDA [$00],Y ; eeexpyyi
         TAX
         AND #$01
         STA !fast_mode_save_current_item_box_required
-        TXA : LSR : TAX : AND #$01
+        TXA : LSR : TAX : AND #$03
         STA !fast_mode_save_current_yoshi_required
-        TXA : LSR : TAX : AND #$01
+        TXA : LSR #2 : TAX : AND #$01
         STA !fast_mode_save_current_powerup_required
         TXA : LSR : TAX : AND #$01
         STA !fast_mode_save_current_exit_required
@@ -320,9 +320,9 @@ store_current_level:
         LDA !fast_mode_save_current_exit_required
         AND #$01 : ORA $03 : ASL : STA $03
         LDA !fast_mode_save_current_powerup_required
-        AND #$01 : ORA $03 : ASL : STA $03
+        AND #$01 : ORA $03 : ASL #2 : STA $03
         LDA !fast_mode_save_current_yoshi_required
-        AND #$01 : ORA $03 : ASL : STA $03
+        AND #$03 : ORA $03 : ASL : STA $03
         LDA !fast_mode_save_current_item_box_required
         AND #$01 : ORA $03 : STA $03
         INY
@@ -420,12 +420,9 @@ FastMode_add_level:
 
         LDA #$00
         STA !fast_mode_save_current_midway_enable
-        
-        LDA #$01
         STA !fast_mode_save_current_item_box_required
         STA !fast_mode_save_current_yoshi_required
         STA !fast_mode_save_current_powerup_required
-        ;; TODO set these up properly
         
         LDA #$01
         STA !fast_mode_save_current_exit_required
@@ -443,10 +440,10 @@ FastMode_add_level:
         RTL
 
 submap_table:
-        db $ff,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
-        db $00,$00,$ff,$00,$00,$00,$00,$ff,$00,$ff,$00,$00,$00,$00,$ff,$00
+        db $FF,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00,$00
+        db $00,$00,$FF,$00,$00,$00,$00,$FF,$00,$FF,$00,$00,$00,$00,$FF,$00
         db $00,$00,$00,$00,$00,$01,$01,$01,$01,$01,$01,$02,$02,$02,$02,$04
-        db $04,$04,$04,$04,$04,$04,$ff,$04,$04,$04,$04,$04,$02,$02,$02,$02
+        db $04,$04,$04,$04,$04,$04,$FF,$04,$04,$04,$04,$04,$02,$02,$02,$02
         db $02,$03,$03,$03,$03,$03,$03,$03,$05,$05,$05,$05,$05,$05,$05,$05
         db $05,$05,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06,$06
 
@@ -595,12 +592,18 @@ can_advance_to_next_level:
         BRA .do_not_advance
         
     .check_yoshi:
+        LDA !level_is_no_yoshi
+        BNE .check_powerup ; right now any no-yoshi level ignores all yoshi checks
         LDA !fast_mode_save_current_yoshi_required
         BEQ .check_powerup
-        LDA !level_is_no_yoshi
-        BNE .check_powerup
+        CMP #$01
+        BEQ +
         
         LDA $187A ; riding yoshi flag
+        BNE .check_powerup
+        BRA .do_not_advance
+        
+      + LDA $187A ; riding yoshi flag
         BEQ +
         JSL get_yoshi_color
       + CMP !fast_mode_save_current_yoshi_end
