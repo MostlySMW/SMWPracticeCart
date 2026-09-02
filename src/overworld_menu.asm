@@ -595,6 +595,10 @@ unpack_FastMode_level_settings:
         STA !status_fast_mode_special
         STA !status_fast_mode_midway
         STA !status_fast_mode_exit_type
+        STZ !fast_mode_save_current_item_box_required
+        STZ !fast_mode_save_current_yoshi_required
+        STZ !fast_mode_save_current_powerup_required
+        STZ !fast_mode_save_current_exit_required
         BRA .done
         
 ;      + LDA !fast_mode_save_version
@@ -1206,9 +1210,10 @@ option_selection_mode:
     .select_fast_mode_save:
         LDA !status_fast_mode
         BNE +
-        LDA #$2A ; wrong sound
-        STA $1DFC ; apu i/o
-        JMP .finish_no_change
+        JMP .finish_error_sound
+      + CMP #$03
+        BCC +
+        JMP .finish_error_sound
       + LDA #$02
         STA !overworld_menu_mode
         STZ !overworld_menu_submode
@@ -1995,20 +2000,15 @@ draw_option_cursor:
         PLB
         PLP
         RTL
-
-; get yoshi color from yoshi space to simple space
-get_yoshi_color:
+        
+; load yoshi color from yoshi space to simple space
+load_yoshi_color:
         LDA $0DBA ; ow yoshi color
         CMP #$0B
         BCS +
         TAX
         LDA.L yoshi_color_mapping_input,X
-      + RTL
-        
-; load yoshi color from yoshi space to simple space
-load_yoshi_color:
-        JSL get_yoshi_color
-        STA.L !status_yoshi
+      + STA.L !status_yoshi
         RTL
         
 ; save yoshi color from simple space to yoshi space

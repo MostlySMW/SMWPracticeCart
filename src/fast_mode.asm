@@ -12,6 +12,54 @@ FastMode_save_locations:
 
 ALL_CASTLES_SAVE:
         incbin "bin/routes/AllCastles.smwroute"
+        
+try_start_fast_mode:
+        LDA !status_fast_mode 
+        BEQ .done ; fast mode enabled
+        LDA !util_byetudlr_hold
+        AND #$30
+        BNE .done ; pressed start or select
+        
+        JSL retrieve_current_header
+        LDA !fast_mode_save_level_count
+        BEQ .done ; header of route exists
+        
+        LDA #$01
+        STA !fast_mode_start_play ; start fast mode!
+        STA !fast_mode_save_current_exit_required
+        LDA #$FF
+        STA !most_recent_exit
+        
+        STZ !total_frames
+        STZ !total_seconds
+        STZ !total_minutes
+        STZ !total_hours
+        
+        LDA !restore_status_from_backup
+        BNE .done
+        
+        ; save the current settings
+        LDX #!number_of_options
+      - LDA.L !status_table,X
+        STA.L !backup_status_table,X
+        DEX
+        BPL -
+
+        ; default settings for fast mode
+        LDA #$01
+        STA.L !restore_status_from_backup
+        STA.L !status_lrreset
+        STA.L !status_slowdown
+        LDA #$00
+        STA.L !status_states
+        STA.L !status_pause
+        STA.L !status_slots
+        STA.L !status_lagometer
+        STA.L !status_timedeath
+        STA.L !status_region ; force J version for now
+        
+    .done:
+        RTL
 
 reset_header:
         PHB
@@ -567,7 +615,7 @@ can_advance_to_next_level:
         LDA !most_recent_exit ; (0, 1, 2, 3 = exit number)
         STA $00
         LDA $0DD5 ; level exit type
-        BEQ +
+        BPL +
         SEC
         SBC #$7D ; convert ($81, $82, $83 to 4, 5, 6)
         STA $00
@@ -605,7 +653,11 @@ can_advance_to_next_level:
         
       + LDA $187A ; riding yoshi flag
         BEQ +
-        JSL get_yoshi_color
+        LDA $13C7 ; ow yoshi color
+        CMP #$0B
+        BCS +
+        TAX
+        LDA.L yoshi_color_mapping_output,X
       + CMP !fast_mode_save_current_yoshi_end
         BEQ .check_powerup
         BRA .do_not_advance
