@@ -120,7 +120,11 @@ retrieve_current_level:
         BCC +
         JMP .done_fail
         
-      + REP #$30
+      + XBA
+        LDA $04
+        PHA
+        XBA
+        REP #$30
         AND #$00FF
         STA $03
         ASL #2
@@ -129,6 +133,8 @@ retrieve_current_level:
         ASL A ; x10
         TAY
         SEP #$20
+        PLA
+        STA $04
 
         LDA [$00],Y ; translevel
         STA !fast_mode_save_current_level
@@ -252,6 +258,8 @@ store_current_level:
         LDA FastMode_save_locations+2,X
         STA $02
 
+        LDA $04
+        PHA
         LDA !fast_mode_current_level
         REP #$30
         AND #$00FF
@@ -262,6 +270,8 @@ store_current_level:
         ASL A ; x10
         TAY
         SEP #$20
+        PLA
+        STA $04
 
         LDA !fast_mode_save_current_level
         STA [$00],Y

@@ -308,7 +308,7 @@ option_height:
 option_type: ; -----xsm (m = modifiable with L/R, s = selectable with A/B, x = extended options available with X/Y)
         db $01,$01,$01,$01,$01,$05,$05,$05,$02,$03,$01,$01,$01,$01,$01,$01
         db $01,$01,$01,$01,$03,$01,$01,$01,$03,$03,$01,$01,$01,$01,$01,$07
-        db $01,$01,$01,$01,$01,$05,$05,$05,$05,$05,$05,$01,$05,$01,$01,$03
+        db $03,$03,$03,$03,$03,$07,$07,$07,$07,$07,$07,$01,$05,$01,$01,$03
 option_index:
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
         dw $030B,$030C,$0319,$031E,$0321,$0323,$0325,$0327
@@ -672,21 +672,24 @@ FastMode_editor_mode:
         JSL retrieve_current_level
         JSR unpack_FastMode_level_settings
 
-        LDA !util_byetudlr_frame                            ; \
-        AND #$10                                            ; |
-        BEQ +                                               ; |
-                                                            ; |
-        LDA #$00                                            ; |
-        STA !overworld_menu_mode                            ; |
-        STA !util_byetudlr_frame                            ; | Return to main menu on START
-        STZ !text_timer                                     ; |
-        LDA #$1F                                            ; |
-        STA !current_selection                              ; |
+    .check_start:
+        LDA !util_byetudlr_frame
+        AND #$10
+        BEQ .no_buttons
+        
+    .go_start: ; if press start, exit to main menu
+        LDA #$00
+        STA !overworld_menu_mode
+        STA !util_byetudlr_frame
+        STZ !text_timer
+        LDA #$1F
+        STA !current_selection
         LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
-        JMP .done                                           ; /
+        JMP .done
         
-      + LDA !overworld_menu_submode
+    .no_buttons: ; else, run menu like normal
+        LDA !overworld_menu_submode
         ASL A
         TAX
         JSR (fast_mode_editor_submodes,X)
@@ -759,14 +762,14 @@ fast_mode_level_select:
         PLA
         STA !fast_mode_save_current_level
         JSR pack_FastMode_level_settings
-        BRL .complete_level_adjustment_no_sound
+        BRL .complete_level_adjustment
         
     .cant_find_it:
         JSR pack_FastMode_level_settings
         LDA #$2A ; yi2
         STA !fast_mode_save_current_level
         JSR pack_FastMode_level_settings
-        BRL .complete_level_adjustment_no_sound
+        BRL .complete_level_adjustment
         
     .check_r:
         LDA !util_axlr_frame
@@ -798,7 +801,7 @@ fast_mode_level_select:
         PLA
         STA !fast_mode_save_current_level
         JSR pack_FastMode_level_settings
-        BRA .complete_level_adjustment_no_sound
+        BRA .complete_level_adjustment
 
     .check_up:
         LDA !util_byetudlr_frame
@@ -1115,39 +1118,39 @@ option_selection_mode:
 		dw 0                               ;1D
 		dw 0                               ;1E
 		dw .select_fast_mode_save          ;1F
-		dw .select_check_back              ;20
-		dw .select_check_back              ;21
-		dw .select_check_back              ;22
-		dw .select_check_back              ;23
-		dw .select_check_back              ;24
-		dw .select_check_back              ;25
-		dw .select_check_back              ;26
-		dw .select_check_back              ;27
-		dw .select_check_back              ;28
-		dw .select_check_back              ;29
-		dw .select_check_back              ;2A
-		dw .select_check_back              ;2B
-		dw .select_check_back              ;2C
-		dw .select_check_back              ;2D
-		dw .select_check_back              ;2E
+		dw .select_back_or_propogate       ;20
+		dw .select_back_or_propogate       ;21
+		dw .select_back_or_propogate       ;22
+		dw .select_back_or_propogate       ;23
+		dw .select_back_or_propogate       ;24
+		dw .select_back_or_propogate       ;25
+		dw .select_back_or_propogate       ;26
+		dw .select_back_or_propogate       ;27
+		dw .select_back_or_propogate       ;28
+		dw .select_back_or_propogate       ;29
+		dw .select_back_or_propogate       ;2A
+		dw .select_go_back                 ;2B
+		dw .select_go_back                 ;2C
+		dw .select_go_back                 ;2D
+		dw .select_go_back                 ;2E
 		dw .select_fast_mode_delete_save   ;2F
 
-
-    .select_check_back:
+    .select_back_or_propogate:
+        LDA !util_byetudlr_hold
+        ORA !util_axlr_hold
+        AND #$40 ; if holding X/Y, propogate setting instead
+        BNE .propogate_forward
+    .select_go_back:
         STZ !overworld_menu_submode
         LDA #$23 ; beep
         STA $1DFC ; apu i/o
         JMP .finish_no_change
         
     .propogate_forward:
-        LDA !util_byetudlr_hold
-        AND !util_axlr_hold
-        AND #$80
-        BEQ +
         JSR FastMode_propogate_forward
-        LDA #$01 ; coin sound
+        LDA #$03 ; vine sound
         STA $1DFC ; apu i/o
-      + JMP .finish_no_change
+        JMP .finish_no_change
       
     .select_fast_mode_save:
         LDA !status_fast_mode
@@ -1167,7 +1170,30 @@ option_selection_mode:
         JSR RedrawPg2
         LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
-        JMP .finish_no_change
+        
+        PHK
+        PLA
+        STA $02
+        REP #$30
+        LDX #$0020
+        LDY #$C056
+        LDA #.fast_mode_title
+        STA $00
+        LDA #$3434
+        JSL draw_text_string
+        LDX #$0020
+        LDY #$E056
+        LDA #.fast_mode_description
+        STA $00
+        LDA #$3030
+        JSL draw_text_string
+        SEP #$30
+        JMP .no_inc_text
+        
+    .fast_mode_title:
+        db "     ROUTE EDITOR               "
+    .fast_mode_description:
+        db "      SELECT A LEVEL TO EDIT    "
         
     .select_fast_mode_delete_save:
         LDA !status_fast_mode_delete
@@ -1429,7 +1455,7 @@ FastMode_propogate_forward:
         STA $04
         LDA !fast_mode_current_level
         STA $05
-        LDA !fast_mode_save_current_level,X
+        LDA !fast_mode_current_lvl_decomp,X
         STA $06
 
         LDY !fast_mode_save_level_count
@@ -1438,10 +1464,9 @@ FastMode_propogate_forward:
         JSL retrieve_current_level
         BEQ .done
 
-        LDA $04
-        TAX
+        LDX $04
         LDA $06
-        STA !fast_mode_save_current_level,X
+        STA !fast_mode_current_lvl_decomp,X
         JSL store_current_level
         BRA -
 
@@ -1455,7 +1480,7 @@ FastMode_propogate_forward:
 
 ; mapping of overworld menu options to indices into route level data
 selection_to_uncompressed_table:
-    db $09,$0A,$07,$08,$0B,$03,$01,$05,$04,$02,$06,$0C,$10
+        db $09,$0A,$07,$08,$0B,$03,$01,$05,$04,$02,$06,$0C,$0D
         
 ; copy currently loaded movie to sram
 export_movie_to_sram:
