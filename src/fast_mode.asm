@@ -587,6 +587,8 @@ can_advance_to_next_level:
     .check_yoshi:
         LDA !fast_mode_save_current_yoshi_required
         BEQ .check_powerup
+        LDA !level_is_no_yoshi
+        BNE .check_powerup
         
         LDA $187A ; riding yoshi flag
         BEQ +

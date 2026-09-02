@@ -84,6 +84,7 @@
 !in_overworld_menu           = $0EFC
 !overworld_menu_mode         = $0EFD
 !current_meter_selection     = $0EFE
+!overworld_menu_submode      = $0EFF
 
 ; the number of options in the overworld menu
 !number_of_options_pg1       = 32

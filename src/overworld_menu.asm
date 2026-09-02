@@ -305,10 +305,10 @@ option_height:
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
         db $10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10,$10
-option_type:
-        db $01,$01,$01,$01,$01,$01,$01,$01,$02,$03,$01,$01,$01,$01,$01,$01
-        db $01,$01,$01,$01,$03,$01,$01,$01,$03,$03,$01,$01,$01,$01,$01,$01
-        db $01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$01,$03
+option_type: ; -----xsm (m = modifiable with L/R, s = selectable with A/B, x = extended options available with X/Y)
+        db $01,$01,$01,$01,$01,$05,$05,$05,$02,$03,$01,$01,$01,$01,$01,$01
+        db $01,$01,$01,$01,$03,$01,$01,$01,$03,$03,$01,$01,$01,$01,$01,$07
+        db $01,$01,$01,$01,$01,$05,$05,$05,$05,$05,$05,$01,$05,$01,$01,$03
 option_index:
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
         dw $030B,$030C,$0319,$031E,$0321,$0323,$0325,$0327
@@ -685,54 +685,269 @@ FastMode_editor_mode:
         LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
         JMP .done                                           ; /
-
-      + LDA !util_byetudlr_hold                             ; \
-        AND #$40                                            ; |
-        BEQ .no_y                                           ; |
-                                                            ; |
-        LDA !util_byetudlr_frame                            ; | 
-        BIT #$04                                            ; | if Y+Down, increment level counter
-        BEQ .check_ydown                                    ; | 
         
-        JSR pack_FastMode_level_settings                    ; | Pack away old values before increment
-        INC !fast_mode_current_level                        ; |
+      + LDA !overworld_menu_submode
+        ASL A
+        TAX
+        JSR (fast_mode_editor_submodes,X)
+        JSR pack_FastMode_level_settings
+    .done:
+        RTS
+        
+fast_mode_editor_submodes:
+        dw fast_mode_level_select
+        dw fast_mode_level_edit
+
+; level isn't selected yet, cursor is on the right
+fast_mode_level_select:
+        INC !fast_scroll_timer
+        LDA !util_axlr_hold
+        AND #%00110000
+        BNE +
+        STZ !fast_scroll_timer
+      + LDA !fast_scroll_timer
+        CMP #!fast_scroll_delay
+        BCC .test_ab
+        LDA #!fast_scroll_delay
+        STA !fast_scroll_timer
+        
+    .test_ab
+        LDA !util_byetudlr_frame
+        ORA !util_axlr_frame
+        AND #$80
+        BEQ .check_l
+        
+    .select_level:
+        LDA !fast_mode_save_level_count
+        BNE +
+        ; if the route was empty, add new level but don't select it yet
+        JSL route_add_new_level
+        BRL .complete_level_adjustment_no_sound
+        
+      + LDA #$23 ; beep
+        STA $1DFC ; apu i/o
+        LDA #$01
+        STA !overworld_menu_submode
+        BRL .complete_level_adjustment_no_sound
+        
+    .check_l:
+        LDA !util_axlr_frame
+        AND #%00100000 ; if L, change level
+        BNE .go_l
+        LDA !util_axlr_hold
+        AND #%00100000
+        BEQ .check_r
+        LDA !fast_scroll_timer
+        CMP #!fast_scroll_delay
+        BNE .check_r
+    .go_l
+        LDX #0
+      - LDA translevel_list_game_order,X
+        BMI .cant_find_it
+        CMP !fast_mode_save_current_level
+        BEQ .l_found_it
+        INX
+        BRA -
+        
+    .l_found_it:
+        DEX
+        BPL +
+        LDX.B #translevel_list_game_order_end-translevel_list_game_order-1
+      + LDA translevel_list_game_order,X
+        PHA
+        JSR pack_FastMode_level_settings
+        PLA
+        STA !fast_mode_save_current_level
+        JSR pack_FastMode_level_settings
+        BRL .complete_level_adjustment_no_sound
+        
+    .cant_find_it:
+        JSR pack_FastMode_level_settings
+        LDA #$2A ; yi2
+        STA !fast_mode_save_current_level
+        JSR pack_FastMode_level_settings
+        BRL .complete_level_adjustment_no_sound
+        
+    .check_r:
+        LDA !util_axlr_frame
+        AND #%00010000 ; if R, change level
+        BNE .go_r
+        LDA !util_axlr_hold
+        AND #%00010000
+        BEQ .check_up
+        LDA !fast_scroll_timer
+        CMP #!fast_scroll_delay
+        BNE .check_up
+    .go_r:
+        LDX #0
+      - LDA translevel_list_game_order,X
+        BMI .cant_find_it
+        CMP !fast_mode_save_current_level
+        BEQ .r_found_it
+        INX
+        BRA -
+        
+    .r_found_it:
+        INX
+        LDA translevel_list_game_order,X
+        BPL +
+        LDX #0
+        LDA translevel_list_game_order,X
+      + PHA
+        JSR pack_FastMode_level_settings
+        PLA
+        STA !fast_mode_save_current_level
+        JSR pack_FastMode_level_settings
+        BRA .complete_level_adjustment_no_sound
+
+    .check_up:
+        LDA !util_byetudlr_frame
+        BIT #$04 ; if Down, increment level counter
+        BEQ .check_down
+        
+        JSR pack_FastMode_level_settings ; Pack away old values before increment
+        INC !fast_mode_current_level
         LDA !fast_mode_save_level_count
         DEC A
         CMP !fast_mode_current_level
-        BCS +
+        BCS .complete_level_adjustment
         LDA #00
         STA !fast_mode_current_level
-      + STZ !util_byetudlr_frame                            ; |
-        STZ !text_timer                                     ; |
-        LDA #$06 ; fireball sound
-        STA $1DFC ; apu i/o
-        JSR unpack_FastMode_level_settings                  ; | unpack new values after increment
-        JSR RedrawPg2
-        JSL draw_route_level_list
-        BRA .no_y
+        BRA .complete_level_adjustment
 
-    .check_ydown:
-        LDA !util_byetudlr_frame                            ; |
-        BIT #$08                                            ; | if Y+Up, decrement level counter
-        BEQ .no_y                                           ; |
-        JSR pack_FastMode_level_settings                    ; |
-        DEC !fast_mode_current_level                        ; |
-        BPL +
+    .check_down:
+        LDA !util_byetudlr_frame
+        BIT #$08 ; if Up, decrement level counter
+        BEQ .done
+        
+        JSR pack_FastMode_level_settings ; Pack away old values before increment
+        DEC !fast_mode_current_level
+        BPL .complete_level_adjustment
         LDA !fast_mode_save_level_count
         DEC A
         STA !fast_mode_current_level
-      + STZ !util_byetudlr_frame                            ; |
-        STZ !text_timer                                     ; |
+        
+    .complete_level_adjustment:
         LDA #$06 ; fireball sound
         STA $1DFC ; apu i/o
-        JSR unpack_FastMode_level_settings                  ; |
-        JSR RedrawPg2                                       ; /
+    .complete_level_adjustment_no_sound:
+        JSR unpack_FastMode_level_settings
+        STZ !util_byetudlr_frame
+        STZ !text_timer
+        JSR RedrawPg2
+        JSL draw_route_level_list
+        
+    .done:
+        JSR draw_level_route_cursor
+        RTS
+
+; list of translevels in 'proper' game order
+translevel_list_game_order:
+        db $28,$29,$2A,$27,$26,$25,$14
+        db $15,$09,$05,$06,$0A,$2F,$04,$13,$07,$08,$03
+        db $3E,$3C,$2E,$3D,$2D,$01,$02,$2B,$0B,$40,$3F
+        db $0C,$0D,$0F,$10,$11,$0E
+        db $42,$44,$47,$43,$46,$41,$1F,$20,$45
+        db $22,$24,$23,$1D,$1C,$3B,$21,$1B,$1A
+        db $18,$3A,$39,$37,$33,$38,$35,$34,$31,$32
+        db $58,$54,$56,$59,$5A
+        db $4E,$4F,$50,$51,$4C,$4B,$4A,$49
+    .end:
+        db $FF
+
+; draw cursor on top of the route level list
+draw_level_route_cursor:
+        LDA #80 ; width
+        STA $00
+        LDA #$08 ; height
+        STA $01
+        LDA #$10 ; OAM
+        STA $0A
+        LDA !fast_scroll_timer
+        CMP #!fast_scroll_delay
+        BEQ +
+        LDA #$00
+        BRA ++
+      + LDA #$01
+     ++ STA $02 ; squeezed
+        LDA !overworld_menu_submode
+        ASL A
+        STA $04 ; color
+        
+        LDA #$03 ; type
+        STA $03
+        LDA !fast_mode_save_level_count
+        BNE +
+        LDA #$02 ; type
+        STA $03
+        LDY #$17 ; ypos
+        BRA ++
+      + LDA !fast_mode_current_level
+      - SEC
+        SBC #12
+        BPL -
+        CLC
+        ADC #12
+        ASL #3
+        CLC
+        ADC #$17 ; ypos
+        TAY
+     ++ LDX #$80 ; xpos
+     
+        LDA !overworld_menu_submode
+        BEQ +
+        STZ $03
+        
+      + JSR draw_generic_cursor
+        RTS
+
+
+; level is selected on the right, cursor is on the left to select the options
+fast_mode_level_edit:
+        LDA !util_byetudlr_hold
+        AND #$40
+        BEQ .no_y
+
+    .check_yup:
+        LDA !util_byetudlr_frame
+        BIT #$04 ; if Y+Down, increment level counter
+        BEQ .check_ydown
+        
+        JSR pack_FastMode_level_settings ; Pack away old values before increment
+        INC !fast_mode_current_level
+        LDA !fast_mode_save_level_count
+        DEC A
+        CMP !fast_mode_current_level
+        BCS .complete_level_adjustment
+        LDA #00
+        STA !fast_mode_current_level
+        BRA .complete_level_adjustment
+
+    .check_ydown:
+        LDA !util_byetudlr_frame
+        BIT #$08 ; if Y+Up, decrement level counter
+        BEQ .no_y
+        
+        JSR pack_FastMode_level_settings ; Pack away old values before increment
+        DEC !fast_mode_current_level
+        BPL .complete_level_adjustment
+        LDA !fast_mode_save_level_count
+        DEC A
+        STA !fast_mode_current_level
+        
+    .complete_level_adjustment:
+        STZ !util_byetudlr_frame
+        STZ !text_timer
+        LDA #$06 ; fireball sound
+        STA $1DFC ; apu i/o
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2
         JSL draw_route_level_list
         
     .no_y:
         JSR option_selection_mode
+        JSR draw_level_route_cursor
     .done
-        JSR pack_FastMode_level_settings
         RTS
         
 ; run the default part of the menu
@@ -900,24 +1115,30 @@ option_selection_mode:
 		dw 0                               ;1D
 		dw 0                               ;1E
 		dw .select_fast_mode_save          ;1F
-		dw .propogate_forward              ;20
-		dw .propogate_forward              ;21
-		dw .propogate_forward              ;22
-		dw .propogate_forward              ;23
-		dw .propogate_forward              ;24
-		dw .propogate_forward              ;25
-		dw .propogate_forward              ;26
-		dw .propogate_forward              ;27
-		dw .propogate_forward              ;28
-		dw .propogate_forward              ;29
-		dw .propogate_forward              ;2A
-		dw .propogate_forward              ;2B
-		dw .propogate_forward              ;2C
-		dw 0                               ;2D
-		dw 0                               ;2E
+		dw .select_check_back              ;20
+		dw .select_check_back              ;21
+		dw .select_check_back              ;22
+		dw .select_check_back              ;23
+		dw .select_check_back              ;24
+		dw .select_check_back              ;25
+		dw .select_check_back              ;26
+		dw .select_check_back              ;27
+		dw .select_check_back              ;28
+		dw .select_check_back              ;29
+		dw .select_check_back              ;2A
+		dw .select_check_back              ;2B
+		dw .select_check_back              ;2C
+		dw .select_check_back              ;2D
+		dw .select_check_back              ;2E
 		dw .select_fast_mode_delete_save   ;2F
 
 
+    .select_check_back:
+        STZ !overworld_menu_submode
+        LDA #$23 ; beep
+        STA $1DFC ; apu i/o
+        JMP .finish_no_change
+        
     .propogate_forward:
         LDA !util_byetudlr_hold
         AND !util_axlr_hold
@@ -936,6 +1157,7 @@ option_selection_mode:
         JMP .finish_no_change
       + LDA #$02
         STA !overworld_menu_mode
+        STZ !overworld_menu_submode
         LDA #$20
         STA !current_selection
         STZ !text_timer
@@ -954,12 +1176,16 @@ option_selection_mode:
         BNE +
         JMP .finish_error_sound
       + JSL route_remove_level
+        LDA !fast_mode_save_level_count
+        BEQ +
+        JMP .finish_no_change
+      + STZ !overworld_menu_submode ; exit level selection if delete last level
         JMP .finish_no_change
      ++ LDA !fast_mode_save_level_count
         BEQ +
         JSL route_duplicate_level
         JMP .finish_no_change
-      + JSL route_add_new_level
+      + JSL route_add_new_level ; shouldn't happen any more
         JMP .finish_no_change
         
     .select_meters:
@@ -974,6 +1200,7 @@ option_selection_mode:
         JSR draw_edited_status_bar
         LDA #$01
         STA !overworld_menu_mode
+        STZ !overworld_menu_submode
         STZ !text_timer
         JMP .no_update_text
         
@@ -1027,6 +1254,10 @@ option_selection_mode:
     .finish_no_sound:
         LDX !current_selection
         JSL draw_menu_selection
+        STZ $04
+        LDA !overworld_menu_mode
+        ASL A
+        STA $05
         JSL draw_option_value
         
     .finish_no_change:
@@ -2117,20 +2348,18 @@ draw_text_string:
 draw_single_tile:
         STA $0C
         PHX
-        LDA.L $7F837B
+        LDA !menu_tile_upload_bytes
         TAX
         PLA
-        STA.L $7F837D,X
-        LDA #$0100
-        STA.L $7F837F,X
+        STA !menu_tile_upload_location,X
         LDA $0C
-        STA.L $7F8381,X
+        STA !menu_tile_upload_location+2,X
         LDA #$FFFF
-        STA.L $7F8383,X
+        STA !menu_tile_upload_location+4,X
         TXA
         CLC
-        ADC #$0006
-        STA.L $7F837B
+        ADC #$0004
+        STA !menu_tile_upload_bytes
         RTL
 
 ; draw a cursor
@@ -2174,10 +2403,8 @@ draw_generic_cursor:
         LDA #$3C
         BRA .merge_tl_color
       + LDA $04
-        BEQ +
-        LDA #$3A
-        BRA .merge_tl_color
-      + LDA #$36
+        TAX
+        LDA cursor_colors,X
     .merge_tl_color:
         STA $05
         LDA #$00
@@ -2211,10 +2438,8 @@ draw_generic_cursor:
         LDA #$3C
         BRA .merge_tr_color
       + LDA $04
-        BEQ +
-        LDA #$3A
-        BRA .merge_tr_color
-      + LDA #$36
+        TAX
+        LDA cursor_colors,X
     .merge_tr_color:
         ORA #$40
         STA $05
@@ -2244,18 +2469,18 @@ draw_generic_cursor:
         ADC $01
         TAY
         LDA $04
-        BEQ +
-        LDA #$3A
-        BRA .merge_bl_color
-      + LDA #$36
-    .merge_bl_color:
+        TAX
+        LDA cursor_colors,X
         ORA #$80
         STA $05
         LDA #$08
         CLC
         ADC $0A
         STA $06
-        LDA cursor_tiles
+        LDA $03
+        AND #$04
+        TAX
+        LDA cursor_tiles,X
         LDX $0E
         JSR draw_cursor_bit
         
@@ -2276,11 +2501,8 @@ draw_generic_cursor:
         ADC $01
         TAY
         LDA $04
-        BEQ +
-        LDA #$3A
-        BRA .merge_br_color
-      + LDA #$36
-    .merge_br_color:
+        TAX
+        LDA cursor_colors,X
         ORA #$C0
         STA $05
         LDA #$0C
@@ -2311,7 +2533,9 @@ draw_generic_cursor:
         RTS
 
 cursor_tiles:
-        db $06,$08,$0A
+        db $06,$08,$0A,$0C,$0E
+cursor_colors:
+        db $36,$3A,$3E,$3C
 
 ; draw 1/4 of a cursor
 ; where x = x pos, Y = y pos, A = tile byte, $05 = property byte, $06 = pointer to oam
@@ -2390,11 +2614,7 @@ draw_route_level_list:
         JSL draw_text_string
         BRA -
         
-      + LDX #$400C ; hack for vertical string
-        LDY #$1055
-        LDA #$2929
-        JSL draw_text_string
-        BRL .exit
+      + BRL .exit
         
     .not_empty:
         PHX
@@ -2416,19 +2636,15 @@ draw_route_level_list:
         CMP #$01
         REP #$30
         LDA #$28FC ; blank tile
-        BCC + ; if more levels exit, draw arrow
+        BCC + ; if more levels exist, draw arrow
         LDA #$2841 ; arrow tile
-      + LDX #$F554 ; address
+      + LDX #$54F5 ; address
         JSL draw_single_tile
         
         LDA.W #level_names_empty
         STA $00
         LDA.W #level_names_empty>>8
         STA $01
-        LDX #$400C ; hack for vertical string
-        LDY #$1055
-        LDA #$2929
-        JSL draw_text_string
         
         SEP #$30
         PLX
@@ -2447,9 +2663,9 @@ draw_route_level_list:
         CMP $03
         REP #$30
         LDA #$28FC ; blank tile
-        BCS + ; if more levels exit, draw arrow
+        BCS + ; if more levels exist, draw arrow
         LDA #$2842 ; arrow tile
-      + LDX #$9556 ; address
+      + LDX #$5695 ; address
         JSL draw_single_tile
         BRL .exit
         
@@ -2479,10 +2695,6 @@ draw_route_level_list:
         STA $00
     .merge:
         LDX.W #10
-        LDA $08
-        EOR !fast_mode_current_level
-        AND #$00FF
-        BEQ .highlight_me
         INY #8
         LDA [$04],Y
         AND #$00F0
@@ -2491,20 +2703,6 @@ draw_route_level_list:
         BRA +
     .normal_exit:
         LDA #$2D2D
-        BRA +
-    .highlight_me:
-        PHX
-        LDA $07
-        AND #$00FF
-        ASL #5
-        CLC
-        ADC #$5510 ; address
-        XBA
-        TAX
-        LDA #$2C40 ; arrow tile
-        JSL draw_single_tile
-        PLX
-        LDA #$2929
         
       + PHA
         LDA $07
@@ -2520,7 +2718,6 @@ draw_route_level_list:
         INC $07
         INC $08
         BRL -
-        
         
     .exit:
         PLP
