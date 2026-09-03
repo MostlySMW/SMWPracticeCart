@@ -286,13 +286,13 @@ draw_menu_selection:
     
     .any_yoshi:
         REP #$20
-        LDA menu_option_tiles+$1FC8
+        LDA menu_option_tiles+$1FA0
         STA !menu_tile_upload_location+2,Y
-        LDA menu_option_tiles+$1FC8+2
+        LDA menu_option_tiles+$1FA0+2
         STA !menu_tile_upload_location+6,Y
-        LDA menu_option_tiles+$1FC8+4
+        LDA menu_option_tiles+$1FA0+4
         STA !menu_tile_upload_location+10,Y
-        LDA menu_option_tiles+$1FC8+6
+        LDA menu_option_tiles+$1FA0+6
         STA !menu_tile_upload_location+14,Y
         BRA .finish
     
@@ -367,9 +367,9 @@ option_index:
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
         dw $030B,$030C,$0319,$031E,$0321,$0323,$0325,$0327
         dw $0329,$032C,$0337,$033F,$0341,$0347,$0349,$03AE
-        dw $03B0,$03B2,$03BA,$03BA,$03BA,$03BA,$03B6,$03E3
+        dw $03B0,$03B2,$03BA,$03BA,$03BA,$03BA,$03B6,$03F5
         dw $0001,$0003,$0005,$0007,$0009,$000B,$010B,$020B
-        dw $000B,$010B,$020B,$03EF,$03E8,$03F1,$03F4,$03F7
+        dw $000B,$010B,$020B,$03EA,$03E3,$03EC,$03EF,$03F2
 menu_option_tiles:
         incbin "bin/menu_option_tiles.bin"
 menu_object_tiles:
@@ -424,13 +424,13 @@ selection_press_right:
 ; the number of options to allow when holding x or y
 minimum_selection_extended:
         db $01,$01,$01,$01,$01,$FF,$FF,$FF,$00,$0C,$04,$02,$01,$01,$01,$01
-        db $02,$0A,$07,$01,$05,$01,$64,$01,$01,$03,$28,$28,$28,$28,$03,$04
+        db $02,$0A,$07,$01,$05,$01,$64,$01,$01,$03,$28,$28,$28,$28,$03,$07
         db $01,$01,$01,$01,$01,$FF,$FF,$FF,$FF,$FF,$FF,$01,$06,$02,$02,$01
 
 ; the number of options to allow when not holding x or y
 minimum_selection_normal:
         db $01,$01,$01,$01,$01,$03,$04,$04,$00,$0C,$04,$02,$01,$01,$01,$01
-        db $02,$0A,$07,$01,$05,$01,$37,$01,$01,$03,$28,$28,$28,$28,$03,$03
+        db $02,$0A,$07,$01,$05,$01,$37,$01,$01,$03,$28,$28,$28,$28,$03,$07
         db $01,$01,$01,$01,$01,$03,$04,$04,$03,$04,$04,$01,$01,$02,$02,$01
 
 ; this code is run on every frame during the overworld menu game mode (after fade in completes)
@@ -731,6 +731,8 @@ FastMode_editor_mode:
         STZ !text_timer
         LDA #$1F
         STA !current_selection
+        TAX
+        JSL draw_menu_selection
         LDA #$0B ; on/off sound
         STA $1DF9 ; apu i/o
         JMP .done
@@ -1211,9 +1213,12 @@ option_selection_mode:
         LDA !status_fast_mode
         BNE +
         JMP .finish_error_sound
-      + CMP #$03
+      + CMP #$04
         BCC +
-        JMP .finish_error_sound
+        DEC A
+        JSL copy_preset_to_route3
+        LDA #$03
+        STA !status_fast_mode
       + LDA #$02
         STA !overworld_menu_mode
         STZ !overworld_menu_submode

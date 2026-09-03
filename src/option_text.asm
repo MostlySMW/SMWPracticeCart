@@ -239,8 +239,8 @@ option_description:
 	db "  CHOOSE WHICH SAVE             "
 	db "  TO START FAST MODE            "
 	db "                                "
-	db "                                "
-	db "                                "
+	db "  EDITING PRESET ROUTES         "
+	db "  OVERWRITES CUSTOM ROUTE 3     "
 	db "                                "
 	db "  TURN THE YELLOW               "
 	db "  SWITCH PALACE BLOCKS          "
@@ -518,7 +518,10 @@ option_fast_mode:
         db "      CUSTOM ROUTE 1            "
         db "      CUSTOM ROUTE 2            "
         db "      CUSTOM ROUTE 3            "
+        db "      11 EXIT NMG               "
+        db "      11 EXIT CLOUD             "
         db "      ALL CASTLES               "
+        db "      96 EXIT                   "
         
 option_sprites:
         db "      EMPTY                     ";00

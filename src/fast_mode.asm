@@ -2,16 +2,28 @@ FastMode_header_locations:
         dd !fast_mode_save_1_header
         dd !fast_mode_save_2_header
         dd !fast_mode_save_3_header
-        dd #ALL_CASTLES_SAVE
+        dd #preset_route_11_exit_nmg
+        dd #preset_route_11_exit_cloud
+        dd #preset_route_all_castles
+        dd #preset_route_96_exit
 
 FastMode_save_locations:
         dd !fast_mode_save_1
         dd !fast_mode_save_2
         dd !fast_mode_save_3
-        dd #ALL_CASTLES_SAVE+$10
+        dd #preset_route_11_exit_nmg+$10
+        dd #preset_route_11_exit_cloud+$10
+        dd #preset_route_all_castles+$10
+        dd #preset_route_96_exit+$10
 
-ALL_CASTLES_SAVE:
-        incbin "bin/routes/AllCastles.smwroute"
+preset_route_11_exit_nmg:
+        incbin "bin/routes/11_exit_nmg.smwroute"
+preset_route_11_exit_cloud:
+        incbin "bin/routes/11_exit_cloud.smwroute"
+preset_route_all_castles:
+        incbin "bin/routes/all_castles.smwroute"
+preset_route_96_exit:
+        incbin "bin/routes/96_exit.smwroute"
         
 try_start_fast_mode:
         LDA !status_fast_mode 
@@ -59,6 +71,50 @@ try_start_fast_mode:
         STA.L !status_region ; force J version for now
         
     .done:
+        RTL
+        
+; copy route (in A) to save 3
+; save 1 = 0, first preset = 3, etc
+copy_preset_to_route3:
+        PHB
+        PHK
+        PLB
+        
+        REP #$10
+        ASL #2
+        TAX
+        LDY FastMode_header_locations,X
+        STY $00
+        LDY FastMode_header_locations+2,X
+        STY $02
+        LDY #!fast_mode_save_3_header
+        STY $03
+        LDA.B #bank(!fast_mode_save_3_header)
+        STA $05
+        
+        LDY.W #!fast_mode_header_length-1
+      - LDA [$00],Y
+        STA [$03],Y
+        DEY
+        BPL -
+        
+        LDY FastMode_save_locations,X
+        STY $00
+        LDY FastMode_save_locations+2,X
+        STY $02
+        LDY #!fast_mode_save_3
+        STY $03
+        LDA.B #bank(!fast_mode_save_3)
+        STA $05
+        
+        LDY.W #!fast_mode_data_length-1
+      - LDA [$00],Y
+        STA [$03],Y
+        DEY
+        BPL -
+        
+        SEP #$10
+        PLB
         RTL
 
 reset_header:
@@ -657,7 +713,7 @@ can_advance_to_next_level:
         CMP #$0B
         BCS +
         TAX
-        LDA.L yoshi_color_mapping_output,X
+        LDA.L yoshi_color_mapping_input,X
       + CMP !fast_mode_save_current_yoshi_end
         BEQ .check_powerup
         BRA .do_not_advance
@@ -727,123 +783,9 @@ fade_to_overworld:
 pre_level_loading:
         LDA $0109
         CMP #$E9
-        BNE .done
-;        LDA #$01
-;        STA !status_fast_mode
-
+        BNE +
         JSL ResetLevel
-    .done:
-        RTL
-
-draw_original_statusbar:
-        RTL
-
-draw_FastMode_level_tiles:
-        PHP
-        PHB
-        PHK
-        PLB
-        
-;        JSR locate_levels
-        
-        LDA !status_fast_mode
-        BNE +
-        JMP .done
-        
-      + LDA !fast_mode_save_1_header+0
-        BNE +
-        JMP .done
-            
-      + LDA !fast_mode_tile_timer 
-        CMP !fast_mode_save_1_header+0
-        BCC .counter_overflow
-        LDA #$00
-        STA !fast_mode_tile_timer
-        BRA +
-        
-    .counter_overflow:
-        LDA !fast_mode_tile_timer
-        INC !fast_mode_tile_timer
-
-      + REP #$30                          ; A, X/Y 16 bit
-        AND #$00FF
-;        BEQ .done
-        ASL #3
-        TAX                               ; X <- FastMode Level Index
-        SEP #$20                          ; A: 8 bit X/Y 16 bit
-        LDA !fast_mode_save_1+0,X            ; Load Translevel to A
-        LDY #$0000                        ; Clear upper byte of Y
-        ASL
-        TAY                               
-        LDA translevel_locations_2+1,Y        ;$00 -> X Pos
-        STA $00
-        LDA translevel_locations_2+0,Y        ;$01 -> Y Pos
-        STA $01
-
-        LDA slot_tiles
-        STA $03C2 ; tile
-        REP #$20
-        LDA $00
-        AND #$001F
-        ASL #4
-        CLC
-        ADC slot_offsets
-        SEC
-        SBC $1E
-        BMI .continue
-        CMP #$0100
-        BCS .continue
-        SEP #$20
-        STA $03C0 ; x
-        LDA $01
-        AND #$20
-        BEQ +
-        LDA $1F11 ; submap
-        BEQ .continue
-        BRA ++
-      + LDA $1F11 ; submap
-        BNE .continue
-     ++ REP #$20
-        LDA $01
-        AND #$001F
-        ASL #4
-        CLC
-        ADC slot_offsets+2
-        SEC
-        SBC $20
-        BMI .continue
-        CMP #$00E0
-        BCS .continue
-        SEP #$20
-        STA $03C1 ; y
-        TXA
-        INC A
-        ASL A
-        ORA #$30
-        STA $03C3 ; properties
-        LDA #$00
-        STA $0490 ; size
-    .continue:
-    .done:
-        SEP #$30
-        
-        PLB
-        PLP
-        RTL
-
-translevel_locations_2:
-        dw $0000,$0C03,$0E03,$0508,$050A,$090A,$0B0C,$0D0C
-        dw $010D,$030D,$050E,$1003,$1403,$1603,$1A03,$1405
-        dw $1705,$1408,$100F,$0710,$0211,$0511,$0712,$0517
-        dw $0E17,$0319,$0C1B,$0F1B,$0C1D,$0F1D,$1410,$1610
-        dw $1812,$1516,$1816,$131B,$151B,$0922,$0B24,$0926
-        dw $0627,$0328,$0928,$082C,$002E,$032E,$0C2E,$1021
-        dw $1423,$1723,$1923,$1425,$1725,$1925,$1227,$1427
-        dw $1727,$1927,$1B27,$1729,$0830,$0C30,$0532,$0A32
-        dw $0C32,$0637,$0837,$043A,$0A3A,$0C3A,$043C,$083C
-        dw $1131,$1331,$1631,$1931,$1C31,$1133,$1333,$1633
-        dw $1933,$1C33,$1736,$1238,$1538,$1738,$1938,$1C38
-        dw $143A,$1A3A,$173B,$123D,$1C3D
+      + RTL
 
 ; display the run time on the status bar
 ; this draws only on level exit
