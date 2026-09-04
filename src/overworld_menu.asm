@@ -1258,17 +1258,24 @@ option_selection_mode:
         
     .select_fast_mode_delete_save:
         LDA !status_fast_mode_delete
-        BNE ++
+        BNE ..add
         LDA !fast_mode_save_level_count
         BNE +
         JMP .finish_error_sound
+      + LDA !util_byetudlr_hold ; if holding X/Y, delete entire route
+        ORA !util_axlr_hold
+        AND #$40
+        BEQ +
+        JSL route_remove_all_levels
+        BRA ++
       + JSL route_remove_level
         LDA !fast_mode_save_level_count
-        BEQ +
+        BEQ ++
         JMP .finish_no_change
-      + STZ !overworld_menu_submode ; exit level selection if delete last level
+     ++ STZ !overworld_menu_submode ; exit level selection if delete last level
         JMP .finish_no_change
-     ++ LDA !fast_mode_save_level_count
+    ..add:
+        LDA !fast_mode_save_level_count
         BEQ +
         JSL route_duplicate_level
         JMP .finish_no_change
@@ -1646,6 +1653,33 @@ route_remove_level: ; use mvn, (Y) <- (X), C = len-1
         BNE +
         DEC !fast_mode_current_level
       + JSL draw_route_level_list
+        JSR unpack_FastMode_level_settings
+        JSR RedrawPg2
+        PLP
+        RTL
+        
+; just nuke the entire route
+route_remove_all_levels:
+        PHP
+        LDA #$06 ; gulp sound
+        STA $1DF9 ; apu i/o
+        
+        LDA.L !status_fast_mode
+        DEC A
+        REP #$30
+        AND #$00FF
+        ASL #2
+        TAX
+        LDA.L FastMode_header_locations,X
+        STA $00
+        LDA.L FastMode_header_locations+1,X
+        STA $01
+        SEP #$30
+        LDA #$00
+        STA [$00] ; no levels
+        
+        STZ !fast_mode_current_level
+        JSL draw_route_level_list
         JSR unpack_FastMode_level_settings
         JSR RedrawPg2
         PLP
@@ -2968,10 +3002,10 @@ draw_route_level_list:
         STA $02
         REP #$30
         LDA #$28FC ; blank tile
-        LDX #$F554 ; address
+        LDX #$54F5 ; address
         JSL draw_single_tile
         LDA #$28FC ; blank tile
-        LDX #$9556 ; address
+        LDX #$5695 ; address
         JSL draw_single_tile
         LDX #$0010
         LDA #$5511 ; address

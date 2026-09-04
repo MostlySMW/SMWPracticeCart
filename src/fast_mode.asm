@@ -26,7 +26,7 @@ preset_route_96_exit:
         incbin "bin/routes/96_exit.smwroute"
         
 try_start_fast_mode:
-        LDA !status_fast_mode 
+        LDA !status_fast_mode
         BEQ .done ; fast mode enabled
         LDA !util_byetudlr_hold
         AND #$30
@@ -660,7 +660,7 @@ attempt_level_advance:
     .no_advance:
         LDA #$01
         RTL
-
+        
 ; A = 1 if all requirements are met and player can move onto the next level, 0 if not
 can_advance_to_next_level:
     .check_exit_type:
@@ -675,8 +675,21 @@ can_advance_to_next_level:
         SEC
         SBC #$7D ; convert ($81, $82, $83 to 4, 5, 6)
         STA $00
+        
+        ; swap normal and secret exit for dgh and fgh
+      + LDA !fast_mode_save_current_level
+        CMP #$04 ; dgh
+        BEQ .swap_exit
+        CMP #$41 ; fgh
+        BNE +
+    .swap_exit:
+        LDA $00
+        TAX
+        LDA.L .swapped_exits,X
+        BRA ++
+        
       + LDA $00
-        CMP !fast_mode_save_current_exit_type
+     ++ CMP !fast_mode_save_current_exit_type
         BEQ .check_item_box
         BRA .do_not_advance
     
@@ -733,6 +746,9 @@ can_advance_to_next_level:
     .do_not_advance:
         LDA #$00
         RTL
+        
+    .swapped_exits:
+        db $01,$00,$02,$03
         
 
 fade_to_overworld:
@@ -791,16 +807,18 @@ pre_level_loading:
 ; this draws only on level exit
 display_fastmode_run_time:
         LDA !fast_mode_save_show_timer
-        BNE + ; if the timer is set to show at level end, draw it
+        BNE .do_draw_it ; if the timer is set to show at level end, draw it
         LDA !fast_mode_current_level
         INC A
         CMP !fast_mode_save_level_count
-        BNE ++ ; otherwise, if this is not the last level in the run, skip it
+        BNE .dont_draw_it ; otherwise, if this is not the last level in the run, skip it
         JSL can_advance_to_next_level
-        BNE + ; if it is, draw the timer anyway if the run is completed
-     ++ RTL
+        BNE .do_draw_it ; if it is, draw the timer anyway if the run is completed
+    .dont_draw_it:
+        RTL
         
-      + LDA !total_hours
+    .do_draw_it:
+        LDA !total_hours
         STA !status_bar+$93
         
         LDA !total_minutes

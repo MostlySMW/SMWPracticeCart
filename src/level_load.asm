@@ -698,6 +698,18 @@ bowser_layer1_tilemap:
 
 bowser_layer2_tiles:
         incbin "bin/bowser_layer2_tiles.bin"
+        
+setup_bowser_irq:
+        LDA $0D9F ; hdma channels
+        STA $420C ; hdmaen
+        
+        LDA !fast_mode_start_play
+        BNE +
+        LDA #$A1 ; enable irq normally
+        RTL
+        
+      + LDA #$81 ; keep it disabled for fast mode
+        RTL
 
 ; fix the graphics upload routine for reznor, iggy, & larry
 ; this really should have been done already, they were just lucky that

@@ -302,6 +302,11 @@ ORG !_F+$00AB4A
         JSL fix_iggy_larry_graphics
         NOP #2
 
+; enable IRQ for bowser fight
+ORG !_F+$008351
+        JSL setup_bowser_irq
+        NOP #4
+
 ; allow both controllers 1 and 2 to control mario at any time
 ORG !_F+$008650
         JSL controller_update
@@ -401,6 +406,11 @@ ORG !_F+$00A270
 ORG !_F+$00D0B8
         JSL on_mario_death
         JMP $D0C6
+        
+; run routine on side exit
+ORG !_F+$05B163
+        JSL on_side_exit
+        NOP
         
 ;;;;;;;;;;;;; REGION DIFFERENCES ;;;;;;;;;;;;;
 

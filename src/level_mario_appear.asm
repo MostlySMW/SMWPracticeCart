@@ -4,9 +4,34 @@ reset bytes
 
 ; this code is run once on the frame that Mario appears (a frame after the mosaic effect finishes)
 level_mario_appear:
+        JSR setup_bowser_status_bar
+        JSR playback_buffered_inputs
+        JSR try_midway_advance
+        
+        ; woof
+        ; if in fast mode run, for boss fights, run status bar init
+        ; pass by faking the game mode value
+        LDA $0D9B ; boss flag
+        BEQ .done
+        LDA !fast_mode_start_play
+        BEQ .done
+        LDA $0100 ; game mode
+        PHA
+        STZ $0100 
+        JSL display_meters_wrapper
+        PLA
+        STA $0100
+        
+    .done:
+        RTL
+        
+; set up the new bowser status bar that is at the bottom of the screen
+setup_bowser_status_bar:
         LDA $0D9B ; boss flag
         CMP #$C1 ; bowser fight
-        BNE +
+        BNE .done
+        LDA !fast_mode_start_play
+        BNE .done
 
         LDA #$01
         STA $11 ; IRQType
@@ -34,9 +59,8 @@ level_mario_appear:
         LDA #$0F
         STA $2100 ; exit force blank
         
-      + JSR playback_buffered_inputs
-        JSR try_midway_advance
-        RTL
+    .done:
+        RTS
         
 ; if required, set up the appropriate bowser fight phase
 ; also place a stunned mechakoopa in the middle of the screen

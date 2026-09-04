@@ -2483,6 +2483,18 @@ on_mario_death:
         BNE +
         DEC $1496
       + RTL
+      
+; runs the frame the level is exited via screen side exit
+on_side_exit:
+        LDA #$83 ; new side exit marker
+        STA $0DD5
+        
+        LDA !fast_mode_start_play
+        BEQ +
+        JSL add_additional_exit_time
+        JSL display_fastmode_run_time
+        
+      + RTL
 
 ; display a score sprite only if sprite slot numbers are disabled
 ; return A = 0 if enabled

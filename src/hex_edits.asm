@@ -48,10 +48,6 @@ ORG !_F+$048F35
 ORG !_F+$01EC36
         db $80
 
-; enable IRQ for bowser fight
-ORG !_F+$008358
-        db #$A1
-
 ; increase size of status bar
 ORG !_F+$008293
         db #$26
@@ -304,9 +300,6 @@ ORG !_F+$00A267
 ; remove old death marker
 ORG !_F+$00D0CB
         NOP #5
-; change side exit marker to $83
-ORG !_F+$05B164
-        db $83
 
 ; disable 3rd exit from setting map to yoshi's island
 ORG !_F+$00C9DB

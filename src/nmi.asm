@@ -426,7 +426,25 @@ break:
         BNE -
         PLA
         
-        LDA #$0F
+        LDA !fast_mode_start_play
+        BEQ +
+        STZ $2115 ; vmainc
+        LDA #$4D
+        STA $2116 ; vram address low
+        LDA #$24
+        STA $2117 ; vram address hi
+        LDA #$32
+        STA $2118
+        LDA #$34
+        STA $2118
+        LDA #$36
+        STA $2118
+        LDA #$38
+        STA $2118
+        LDA #$3A
+        STA $2118
+        
+      + LDA #$0F
         STA $2100 ; exit force blank
         
         LDY #$0006 ; delay before showing text
@@ -444,6 +462,8 @@ break:
         LDA #$0F
         STA $2100 ; exit force blank
         
+        LDA !fast_mode_start_play ; don't reload state if in fast mode run
+        BNE .forever
         LDA.L !save_state_exists
         CMP #$BD
     .forever:
